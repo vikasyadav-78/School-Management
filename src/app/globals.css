@@ -5,11 +5,23 @@
   --foreground: #171717;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-teacher-50: #f5f0ff;
+  --color-teacher-100: #ebdfff;
+  --color-teacher-200: #d8bfff;
+  --color-teacher-300: #be94ff;
+  --color-teacher-400: #9c61fe;
+  --color-teacher-500: #7f22fe;
+  --color-teacher-600: #7f22fe;
+  --color-teacher-700: #6b12df;
+  --color-teacher-800: #570cb7;
+  --color-teacher-900: #480b95;
+  --color-teacher-950: #1c0244;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,3 +36,103 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Centralized Global Scrollbar Styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari, Brave) Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Sidebar & High-Density Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* Optimal matching tone for the dark zinc-900 sidebar track */
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* Ensure all clickable elements display a pointer cursor */
+a, 
+button, 
+select, 
+label, 
+summary, 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"], 
+input[type="checkbox"], 
+input[type="radio"],
+input[type="date"],
+input[type="month"],
+input[type="week"],
+::-webkit-calendar-picker-indicator,
+[role="button"],
+[onclick],
+.cursor-pointer,
+.clickable {
+  cursor: pointer !important;
+}
+
+/* Print Media Styles to print ONLY the receipt/voucher container */
+@media print {
+  /* Hide all elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show only the printable receipt/voucher container and its children */
+  #printable-receipt,
+  #printable-receipt * {
+    visibility: visible !important;
+  }
+
+  /* Position the printable element at the top left of the page */
+  #printable-receipt {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
