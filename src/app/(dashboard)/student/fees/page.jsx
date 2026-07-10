@@ -76,92 +76,151 @@ export default function StudentFeesPage() {
   const handlePayment = async (paymentId, feeName) => {
     try {
       setPayingId(paymentId);
-      
-      const isLoaded = await loadRazorpayScript();
-      if (!isLoaded) {
-        toast.error("Failed to load payment gateway script. Please check your internet connection.");
+      const paymentGateway = fees.payment_gateway || {};
+
+      if (!paymentGateway.enabled) {
+        toast.error("Online payment is currently unavailable.");
+        setPayingId(null);
         return;
       }
 
-      const initiateResponse = await api.post(`/student/fees/${paymentId}/pay`);
-      const checkout = initiateResponse.data.checkout;
+      const gateway = paymentGateway.gateway?.toLowerCase();
+      console.log("Gateway:", gateway);
+      console.log("Calling Pay API...");
+
+      const pay_initiate_url = `/student/fees/${paymentId}/pay`;
+      console.log("Pay API URL:", pay_initiate_url);
+
+      const initiateResponse = await api.post(pay_initiate_url);
+      console.log("Pay API Response:", initiateResponse.data);
+
+      const checkout = initiateResponse.data.checkout || initiateResponse.data;
+      console.log("Checkout Object:", checkout);
+
+      const verify_url = checkout?.verify_url || initiateResponse.data?.verify_url || `/student/fees/${paymentId}/verify`;
+      console.log("Verify URL:", verify_url);
 
       if (!checkout) {
         toast.error("Failed to initialize transaction order.");
-        return;
-      }
-
-      // Debugging check and logging
-      const rzpKey = checkout.client?.key;
-      const rzpOrderId = checkout.client?.order_id;
-      const rzpAmount = checkout.amount;
-      const rzpCurrency = checkout.currency;
-
-      console.log("Razorpay Checkout configuration:", {
-        key: rzpKey,
-        order_id: rzpOrderId,
-        amount: rzpAmount,
-        currency: rzpCurrency
-      });
-
-      if (!rzpKey) {
-        toast.error("Payment Failed: Authentication key was missing during initialization.");
         setPayingId(null);
         return;
       }
 
-      const options = {
-        key: rzpKey,
-        amount: rzpAmount,
-        currency: rzpCurrency,
-        name: checkout.client?.name || "School Management System",
-        description: `${feeName} Fee Payment`,
-        order_id: rzpOrderId,
-        handler: async (response) => {
-          try {
-            setPayingId(paymentId);
-            const verifyPayload = {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            };
+      switch (gateway) {
+        case "razorpay": {
+          const isLoaded = await loadRazorpayScript();
+          if (!isLoaded) {
+            toast.error("Failed to load payment gateway script. Please check your internet connection.");
+            setPayingId(null);
+            return;
+          }
 
-            await api.post(`/student/fees/${paymentId}/verify`, verifyPayload);
-            toast.success("Payment completed and verified successfully!");
-            dispatch(fetchStudentFees());
-          } catch (err) {
-            console.error("Verification error:", err);
-            toast.error(err?.message || "Payment verification failed.");
-          } finally {
+          const rzpKey = paymentGateway.key || paymentGateway.key_id || checkout.client?.key;
+          const rzpOrderId = checkout.client?.order_id || checkout.order_id;
+          const rzpAmount = checkout.amount;
+          const rzpCurrency = checkout.currency || paymentGateway.currency || "INR";
+
+          if (!rzpKey) {
+            toast.error("Payment Failed: Authentication key was missing during initialization.");
             setPayingId(null);
+            return;
           }
-        },
-        prefill: {
-          name: checkout.client?.student_name || "",
-          email: checkout.client?.email || "",
-          contact: checkout.client?.contact || ""
-        },
-        theme: {
-          color: "#7c3aed"
-        },
-        modal: {
-          ondismiss: () => {
+
+          const options = {
+            key: rzpKey,
+            amount: rzpAmount,
+            currency: rzpCurrency,
+            name: checkout.client?.name || "School Management System",
+            description: `${feeName} Fee Payment`,
+            order_id: rzpOrderId,
+            handler: async (response) => {
+              try {
+                setPayingId(paymentId);
+                const verifyPayload = {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                };
+
+                await api.post(verify_url, verifyPayload);
+                toast.success("Payment completed and verified successfully!");
+                dispatch(fetchStudentFees());
+              } catch (err) {
+                console.error("Verification error:", err);
+                toast.error(err?.message || "Payment verification failed.");
+              } finally {
+                setPayingId(null);
+              }
+            },
+            prefill: {
+              name: checkout.client?.student_name || "",
+              email: checkout.client?.email || "",
+              contact: checkout.client?.contact || ""
+            },
+            theme: {
+              color: "#7c3aed"
+            },
+            modal: {
+              ondismiss: () => {
+                setPayingId(null);
+                toast.warning("Payment cancelled by user.");
+              }
+            }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.on("payment.failed", (response) => {
+            toast.error(response.error.description || "Payment process failed.");
             setPayingId(null);
-            toast.warning("Payment cancelled by user.");
-          }
+          });
+          rzp.open();
+          break;
         }
-      };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", (response) => {
-        toast.error(response.error.description || "Payment process failed.");
-        setPayingId(null);
-      });
-      rzp.open();
+        case "stripe":
+          toast.error("Stripe payments are not supported yet.");
+          setPayingId(null);
+          break;
+
+        case "cashfree":
+          toast.error("Cashfree integration is not implemented yet.");
+          setPayingId(null);
+          break;
+
+        case "payu":
+          toast.error("PayU integration is not implemented yet.");
+          setPayingId(null);
+          break;
+
+        case "easebuzz": {
+          const payment_url = checkout?.client?.payment_url || checkout?.payment_url;
+          console.log("Gateway:", gateway);
+          console.log("Payment URL:", payment_url);
+          if (payment_url) {
+            console.log("Redirecting to Easebuzz...");
+            window.location.href = payment_url;
+          } else {
+            toast.error("Payment URL not received from server.");
+            setPayingId(null);
+          }
+          break;
+        }
+
+        default:
+          toast.error(`Payment gateway "${gateway || "unknown"}" is not implemented yet.`);
+          setPayingId(null);
+          break;
+      }
     } catch (err) {
       console.error("Payment initiation error:", err);
       toast.error(err?.message || "Failed to initiate payment.");
       setPayingId(null);
+    } finally {
+      const paymentGateway = fees.payment_gateway || {};
+      const gateway = paymentGateway.gateway?.toLowerCase();
+      if (gateway !== "razorpay") {
+        setPayingId(null);
+      }
     }
   };
 
@@ -189,6 +248,7 @@ export default function StudentFeesPage() {
   const summary = fees.summary || {};
   const payments = fees.payments || [];
   const receipts = fees.receipts || [];
+  const paymentGateway = fees.payment_gateway || {};
 
   return (
     <div className="space-y-6 animate-fade-in text-xs">
@@ -196,6 +256,13 @@ export default function StudentFeesPage() {
         title="My Fees Statement"
         subtitle="Review fees cycle structures, outstanding term dues, and download print receipts."
       />
+
+      {/* Warning Banner if Gateway is Disabled */}
+      {paymentGateway?.enabled === false && (
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-xl text-left">
+          Online payment is currently unavailable.
+        </div>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -293,7 +360,7 @@ export default function StudentFeesPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {v.can_pay_online && statusStr.toLowerCase() !== "paid" ? (
                         <button 
-                          disabled={payingId === v.id}
+                          disabled={payingId === v.id || paymentGateway?.enabled === false}
                           onClick={() => handlePayment(v.id, v.fee_name)}
                           className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-750 text-white rounded-lg text-[10px] font-bold shadow-sm cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1.5"
                         >

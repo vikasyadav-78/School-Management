@@ -75,9 +75,9 @@ export default function ReportCardsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cardsList.map((card) => (
+          {cardsList.map((card, idx) => (
             <div 
-              key={card.id} 
+              key={card.id || card.exam_id || idx} 
               className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden flex flex-col justify-between group text-left"
             >
               <div className="space-y-3">
@@ -165,11 +165,11 @@ export default function ReportCardsPage() {
                   <div className="grid grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                     <div>
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Percentage Obtained</span>
-                      <span className="font-extrabold text-zinc-850 text-sm">{activeDetail.percentage || "N/A"}%</span>
+                      <span className="font-extrabold text-zinc-800 text-sm">{(activeDetail.summary?.percentage ?? activeDetail.percentage) || "N/A"}%</span>
                     </div>
                     <div>
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Final Grade / Status</span>
-                      <span className="font-extrabold text-zinc-850 text-sm capitalize">{activeDetail.grade || "N/A"} ({activeDetail.status || "Pass"})</span>
+                      <span className="font-extrabold text-zinc-800 text-sm capitalize">{(activeDetail.summary?.grade ?? activeDetail.grade) || "N/A"} ({(activeDetail.summary?.status ?? activeDetail.status) || "Pass"})</span>
                     </div>
                   </div>
 
@@ -186,12 +186,12 @@ export default function ReportCardsPage() {
                               <th className="px-4 py-2.5">Maximum Marks</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-zinc-150 text-[10px]">
+                          <tbody className="divide-y divide-zinc-100 text-[10px]">
                             {activeDetail.subjects.map((sub, sIdx) => (
                               <tr key={sIdx}>
                                 <td className="px-4 py-2.5 font-bold text-zinc-700">{sub.subject || sub.subject_name}</td>
-                                <td className="px-4 py-2.5 font-semibold text-zinc-650">{sub.marks ?? "—"}</td>
-                                <td className="px-4 py-2.5 font-semibold text-zinc-650">{sub.max_marks ?? "—"}</td>
+                                <td className="px-4 py-2.5 font-semibold text-zinc-600">{sub.marks_obtained ?? sub.marks ?? "—"}</td>
+                                <td className="px-4 py-2.5 font-semibold text-zinc-600">{sub.max_marks ?? "—"}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -200,10 +200,10 @@ export default function ReportCardsPage() {
                     </div>
                   )}
 
-                  {activeDetail.remarks && (
+                  {(activeDetail.summary?.remarks ?? activeDetail.remarks) && (
                     <div className="p-4 bg-amber-50/50 border border-amber-100 rounded-xl space-y-1">
                       <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wider block">Teacher Feedback Remarks</span>
-                      <p className="text-zinc-750 font-bold text-xs">{activeDetail.remarks}</p>
+                      <p className="text-zinc-700 font-bold text-xs">{activeDetail.summary?.remarks ?? activeDetail.remarks}</p>
                     </div>
                   )}
                 </>

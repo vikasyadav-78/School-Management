@@ -54,18 +54,18 @@ export default function ExamSchedulePage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {examsList.map((exam) => {
-            const isExpanded = expandedExamId === exam.id;
+          {examsList.map((exam, idx) => {
+            const isExpanded = expandedExamId === (exam.id || exam.exam_id);
             const subjects = exam.subjects || [];
             
             return (
               <div 
-                key={exam.id} 
+                key={exam.id || exam.exam_id || idx} 
                 className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-300"
               >
                 {/* Accordion Trigger Header */}
                 <div 
-                  onClick={() => toggleExpand(exam.id)}
+                  onClick={() => toggleExpand(exam.id || exam.exam_id)}
                   className="px-6 py-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">

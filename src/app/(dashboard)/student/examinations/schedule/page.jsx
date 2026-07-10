@@ -36,13 +36,13 @@ export default function ExamSchedulePage() {
     );
   }
 
-  const examsList = Array.isArray(examSchedule) 
-    ? examSchedule 
+  const examsList = Array.isArray(examSchedule)
+    ? examSchedule
     : (examSchedule?.exams || examSchedule?.data || []);
 
   return (
     <div className="space-y-6 animate-fade-in text-xs">
-      <PageHeader 
+      <PageHeader
         title="Examination Schedule"
         subtitle="View dates, timings, venues, and mark structures for your upcoming term examinations."
       />
@@ -54,18 +54,18 @@ export default function ExamSchedulePage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {examsList.map((exam) => {
-            const isExpanded = expandedExamId === exam.id;
+          {examsList.map((exam, idx) => {
+            const isExpanded = expandedExamId === (exam.id || exam.exam_id);
             const subjects = exam.subjects || [];
-            
+
             return (
-              <div 
-                key={exam.id} 
+              <div
+                key={exam.id || exam.exam_id || idx}
                 className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-300"
               >
                 {/* Accordion Trigger Header */}
-                <div 
-                  onClick={() => toggleExpand(exam.id)}
+                <div
+                  onClick={() => toggleExpand(exam.id || exam.exam_id)}
                   className="px-6 py-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
@@ -112,7 +112,7 @@ export default function ExamSchedulePage() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {subjects.map((sub, sIdx) => (
-                          <div 
+                          <div
                             key={sIdx}
                             className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm space-y-3 relative overflow-hidden"
                           >
@@ -129,7 +129,7 @@ export default function ExamSchedulePage() {
                               <div className="text-right">
                                 <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Passing / Max</span>
                                 <span className="font-bold text-zinc-700 text-xs">
-                                  {sub.passing_marks || "N/A"} / {sub.max_marks || "N/A"}
+                                  {sub.pass_marks || "N/A"} / {sub.max_marks || "N/A"}
                                 </span>
                               </div>
                             </div>

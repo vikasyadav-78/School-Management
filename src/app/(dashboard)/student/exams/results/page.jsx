@@ -13,35 +13,33 @@ export default function StudentResultsPage() {
   const [selectedExamId, setSelectedExamId] = useState("");
 
   useEffect(() => {
-    dispatch(fetchStudentExamSchedule());
+    dispatch(fetchStudentResults());
   }, [dispatch]);
 
-  // Load results once schedule is loaded and we have an initial exam ID
-  useEffect(() => {
-    const exams = Array.isArray(examSchedule) 
-      ? examSchedule 
-      : (examSchedule?.exams || examSchedule?.data || []);
+  const resultsList = Array.isArray(examResults?.results) 
+    ? examResults.results 
+    : (Array.isArray(examResults) ? examResults : []);
 
-    if (exams.length > 0 && !selectedExamId) {
-      setSelectedExamId(exams[0].id);
-      dispatch(fetchStudentResults(exams[0].id));
+  // Set selectedExamId once results are loaded
+  useEffect(() => {
+    if (resultsList.length > 0 && !selectedExamId) {
+      setSelectedExamId(resultsList[0].exam_id);
     }
-  }, [dispatch, examSchedule, selectedExamId]);
+  }, [resultsList, selectedExamId]);
 
   const handleExamChange = (e) => {
     const val = e.target.value;
     setSelectedExamId(val);
-    if (val) {
-      dispatch(fetchStudentResults(val));
-    }
   };
 
-  const examsList = Array.isArray(examSchedule) 
-    ? examSchedule 
-    : (examSchedule?.exams || examSchedule?.data || []);
+  const examsList = resultsList;
 
-  const resultsData = examResults?.results || examResults?.data || examResults || {};
-  const subjectMarks = resultsData.marks || resultsData.subject_marks || [];
+  const activeResult = selectedExamId 
+    ? (resultsList.find(r => r.exam_id === selectedExamId) || resultsList[0] || {})
+    : (resultsList[0] || {});
+
+  const summary = activeResult.summary || {};
+  const subjectMarks = activeResult.subjects || [];
 
   return (
     <div className="space-y-6 animate-fade-in text-xs">
@@ -61,9 +59,9 @@ export default function StudentResultsPage() {
           className="w-full sm:w-72 px-3 py-2 border border-zinc-250 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-800"
         >
           <option value="">-- Select Exam --</option>
-          {examsList.map((exam) => (
-            <option key={exam.id} value={exam.id}>
-              {exam.name || exam.title}
+          {examsList.map((exam, idx) => (
+            <option key={exam.id || exam.exam_id || idx} value={exam.id || exam.exam_id || ""}>
+              {exam.type_label || exam.exam_name || exam.name || exam.title || "Exam"}
             </option>
           ))}
         </select>
@@ -89,7 +87,7 @@ export default function StudentResultsPage() {
           <span className="text-zinc-400 font-bold uppercase tracking-wider text-xs block mb-2">No Exam Selected</span>
           <span className="text-zinc-400/80 text-[10px]">Please select an examination from the dropdown above to view results.</span>
         </div>
-      ) : Object.keys(resultsData).length === 0 ? (
+      ) : Object.keys(activeResult).length === 0 ? (
         <div className="p-12 bg-white rounded-2xl border border-zinc-200 shadow-sm text-center">
           <span className="text-zinc-400 font-bold uppercase tracking-wider text-xs block mb-2">No Results Found</span>
           <span className="text-zinc-400/80 text-[10px]">No results are available for the selected exam.</span>
@@ -102,54 +100,54 @@ export default function StudentResultsPage() {
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Percentage</span>
               <div className="inline-flex items-center gap-1 text-base font-extrabold text-violet-650">
                 <FaPercent className="w-3.5 h-3.5" />
-                <span>{resultsData.percentage || "N/A"}%</span>
+                <span>{summary.percentage ?? "N/A"}%</span>
               </div>
             </div>
             <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Final Grade</span>
               <div className="inline-flex items-center gap-1 text-base font-extrabold text-violet-650">
                 <FaAward className="w-3.5 h-3.5" />
-                <span>{resultsData.grade || "N/A"}</span>
+                <span>{summary.grade || "N/A"}</span>
               </div>
             </div>
             <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Class Rank</span>
               <div className="inline-flex items-center gap-1 text-base font-extrabold text-violet-650">
                 <FaUserCircle className="w-3.5 h-3.5" />
-                <span>#{resultsData.rank || "N/A"}</span>
+                <span>#{summary.rank || "N/A"}</span>
               </div>
             </div>
             <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total Marks</span>
               <div className="text-base font-extrabold text-zinc-800 mt-0.5">
-                {resultsData.total_marks_obtained || resultsData.marks_obtained || 0} / {resultsData.total_maximum_marks || resultsData.max_marks || 0}
+                {summary.total_obtained ?? summary.marks_obtained ?? 0} / {summary.total_max ?? summary.max_marks ?? 0}
               </div>
             </div>
             <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Attendance</span>
               <div className="text-base font-extrabold text-zinc-800 mt-0.5">
-                {resultsData.attendance_percentage || "100"}%
+                {summary.attendance_rate ?? "100"}%
               </div>
             </div>
             <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center col-span-2 md:col-span-1">
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Status</span>
               <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border tracking-wider mt-1 ${
-                resultsData.status?.toLowerCase() === "pass" 
+                summary.status?.toLowerCase() === "pass" 
                   ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
                   : "bg-rose-50 text-rose-700 border-rose-200"
               }`}>
-                {resultsData.status || resultsData.pass_fail_status || "Pass"}
+                {summary.status || "Pass"}
               </span>
             </div>
           </div>
 
           {/* Remarks Section */}
-          {resultsData.teacher_remarks && (
-            <div className="p-4 bg-violet-50/40 border border-violet-100 rounded-xl space-y-1 text-left">
+          {summary.remarks && (
+            <div className="p-4 bg-violet-50/40 border border-violet-100 rounded-xl text-left space-y-1">
               <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wider flex items-center gap-1">
                 <FaFileSignature className="w-3.5 h-3.5" /> Instructor Remarks
               </span>
-              <p className="text-zinc-700 font-bold text-xs">{resultsData.teacher_remarks}</p>
+              <p className="text-zinc-700 font-bold text-xs">{summary.remarks}</p>
             </div>
           )}
 
@@ -177,30 +175,30 @@ export default function StudentResultsPage() {
                   {subjectMarks.map((sm, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                       <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
-                        {sm.subject || sm.subject_name || "N/A"}
+                        {sm.subject_name || sm.subject || "N/A"}
                       </td>
                       <td className="px-6 py-4 font-semibold text-zinc-700 whitespace-nowrap">
-                        {sm.theory ?? "—"}
+                        {sm.theory_marks ?? sm.theory ?? "—"}
                       </td>
                       <td className="px-6 py-4 font-semibold text-zinc-700 whitespace-nowrap">
-                        {sm.practical ?? "—"}
+                        {sm.practical_marks ?? sm.practical ?? "—"}
                       </td>
                       <td className="px-6 py-4 font-semibold text-zinc-700 whitespace-nowrap">
-                        {sm.internal ?? "—"}
+                        {sm.internal_marks ?? sm.internal ?? "—"}
                       </td>
-                      <td className="px-6 py-4 font-extrabold text-zinc-850 whitespace-nowrap">
-                        {sm.total_marks || sm.total || "—"}
+                      <td className="px-6 py-4 font-extrabold text-zinc-800 whitespace-nowrap">
+                        {sm.marks_obtained ?? sm.total_marks ?? sm.total ?? "—"}
                       </td>
                       <td className="px-6 py-4 font-extrabold text-violet-650 whitespace-nowrap">
                         {sm.grade || "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-0.5 rounded text-[9px] font-bold border uppercase ${
-                          sm.status?.toLowerCase() === "pass" 
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-250" 
-                            : "bg-rose-50 text-rose-600 border-rose-250"
+                          sm.is_absent 
+                            ? "bg-rose-50 text-rose-600 border-rose-200" 
+                            : "bg-emerald-50 text-emerald-600 border-emerald-200"
                         }`}>
-                          {sm.status || "Pass"}
+                          {sm.is_absent ? "Absent" : (sm.status || "Pass")}
                         </span>
                       </td>
                     </tr>
