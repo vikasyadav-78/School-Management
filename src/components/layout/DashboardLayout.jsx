@@ -13,29 +13,50 @@ function DashboardLayoutContent({ children }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const { isOpen, isMobileOpen, closeSidebar } = useSidebar();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
 
-    // 1. Instantly check for the presence of token in localStorage to avoid full layout flash
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const adminToken = localStorage.getItem("admin_token");
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+
+    if (adminToken && currentPath.startsWith("/admin") && role !== "admin") {
+      localStorage.setItem("token", adminToken);
+      localStorage.setItem("role", "admin");
+      localStorage.removeItem("admin_token");
+      window.location.href = currentPath;
+      return;
+    }
+    
     if (!token) {
-      router.push("/login");
+      if (role === "admin") {
+        router.push("/admin-login");
+      } else {
+        router.push("/login");
+      }
       return;
     }
 
-    // 2. Load user session details dynamically
-    dispatch(getCurrentUser()).then((res) => {
-      if (res.meta.requestStatus === "rejected") {
-        router.push("/login");
-      }
-    });
-  }, [dispatch, router]);
+    if (!user) {
+      dispatch(getCurrentUser()).then((res) => {
+        if (res.meta.requestStatus === "rejected") {
+          if (role === "admin") {
+            router.push("/admin-login");
+          } else {
+            router.push("/login");
+          }
+        }
+      });
+    }
+  }, [dispatch, router, user]);
 
-  // Show a full-screen modern loader when verification is in progress or before mounting completes
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const adminToken = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  
   if (!mounted || !token || (loading && !isAuthenticated)) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center space-y-4">
@@ -47,26 +68,37 @@ function DashboardLayoutContent({ children }) {
 
   return (
     <div className="min-h-screen bg-zinc-50 flex">
-      {/* Sidebar Navigation */}
       <Sidebar />
 
-      {/* Main Container */}
       <div 
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
           isOpen ? "lg:pl-[280px]" : "lg:pl-[80px]"
         }`}
       >
-        {/* Navbar */}
         <Navbar />
 
-        {/* Content Frame */}
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+          {adminToken && (
+            <button
+              onClick={() => {
+                const token = localStorage.getItem("admin_token");
+                if (token) {
+                  localStorage.setItem("token", token);
+                  localStorage.setItem("role", "admin");
+                  localStorage.removeItem("admin_token");
+                  window.location.href = "/admin/dashboard";
+                }
+              }}
+              className="mb-4 px-4 py-2.5 bg-violet-600 hover:bg-violet-750 text-white font-extrabold rounded-xl transition-all cursor-pointer shadow-sm text-xs flex items-center gap-2"
+            >
+              &larr; Back to Admin Dashboard
+            </button>
+          )}
           <Breadcrumb />
           {children}
         </main>
       </div>
 
-      {/* Mobile Sidebar overlay backdrop */}
       {isMobileOpen && (
         <div
           onClick={closeSidebar}

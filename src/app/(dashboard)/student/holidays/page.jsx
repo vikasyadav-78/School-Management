@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { fetchStudentHolidays, fetchStudentHolidayDetail } from "@/features/students/redux/studentThunk";
 import { toast } from "sonner";
+import { api } from "@/services/api";
 
 export default function StudentHolidaysPage() {
   const dispatch = useDispatch();
@@ -93,9 +94,15 @@ export default function StudentHolidaysPage() {
     );
   };
 
-  const handleOpenDetail = (id) => {
+  const handleOpenDetail = async (id) => {
     setIsModalOpen(true);
     dispatch(fetchStudentHolidayDetail(id));
+    try {
+      await api.post(`/student/holidays/${id}/read`);
+      dispatch(fetchStudentHolidays()); // Refresh lists to show read state
+    } catch (err) {
+      console.error("Failed to mark holiday as read:", err);
+    }
   };
 
   // --- Calendar Builder Helper Helpers ---

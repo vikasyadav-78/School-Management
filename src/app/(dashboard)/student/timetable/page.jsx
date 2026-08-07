@@ -97,17 +97,17 @@ export default function StudentTimetablePage() {
                         )}
                       </div>
                       
-                      <h4 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                        {p.subject || "N/A"}
+                      <h4 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5 capitalize">
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${p.slot_type === 'lunch' ? 'bg-amber-500' : p.slot_type === 'sport' ? 'bg-emerald-500' : 'bg-violet-500'}`} />
+                        {p.title || p.subject || p.slot_type_label || (p.slot_type === "lunch" ? "Lunch Break" : "N/A")}
                       </h4>
                       
                       <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-1 border-t border-zinc-100/50">
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 capitalize">
                           <FaChalkboardTeacher className="text-zinc-400" />
-                          {p.teacher || "N/A"}
+                          {p.teacher || (p.slot_type === "lunch" ? "Lunch Break" : "N/A")}
                         </span>
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 capitalize">
                           <FaMapMarkerAlt className="text-zinc-400" />
                           {p.room || p.room_name || "N/A"}
                         </span>

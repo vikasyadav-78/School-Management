@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, getCurrentUser } from "./moduleThunk";
+import { loginUser, getCurrentUser, impersonateStudentUser, impersonateTeacherUser } from "./moduleThunk";
 
 const initialState = {
   user: null,
   token: null,
   isAuthenticated: false,
   loading: false,
-  error: null
+  error: null,
+  impersonated: false,
+  impersonator: null
 };
 
 const authSlice = createSlice({
@@ -19,8 +21,12 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      state.impersonated = false;
+      state.impersonator = null;
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("role");
       }
     },
     clearAuthError(state) {
@@ -36,8 +42,17 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.token = action.payload.token;
-        state.user = action.payload.user;
+        
+        let u = action.payload.user || action.payload.data?.user || action.payload.admin || action.payload.data?.admin || action.payload;
+        if (u && typeof u === "object") {
+          let role = action.payload.role || u.role || "admin";
+          if (role === "school_admin") role = "admin";
+          u = { ...u, role };
+        }
+        state.user = u;
         state.isAuthenticated = true;
+        state.impersonated = false;
+        state.impersonator = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -49,13 +64,65 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+        
+        const storedRole = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+        let u = action.payload.user || action.payload.data?.user || action.payload.admin || action.payload.data?.admin || action.payload;
+        if (u && typeof u === "object") {
+          let role = storedRole || u.role || "admin";
+          if (role === "school_admin") role = "admin";
+          u = { ...u, role };
+        }
+        state.user = u;
         state.isAuthenticated = true;
       })
       .addCase(getCurrentUser.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.user = null;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+        }
+      })
+      .addCase(impersonateStudentUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(impersonateStudentUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+        let u = action.payload.student || action.payload.user || action.payload.data?.student || action.payload.data?.user || action.payload;
+        if (u && typeof u === "object") {
+          u = { ...u, role: "student" };
+        }
+        state.user = u;
+        state.isAuthenticated = true;
+        state.impersonated = true;
+        state.impersonator = "admin";
+      })
+      .addCase(impersonateStudentUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(impersonateTeacherUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(impersonateTeacherUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+        let u = action.payload.teacher || action.payload.user || action.payload.data?.teacher || action.payload.data?.user || action.payload;
+        if (u && typeof u === "object") {
+          u = { ...u, role: "teacher" };
+        }
+        state.user = u;
+        state.isAuthenticated = true;
+        state.impersonated = true;
+        state.impersonator = "admin";
+      })
+      .addCase(impersonateTeacherUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   }
 });

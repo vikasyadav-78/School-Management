@@ -96,9 +96,9 @@ import {
 
 export const fetchTeacherLeaves = createAsyncThunk(
   "teachers/fetchLeaves",
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      return await getTeacherLeavesList();
+      return await getTeacherLeavesList(params);
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch leaves");
     }

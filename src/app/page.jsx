@@ -8,23 +8,33 @@ import { getCurrentUser } from "@/features/auth/redux/moduleThunk";
 export default function HomeRedirector() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+    
     if (!token) {
-      router.replace("/login");
+      if (role === "admin") {
+        router.replace("/admin-login");
+      } else {
+        router.replace("/login");
+      }
       return;
     }
 
-    if (!user) {
+    if (!user && !loading) {
       dispatch(getCurrentUser()).then((res) => {
         if (res.meta.requestStatus === "rejected") {
-          router.replace("/login");
+          if (role === "admin") {
+            router.replace("/admin-login");
+          } else {
+            router.replace("/login");
+          }
         }
       });
     }
-  }, [user, dispatch, router]);
+  }, [user, loading, dispatch, router]);
 
   useEffect(() => {
     if (user) {
@@ -35,7 +45,12 @@ export default function HomeRedirector() {
       } else if (user.role === "student") {
         router.replace("/student/dashboard");
       } else {
-        router.replace("/login");
+        const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+        if (role === "admin") {
+          router.replace("/admin-login");
+        } else {
+          router.replace("/login");
+        }
       }
     }
   }, [user, router]);

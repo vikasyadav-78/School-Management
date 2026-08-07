@@ -24,47 +24,41 @@ export default function Navbar() {
   // Notices API State
   const [notices, setNotices] = useState([]);
   const [loadingNotices, setLoadingNotices] = useState(false);
-  const [readNoticeIds, setReadNoticeIds] = useState([]);
   const [activeNotice, setActiveNotice] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [activeTab, setActiveTab] = useState("unread"); // "unread" | "read"
 
-  const markAsRead = (noticeId) => {
-    if (!readNoticeIds.includes(noticeId)) {
-      const updated = [...readNoticeIds, noticeId];
-      setReadNoticeIds(updated);
-      localStorage.setItem("school_student_read_notices", JSON.stringify(updated));
+  const markAsRead = async (noticeId) => {
+    try {
+      const url = user?.role === "teacher" 
+        ? `/teacher/notices/${noticeId}/read` 
+        : `/student/notices/${noticeId}/read`;
+      await api.post(url);
       toast.success("Notification marked as read!");
+      fetchNotices(); // Reload from server
+    } catch (err) {
+      console.error("Notice mark read error:", err);
     }
   };
 
   const fetchNotices = async () => {
     try {
       setLoadingNotices(true);
-      const response = await api.get("/student/notices");
+      const url = user?.role === "teacher" ? "/teacher/notices" : "/student/notices";
+      const response = await api.get(url);
       const list = response.data.notices || response.data.leaves || response.data.data || (Array.isArray(response.data) ? response.data : []);
       setNotices(list);
     } catch (err) {
-      console.error("Notices fetch error:", err);
+      setNotices([]);
     } finally {
       setLoadingNotices(false);
     }
   };
 
   useEffect(() => {
-    if (user?.role === "student") {
+    if (user?.role === "student" || user?.role === "teacher") {
       fetchNotices();
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("school_student_read_notices");
-        if (stored) {
-          try {
-            setReadNoticeIds(JSON.parse(stored));
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
     }
   }, [user]);
 
@@ -72,14 +66,19 @@ export default function Navbar() {
     try {
       setLoadingDetail(true);
       setShowDetailModal(true);
-      const response = await api.get(`/student/notices/${noticeId}`);
+      const url = user?.role === "teacher" ? `/teacher/notices/${noticeId}` : `/student/notices/${noticeId}`;
+      const response = await api.get(url);
       const detailedNotice = response.data.notice || response.data.data || response.data;
       setActiveNotice(detailedNotice);
 
-      if (!readNoticeIds.includes(noticeId)) {
-        const updated = [...readNoticeIds, noticeId];
-        setReadNoticeIds(updated);
-        localStorage.setItem("school_student_read_notices", JSON.stringify(updated));
+      // Call read API if notice is currently unread
+      const noticeObj = notices.find(n => n.id === noticeId);
+      if (noticeObj && !noticeObj.is_read && !noticeObj.read_at) {
+        const readUrl = user?.role === "teacher" 
+          ? `/teacher/notices/${noticeId}/read` 
+          : `/student/notices/${noticeId}/read`;
+        await api.post(readUrl);
+        fetchNotices(); // Reload from server
       }
     } catch (err) {
       console.error("Notice details error:", err);
@@ -100,8 +99,8 @@ export default function Navbar() {
     { id: 3, title: "Class Schedule Updated", time: "1 day ago", desc: "Class 10-A moved to Room 4." }
   ];
 
-  const unreadNotices = notices.filter((n) => !readNoticeIds.includes(n.id));
-  const readNotices = notices.filter((n) => readNoticeIds.includes(n.id));
+  const unreadNotices = notices.filter((n) => !n.is_read && !n.read_at);
+  const readNotices = notices.filter((n) => n.is_read || n.read_at);
   const unreadCount = unreadNotices.length;
   const readCount = readNotices.length;
 
@@ -185,14 +184,14 @@ export default function Navbar() {
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowUserDropdown(false);
-              if (user?.role === "student") {
+              if (user?.role === "student" || user?.role === "teacher") {
                 fetchNotices();
               }
             }}
             className="p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 relative transition-all"
           >
             <FaBell className="w-5 h-5" />
-            {user?.role === "student" && unreadCount > 0 && (
+            {(user?.role === "student" || user?.role === "teacher") && unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 bg-blue-600 text-white text-[8px] font-extrabold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
@@ -204,14 +203,14 @@ export default function Navbar() {
             <div className="absolute right-0 mt-2 w-80 bg-white border border-zinc-200 shadow-xl rounded-xl z-50 p-4 space-y-3 animate-fade-in">
               <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
                 <span className="font-bold text-sm text-zinc-800">Notifications</span>
-                {user?.role === "student" && (
+                {(user?.role === "student" || user?.role === "teacher") && (
                   <span className="text-[10px] text-blue-600 font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full">
                     {unreadCount} Unread
                   </span>
                 )}
               </div>
 
-              {user?.role === "student" && (
+              {(user?.role === "student" || user?.role === "teacher") && (
                 <div className="flex border-b border-zinc-100 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                   <button 
                     onClick={() => setActiveTab("unread")}
@@ -237,7 +236,7 @@ export default function Navbar() {
               )}
 
               <div className="divide-y divide-zinc-100 max-h-80 overflow-y-auto overflow-x-hidden space-y-2 pt-1">
-                {user?.role !== "student" ? (
+                {!(user?.role === "student" || user?.role === "teacher") ? (
                   // Fallback for Admin/Teacher view
                   <div className="divide-y divide-zinc-50">
                     {dummyNotifications.map((n) => (
@@ -268,7 +267,7 @@ export default function Navbar() {
                   [...(activeTab === "unread" ? unreadNotices : readNotices)]
                     .sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0))
                     .map((n) => {
-                      const isUnread = !readNoticeIds.includes(n.id);
+                      const isUnread = !n.is_read && !n.read_at;
                       return (
                         <div 
                           key={n.id} 

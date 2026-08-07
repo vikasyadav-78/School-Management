@@ -7,7 +7,7 @@ import {
   FaChalkboardTeacher, FaUserGraduate, FaBook, FaBuilding,
   FaUsers, FaCalendarTimes, FaMoneyBillWave, FaCalendarAlt,
   FaShoppingCart, FaFileAlt, FaUser, FaChevronDown, FaChevronRight,
-  FaGraduationCap, FaLock, FaUmbrellaBeach
+  FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo
 } from "react-icons/fa";
 import { MdDashboard, MdEmail } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -29,7 +29,9 @@ const iconMap = {
   FaFileAlt,
   FaUser,
   FaLock,
-  FaUmbrellaBeach
+  FaUmbrellaBeach,
+  FaCalendarCheck,
+  FaVideo
 };
 
 import { useSidebar } from "@/context/SidebarContext";
@@ -46,13 +48,118 @@ export default function Sidebar() {
   const [expandedMenus, setExpandedMenus] = useState({});
   const [logoError, setLogoError] = useState(false);
   const { user } = useSelector((state) => state.auth);
+  const { profile: teacherProfile } = useSelector((state) => state.teachers || {});
   const userRole = user?.role || "admin";
+
+
+
+  const checkPermission = (featureName, canManageKey) => {
+    const checkValue = (obj) => {
+      if (!obj) return false;
+      // Check direct property values (boolean true, string "true", number 1 or string "1")
+      if (obj[canManageKey] === true || obj[canManageKey] === "true" || obj[canManageKey] === 1 || obj[canManageKey] === "1" || obj[canManageKey] === "yes" || obj[canManageKey] === "active") return true;
+      
+      // Check feature lists
+      if (Array.isArray(obj.enabled_features) && obj.enabled_features.includes(featureName)) return true;
+
+      // Recursive checks for relations
+      if (obj.teacher && checkValue(obj.teacher)) return true;
+      if (obj.teacher_profile && checkValue(obj.teacher_profile)) return true;
+      if (obj.profile && checkValue(obj.profile)) return true;
+      
+      return false;
+    };
+
+    return checkValue(user) || checkValue(teacherProfile);
+  };
+
+  const renderSubmenu = (submenu, depth = 1) => {
+    return (
+      <div className="space-y-1">
+        {submenu.map((sub) => {
+          const hasNested = sub.submenu && sub.submenu.length > 0;
+          const subActive = isSubActive(sub, submenu);
+          const subExpanded = expandedMenus[sub.title] || subActive;
+
+          if (hasNested) {
+            return (
+              <div key={sub.title} className="space-y-1">
+                <button
+                  onClick={() => toggleSubmenu(sub.title)}
+                  className={`transition-all duration-200 hover:bg-zinc-800 hover:text-white flex items-center text-xs font-semibold w-full justify-between px-4 py-2 rounded-md ${
+                    subActive ? "text-violet-400 font-bold" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  <span className="transition-opacity duration-300 whitespace-nowrap">{sub.title}</span>
+                  {subExpanded ? <FaChevronDown className="w-2.5 h-2.5 text-zinc-500 shrink-0" /> : <FaChevronRight className="w-2.5 h-2.5 text-zinc-500 shrink-0" />}
+                </button>
+                {subExpanded && (
+                  <div className="pl-4 border-l border-zinc-800 space-y-1 mt-1">
+                    {renderSubmenu(sub.submenu, depth + 1)}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={sub.title}
+              href={sub.path}
+              onClick={closeSidebar}
+              className={`block px-4 py-2 text-xs font-medium rounded-md transition-colors hover:text-white ${
+                subActive
+                  ? "text-violet-400 font-semibold border-l-2 border-violet-500 pl-3"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              {sub.title}
+            </Link>
+          );
+        })}
+      </div>
+    );
+  };
 
   let navItems = ADMIN_NAVIGATION_ITEMS;
   let panelLabel = "Admin Panel";
   
   if (userRole === "teacher") {
-    navItems = TEACHER_NAVIGATION_ITEMS;
+    navItems = TEACHER_NAVIGATION_ITEMS.map(item => {
+      if (item.title === "Admin Access" && item.submenu) {
+        const filteredSubmenu = item.submenu.map(sub => {
+          if (sub.path === "/teacher/admin/staff" && !checkPermission("staff", "can_manage_staff")) return null;
+          if (sub.path === "/teacher/admin/teachers" && !checkPermission("teachers", "can_manage_teachers")) return null;
+          if (sub.path === "/teacher/admin/teacher-attendance" && !checkPermission("attendance", "can_manage_teacher_attendance")) return null;
+          if (sub.path === "/teacher/admin/payroll" && !checkPermission("payroll", "can_manage_payroll")) return null;
+          if (sub.path === "/teacher/admin/classes" && !checkPermission("classes", "can_manage_classes")) return null;
+          if (sub.path === "/teacher/admin/subjects" && !checkPermission("subjects", "can_manage_subjects")) return null;
+          if (sub.path === "/teacher/admin/academic-years" && !checkPermission("academic_years", "can_manage_academic_years")) return null;
+          if (sub.path === "/teacher/admin/fees" && !checkPermission("fees", "can_manage_fees")) return null;
+          if (sub.path === "/teacher/admin/notices" && !checkPermission("notices", "can_manage_notices")) return null;
+          if (sub.path === "/teacher/admin/holidays" && !checkPermission("holidays", "can_manage_holidays")) return null;
+          if (sub.path === "/teacher/admin/leaves" && !checkPermission("leave", "can_manage_leaves")) return null;
+          if (sub.path === "/teacher/admin/certificates" && !checkPermission("certificates", "can_manage_certificates")) return null;
+          if (sub.path === "/teacher/admin/manage-timetable" && !checkPermission("timetable", "can_manage_timetable")) return null;
+          if (sub.path === "/teacher/admin/online-mcq" && !checkPermission("online_mcq", "can_manage_online_mcq")) return null;
+
+          if (sub.title === "Live Classes" && sub.submenu) {
+            const hasLiveClassesAccess = checkPermission("live_classes", "can_manage_live_classes");
+            const filteredSub = sub.submenu.filter(subitem => {
+              if (subitem.path === "/teacher/admin/live-classes") return hasLiveClassesAccess;
+              return true; // Reports is always allowed
+            });
+            if (filteredSub.length === 0) return null;
+            return { ...sub, submenu: filteredSub };
+          }
+          return sub;
+        }).filter(Boolean);
+
+        if (filteredSubmenu.length === 0) return null;
+        return { ...item, submenu: filteredSubmenu };
+      }
+      return item;
+    }).filter(Boolean);
     panelLabel = "Teacher Panel";
   } else if (userRole === "student") {
     navItems = STUDENT_NAVIGATION_ITEMS;
@@ -63,10 +170,40 @@ export default function Sidebar() {
     setExpandedMenus((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
-  const isRouteActive = (item) => {
-    if (item.path === "/" && pathname === "/") return true;
-    if (item.path !== "/" && pathname.startsWith(item.path)) return true;
+  const isPathActive = (itemPath, siblings = []) => {
+    if (itemPath === "/" && pathname === "/") return true;
+    if (itemPath === "/") return false;
+    
+    // Exact match
+    if (pathname === itemPath) return true;
+    
+    // Prefix match
+    if (pathname.startsWith(itemPath)) {
+      // Check if there is any sibling path that is a longer prefix match
+      const hasLongerMatch = siblings.some(sib => 
+        sib.path !== itemPath && 
+        pathname.startsWith(sib.path) && 
+        sib.path.length > itemPath.length
+      );
+      return !hasLongerMatch;
+    }
+    
     return false;
+  };
+
+  const isSubActive = (subItem, submenuList = []) => {
+    return isPathActive(subItem.path, submenuList);
+  };
+
+  const isParentActive = (parentItem) => {
+    if (parentItem.submenu && parentItem.submenu.length > 0) {
+      return parentItem.submenu.some(sub => isSubActive(sub, parentItem.submenu));
+    }
+    return isPathActive(parentItem.path);
+  };
+
+  const isRouteActive = (item) => {
+    return isParentActive(item);
   };
 
   return (
@@ -142,22 +279,7 @@ export default function Sidebar() {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="pl-11 mt-1 space-y-1 transition-all duration-300">
-                    {item.submenu.map((sub) => {
-                      const subActive = pathname === sub.path;
-                      return (
-                        <Link 
-                          key={sub.title}
-                          href={sub.path}
-                          onClick={closeSidebar}
-                          className={`block px-4 py-2 text-xs font-medium rounded-md transition-colors hover:text-white ${subActive
-                            ? "text-violet-400 font-semibold border-l-2 border-violet-500 pl-3"
-                            : "text-zinc-500 hover:text-zinc-300"
-                            }`}
-                        >
-                          {sub.title}
-                        </Link>
-                      );
-                    })}
+                    {renderSubmenu(item.submenu, 1)}
                   </div>
                 )}
               </div>

@@ -21,9 +21,27 @@ export default function TeacherLeavesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
+  // Filters state
+  const [statusFilter, setStatusFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  });
+
   useEffect(() => {
-    dispatch(fetchTeacherLeaves());
-  }, [dispatch]);
+    const params = {};
+    if (statusFilter) params.status = statusFilter;
+    if (monthFilter) params.month = monthFilter;
+
+    dispatch(fetchTeacherLeaves(params)).then((action) => {
+      if (action.payload) {
+        console.log("Teacher Leaves API response payload:", action.payload);
+        const hasApprovedInBackend = action.payload.records?.some(r => r.status?.toLowerCase() === "approved");
+        const hasPendingInBackend = action.payload.records?.some(r => r.status?.toLowerCase() === "pending");
+        console.log(`Backend reports: hasApproved=${hasApprovedInBackend}, hasPending=${hasPendingInBackend}. Note: If approved leaves display as Pending, please verify the backend database status.`);
+      }
+    });
+  }, [dispatch, statusFilter, monthFilter]);
 
   // Calculate leave days automatically when dates change
   const calculateDays = (from, to) => {
@@ -56,17 +74,8 @@ export default function TeacherLeavesPage() {
       setSubmitting(true);
       
       const payload = {
-        from_date: new Date(fromDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
-        to_date: new Date(toDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
-        total_days: totalDays,
+        from_date: fromDate,
+        to_date: toDate,
         reason: reason.trim()
       };
 
@@ -81,7 +90,10 @@ export default function TeacherLeavesPage() {
       setReason("");
       
       // Refresh list
-      dispatch(fetchTeacherLeaves());
+      const params = {};
+      if (statusFilter) params.status = statusFilter;
+      if (monthFilter) params.month = monthFilter;
+      dispatch(fetchTeacherLeaves(params));
     } catch (err) {
       setFormError(err || "Failed to submit leave request.");
       toast.error(err || "Failed to submit leave request.");
@@ -90,7 +102,7 @@ export default function TeacherLeavesPage() {
     }
   };
 
-  if (loading && !leaves) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <PageLoader />
@@ -106,8 +118,8 @@ export default function TeacherLeavesPage() {
     );
   }
 
-  const stats = leaves?.stats || { total: 0, pending: 0, approved: 0, rejected: 0 };
-  const records = leaves?.records || [];
+  const stats = leaves?.summary || leaves?.stats || { total: 0, pending: 0, approved: 0, rejected: 0 };
+  const records = leaves?.leaves || leaves?.records || [];
 
   return (
     <div className="space-y-6 animate-fade-in text-xs">
@@ -118,7 +130,7 @@ export default function TeacherLeavesPage() {
         />
         <Button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-750 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm"
+          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm"
         >
           <FaCalendarPlus className="w-4 h-4" />
           Apply Leave
@@ -129,42 +141,65 @@ export default function TeacherLeavesPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total Requests</span>
-          <h3 className="text-xl font-extrabold text-zinc-850 mt-1">{stats.total}</h3>
+          <h3 className="text-xl font-extrabold text-zinc-800 mt-1">{stats.total}</h3>
         </div>
         <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-center">
           <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider block">Pending</span>
-          <h3 className="text-xl font-extrabold text-amber-705 mt-1">{stats.pending}</h3>
+          <h3 className="text-xl font-extrabold text-amber-700 mt-1">{stats.pending}</h3>
         </div>
         <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl text-center">
           <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Approved</span>
-          <h3 className="text-xl font-extrabold text-emerald-705 mt-1">{stats.approved}</h3>
+          <h3 className="text-xl font-extrabold text-emerald-700 mt-1">{stats.approved}</h3>
         </div>
         <div className="bg-rose-50/50 border border-rose-100 p-4 rounded-xl text-center">
           <span className="text-[9px] font-bold text-rose-600 uppercase tracking-wider block">Rejected</span>
-          <h3 className="text-xl font-extrabold text-rose-705 mt-1">{stats.rejected}</h3>
+          <h3 className="text-xl font-extrabold text-rose-700 mt-1">{stats.rejected}</h3>
         </div>
       </div>
 
       {/* Leaves History Table */}
       <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-50/50">
+        <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h3 className="text-xs font-bold text-zinc-700 uppercase">Leave Logs</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-bold text-zinc-700 transition-all"
+              >
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div>
+              <input
+                type="month"
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="w-40 px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-bold text-zinc-700 transition-all [color-scheme:light]"
+              />
+            </div>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                <th className="px-6 py-4">Applied Date</th>
-                <th className="px-6 py-4">Leave From</th>
-                <th className="px-6 py-4">Leave To</th>
-                <th className="px-6 py-4">Total Days</th>
-                <th className="px-6 py-4">Reason</th>
-                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 whitespace-nowrap">Applied Date</th>
+                <th className="px-6 py-4 whitespace-nowrap">Leave From</th>
+                <th className="px-6 py-4 whitespace-nowrap">Leave To</th>
+                <th className="px-6 py-4 whitespace-nowrap">Total Days</th>
+                <th className="px-6 py-4 whitespace-nowrap">Reason</th>
+                <th className="px-6 py-4 whitespace-nowrap">Admin Remarks</th>
+                <th className="px-6 py-4 whitespace-nowrap">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-150 text-xs">
-              {records.map((r) => {
-                const statusStr = r.status || "Pending";
+            <tbody className="divide-y divide-zinc-100 text-xs">
+              {records.map((r, idx) => {
+                const statusStr = r.status_label || r.status || "Pending";
                 let badgeClass = "bg-zinc-50 text-zinc-500 border-zinc-200";
                 let StatusIcon = FaHourglassHalf;
                 
@@ -180,21 +215,24 @@ export default function TeacherLeavesPage() {
                 }
 
                 return (
-                  <tr key={r.id} className="hover:bg-zinc-50/50 transition-colors">
+                  <tr key={r.id || r._id || idx} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
-                      {r.applied_date || "N/A"}
+                      {r.created_at_label || r.applied_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-medium text-zinc-650 whitespace-nowrap">
-                      {r.from_date || "N/A"}
+                    <td className="px-6 py-4 font-medium text-zinc-600 whitespace-nowrap">
+                      {r.from_date_label || r.from_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-medium text-zinc-650 whitespace-nowrap">
-                      {r.to_date || "N/A"}
+                    <td className="px-6 py-4 font-medium text-zinc-600 whitespace-nowrap">
+                      {r.to_date_label || r.to_date || "N/A"}
                     </td>
                     <td className="px-6 py-4 font-bold text-zinc-700 whitespace-nowrap">
-                      {r.total_days || r.totalDays || 0} Days
+                      {r.days || r.total_days || r.totalDays || 0} Days
                     </td>
-                    <td className="px-6 py-4 text-zinc-600 max-w-xs truncate" title={r.reason}>
+                    <td className="px-6 py-4 text-zinc-600 max-w-xs truncate whitespace-nowrap" title={r.reason}>
                       {r.reason || r.details || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-zinc-500 font-semibold whitespace-nowrap">
+                      {r.admin_remarks || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${badgeClass}`}>
@@ -207,7 +245,7 @@ export default function TeacherLeavesPage() {
               })}
               {records.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="text-center py-10 text-zinc-400 font-semibold uppercase tracking-wider text-xs">
+                  <td colSpan="7" className="text-center py-10 text-zinc-400 font-semibold uppercase tracking-wider text-xs">
                     No Leave Requests Found
                   </td>
                 </tr>
@@ -221,7 +259,7 @@ export default function TeacherLeavesPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50/50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaCalendarPlus className="text-violet-500" />
                 Apply for Leave
@@ -252,7 +290,7 @@ export default function TeacherLeavesPage() {
                       setFromDate(e.target.value);
                       setFormError("");
                     }}
-                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold"
+                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-black"
                   />
                 </div>
                 <div className="space-y-1">
@@ -265,7 +303,7 @@ export default function TeacherLeavesPage() {
                       setToDate(e.target.value);
                       setFormError("");
                     }}
-                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold"
+                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-black"
                   />
                 </div>
               </div>
@@ -293,7 +331,7 @@ export default function TeacherLeavesPage() {
                     setFormError("");
                   }}
                   placeholder="Provide details about the leave requirement..."
-                  className="w-full p-2.5 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold leading-relaxed"
+                  className="w-full p-2.5 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold leading-relaxed text-black"
                 />
               </div>
 
@@ -308,7 +346,7 @@ export default function TeacherLeavesPage() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="w-1/2 bg-violet-600 hover:bg-violet-750 text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2"
+                  className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -26,12 +26,18 @@ import {
   fetchStudentReportCards,
   fetchStudentReportCardDetail,
   fetchStudentAdmitCards,
-  fetchStudentAdmitCardDetail
+  fetchStudentAdmitCardDetail,
+  fetchStudentsMeta,
+  toggleStudentStatus,
+  assignStudentId,
+  fetchStudentIdCard
 } from "./studentThunk";
 
 const initialState = {
   list: [],
   classSummaries: [],
+  meta: null,
+  loadingMeta: false,
   selectedItem: null,
   loading: false,
   error: null,
@@ -60,7 +66,9 @@ const initialState = {
   loadingReportCardDetail: false,
   admitCards: null,
   admitCardDetail: null,
-  loadingAdmitCardDetail: false
+  loadingAdmitCardDetail: false,
+  idCardData: null,
+  loadingIdCard: false
 };
 
 const studentsSlice = createSlice({
@@ -83,14 +91,14 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudentsList.fulfilled, (state, action) => {
         state.loading = false;
-        state.classSummaries = action.payload.data;
-        state.pagination.total = action.payload.total;
+        state.list = action.payload.students || action.payload.data || action.payload || [];
+        state.pagination.total = action.payload.count || action.payload.meta?.total || action.payload.total || 0;
       })
       .addCase(fetchStudentsList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Fetch By Class (Loads students inside the selected class details page)
+      // Fetch By Class
       .addCase(fetchStudentsByClass.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -110,28 +118,113 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudentsById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedItem = action.payload.data;
+        state.selectedItem = action.payload.student || action.payload.data || action.payload;
       })
       .addCase(fetchStudentsById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       // Add Item
+      .addCase(addStudentsItem.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(addStudentsItem.fulfilled, (state, action) => {
-        state.list = [action.payload.data, ...state.list];
+        state.loading = false;
+        const newStudent = action.payload.student || action.payload.data || action.payload;
+        if (newStudent) {
+          state.list = [newStudent, ...state.list];
+        }
+      })
+      .addCase(addStudentsItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       // Update Item
+      .addCase(updateStudentsItem.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateStudentsItem.fulfilled, (state, action) => {
-        const updated = action.payload.data;
-        state.list = state.list.map((item) => (item.id === updated.id ? updated : item));
-        if (state.selectedItem && state.selectedItem.id === updated.id) {
-          state.selectedItem = updated;
+        state.loading = false;
+        const updated = action.payload.student || action.payload.data || action.payload;
+        if (updated) {
+          state.list = state.list.map((item) => (item.id === updated.id ? updated : item));
+          if (state.selectedItem && state.selectedItem.id === updated.id) {
+            state.selectedItem = updated;
+          }
         }
+      })
+      .addCase(updateStudentsItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       // Delete Item
       .addCase(deleteStudentsItem.fulfilled, (state, action) => {
-        const deleted = action.payload.data;
-        state.list = state.list.filter((item) => item.id !== deleted.id);
+        // Backend API might return the deleted item or just {success: true}
+        // Let's assume action.meta.arg contains the id
+        const deletedId = action.meta.arg;
+        state.list = state.list.filter((item) => item.id !== deletedId);
+      })
+      // Meta
+      .addCase(fetchStudentsMeta.pending, (state) => {
+        state.loadingMeta = true;
+      })
+      .addCase(fetchStudentsMeta.fulfilled, (state, action) => {
+        state.loadingMeta = false;
+        state.meta = action.payload.data || action.payload;
+        
+        // Populate classSummaries for the admin/students page
+        const metaData = action.payload.data || action.payload;
+        const classSummaries = (metaData.classes || []).map(c => ({
+          id: c.id,
+          className: c.name.replace(/class/i, '').trim() || c.name,
+          originalName: c.name,
+          sections: c.sections.map(s => s.name),
+          sectionsData: c.sections,
+          totalSections: c.sections.length || 1,
+          isStreamBased: false,
+          streams: [],
+          totalStudents: c.total_students !== undefined ? c.total_students : "N/A",
+          newStudents: c.new_students !== undefined ? c.new_students : "N/A",
+          existingStudents: c.existing_students !== undefined ? c.existing_students : "N/A",
+          classTeachers: c.class_teachers !== undefined ? c.class_teachers : "N/A"
+        }));
+        state.classSummaries = classSummaries;
+      })
+      .addCase(fetchStudentsMeta.rejected, (state) => {
+        state.loadingMeta = false;
+      })
+      // Toggle Status
+      .addCase(toggleStudentStatus.fulfilled, (state, action) => {
+        const updated = action.payload.data;
+        if (updated) {
+          state.list = state.list.map((item) => (item.id === updated.id ? updated : item));
+          if (state.selectedItem && state.selectedItem.id === updated.id) {
+            state.selectedItem = updated;
+          }
+        }
+      })
+      // Assign ID
+      .addCase(assignStudentId.fulfilled, (state, action) => {
+        const updated = action.payload.data;
+        if (updated) {
+          state.list = state.list.map((item) => (item.id === updated.id ? updated : item));
+          if (state.selectedItem && state.selectedItem.id === updated.id) {
+            state.selectedItem = updated;
+          }
+        }
+      })
+      // Fetch ID Card
+      .addCase(fetchStudentIdCard.pending, (state) => {
+        state.loadingIdCard = true;
+      })
+      .addCase(fetchStudentIdCard.fulfilled, (state, action) => {
+        state.loadingIdCard = false;
+        state.idCardData = action.payload.data || action.payload;
+      })
+      .addCase(fetchStudentIdCard.rejected, (state) => {
+        state.loadingIdCard = false;
       })
       // Student profile cases
       .addCase(fetchStudentProfile.pending, (state) => {

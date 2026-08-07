@@ -19,7 +19,6 @@ import {
 export default function StudentDashboardPage() {
   const dispatch = useDispatch();
   const { profile, attendance, timetable, fees, loading } = useSelector((state) => state.students);
-  const [feeStats, setFeeStats] = useState({ total: 30000, paid: 24000, dues: 6000 });
 
   useEffect(() => {
     dispatch(fetchStudentProfile());
@@ -27,20 +26,6 @@ export default function StudentDashboardPage() {
     dispatch(fetchStudentTimetable());
     dispatch(fetchStudentFees());
   }, [dispatch]);
-
-  // Compute fees local fallback if profile loads
-  useEffect(() => {
-    if (profile) {
-      const student = profile.student || profile.user?.student || {};
-      const classNum = parseInt(student.class || student.class_name) || 10;
-      const base = classNum * 3000;
-      setFeeStats({
-        total: base,
-        paid: Math.round(base * 0.8),
-        dues: Math.round(base * 0.2)
-      });
-    }
-  }, [profile]);
 
   if (loading || !profile) {
     return (
@@ -70,8 +55,8 @@ export default function StudentDashboardPage() {
   );
 
   const feesSummary = fees?.summary || {};
-  const paidAmount = feesSummary.total_paid !== undefined ? feesSummary.total_paid : feeStats.paid;
-  const dueAmount = feesSummary.total_due !== undefined ? feesSummary.total_due : feeStats.dues;
+  const paidAmount = feesSummary.total_paid !== undefined ? feesSummary.total_paid : 0;
+  const dueAmount = feesSummary.total_due !== undefined ? feesSummary.total_due : 0;
 
   const cardBgClass = "bg-white border border-zinc-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group";
 

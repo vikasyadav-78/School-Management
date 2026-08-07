@@ -15,7 +15,10 @@ import { getStudentSummary } from "@/features/attendance/redux/attendanceThunk";
 import { fetchStudentFeeDetails } from "@/features/finance/redux/financeThunk";
 import { resetFeeDetails } from "@/features/finance/redux/financeSlice";
 
+import { useAppDialog } from "@/context/DialogContext";
+
 export default function StudentProfilePage() {
+  const dialog = useAppDialog();
   const dispatch = useDispatch();
   const router = useRouter();
   const params = useParams();
@@ -24,6 +27,8 @@ export default function StudentProfilePage() {
   const { selectedItem: student, loading } = useSelector((state) => state.students);
   const { studentSummary } = useSelector((state) => state.attendance);
   const { studentFeeDetails } = useSelector((state) => state.finance);
+
+  console.log("StudentProfilePage: student =", student, "loading =", loading, "id =", id);
 
   useEffect(() => {
     if (id) {
@@ -34,8 +39,15 @@ export default function StudentProfilePage() {
     }
   }, [dispatch, id]);
 
-  const handleDelete = (studentId, studentName, redirectUrl) => {
-    if (window.confirm(`Are you sure you want to delete student "${studentName}"?`)) {
+  const handleDelete = async (studentId, studentName, redirectUrl) => {
+    const isConfirmed = await dialog.confirm({
+      title: "Delete Student",
+      message: `Are you sure you want to delete student "${studentName}"?`,
+      type: "delete",
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
+    if (isConfirmed) {
       dispatch(deleteStudentsItem(studentId)).then(() => {
         router.push(redirectUrl);
       });
@@ -44,14 +56,14 @@ export default function StudentProfilePage() {
 
   const renderStudentAvatar = () => {
     if (!student) return null;
-    let img = student.profileImage;
+    let img = student.photo || student.profileImage;
     if (img && typeof img === "object" && img.constructor && img.constructor.name === "FileList") {
       img = img[0];
     }
     if (img instanceof File || (img && typeof img === "object" && img.name && img.size)) {
       try {
         const objectUrl = URL.createObjectURL(img);
-        return <img src={objectUrl} alt={student.name} className="w-full h-full object-cover rounded-full" />;
+        return <img src={objectUrl} alt={student.full_name || "Student"} className="w-full h-full object-cover rounded-full" />;
       } catch (e) {
         return <FaUserCircle className="text-zinc-300 w-full h-full" />;
       }
@@ -60,7 +72,7 @@ export default function StudentProfilePage() {
       img.includes("/") || img.includes(".") || img.length > 10
     );
     if (hasImageString) {
-      return <img src={img} alt={student.name} className="w-full h-full object-cover rounded-full" />;
+      return <img src={img} alt={student.full_name || "Student"} className="w-full h-full object-cover rounded-full" />;
     }
     return <FaUserCircle className="text-zinc-300 w-full h-full" />;
   };
@@ -73,13 +85,13 @@ export default function StudentProfilePage() {
     );
   }
 
-  const backUrl = student?.className ? `/admin/students/class/${student.className}` : "/students";
+  const backUrl = student?.class ? `/admin/students/class/${student.class.replace(/class/i, '').trim() || student.class}` : "/admin/students";
 
   return (
     <DashboardLayout>
       <PageHeader
         title="Student Profile"
-        subtitle={`Viewing academic record for ${student?.name || id}`}
+        subtitle={`Viewing academic record for ${student?.full_name || id}`}
         action={
           <Link href={backUrl}>
             <Button variant="outline" size="sm">
@@ -96,13 +108,13 @@ export default function StudentProfilePage() {
             {renderStudentAvatar()}
           </div>
           <div>
-            <h3 className="text-base font-bold text-zinc-800">{student.name}</h3>
+            <h3 className="text-base font-bold text-zinc-800">{student.full_name || "-"}</h3>
             <p className="text-xs text-zinc-400 mt-1">
-              Class {student.className} {student.stream ? `- Stream: ${student.stream}` : ""} - Section {student.section}
+              Class {student.class || "-"} - Section {student.section || "-"}
             </p>
-            <span className={`inline-flex items-center mt-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${student.status === "Active" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-zinc-50 text-zinc-500 border-zinc-200"
+            <span className={`inline-flex items-center mt-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${student.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-zinc-50 text-zinc-500 border-zinc-200"
               }`}>
-              {student.status}
+              {student.is_active ? "Active" : "Inactive"}
             </span>
           </div>
 
@@ -110,38 +122,78 @@ export default function StudentProfilePage() {
           <div className="border-t border-zinc-100 pt-6 text-left space-y-4 text-xs text-zinc-600">
             <div className="flex items-center gap-3">
               <FaIdCard className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Student ID:</span>
+              <span className="text-zinc-800 font-semibold">{student.student_id || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaIdCard className="text-zinc-400 w-4 h-4" />
               <span className="font-semibold w-32 text-zinc-400">Admission Number:</span>
-              <span className="text-zinc-800 font-semibold">{student.admissionNo}</span>
+              <span className="text-zinc-800 font-semibold">{student.admission_no || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaIdCard className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Roll Number:</span>
+              <span className="text-zinc-800 font-semibold">{student.roll_no || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaIdCard className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">APAAR ID:</span>
+              <span className="text-zinc-800 font-semibold">{student.apaar_id || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
               <FaUser className="text-zinc-400 w-4 h-4" />
-              <span className="font-semibold w-32 text-zinc-400">Parent / Guardian:</span>
-              <span className="text-zinc-800 font-semibold">{student.parentName || "N/A"}</span>
+              <span className="font-semibold w-32 text-zinc-400">First Name:</span>
+              <span className="text-zinc-800 font-semibold">{student.first_name || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
-              <FaCalendarAlt className="text-zinc-400 w-4 h-4" />
-              <span className="font-semibold w-32 text-zinc-400">Admission Date:</span>
-              <span className="text-zinc-800 font-semibold">{student.admissionDate || "N/A"}</span>
+              <FaUser className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Last Name:</span>
+              <span className="text-zinc-800 font-semibold">{student.last_name || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaUser className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Gender:</span>
+              <span className="text-zinc-800 font-semibold">{student.gender || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
               <FaBuilding className="text-zinc-400 w-4 h-4" />
               <span className="font-semibold w-32 text-zinc-400">Grade Class:</span>
-              <span className="text-zinc-800 font-semibold">Class {student.className} {student.stream ? `(${student.stream})` : ""} - Section {student.section}</span>
+              <span className="text-zinc-800 font-semibold">Class {student.class || "-"} - Section {student.section || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
               <FaCalendarAlt className="text-zinc-400 w-4 h-4" />
-              <span className="font-semibold w-32 text-zinc-400">DOB:</span>
-              <span className="text-zinc-800 font-semibold">{student.dob || "N/A"}</span>
+              <span className="font-semibold w-32 text-zinc-400">Academic Year:</span>
+              <span className="text-zinc-800 font-semibold">{student.academic_year || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaCalendarAlt className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Admission Date:</span>
+              <span className="text-zinc-800 font-semibold">{student.admission_date || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaCalendarAlt className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Date of Birth:</span>
+              <span className="text-zinc-800 font-semibold">{student.date_of_birth_label || student.date_of_birth || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaUser className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Father Name:</span>
+              <span className="text-zinc-800 font-semibold">{student.father_name || "-"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FaUser className="text-zinc-400 w-4 h-4" />
+              <span className="font-semibold w-32 text-zinc-400">Mother Name:</span>
+              <span className="text-zinc-800 font-semibold">{student.mother_name || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
               <FaPhone className="text-zinc-400 w-4 h-4" />
-              <span className="font-semibold w-32 text-zinc-400">Parent Mobile:</span>
-              <span className="text-zinc-800 font-semibold">{student.phone}</span>
+              <span className="font-semibold w-32 text-zinc-400">Guardian Phone:</span>
+              <span className="text-zinc-800 font-semibold">{student.guardian_phone || "-"}</span>
             </div>
             <div className="flex items-center gap-3">
               <FaMapMarkerAlt className="text-zinc-400 w-4 h-4" />
               <span className="font-semibold w-32 text-zinc-400">Home Address:</span>
-              <span className="text-zinc-800 font-semibold">{student.address || "123 Academic Drive, School Town"}</span>
+              <span className="text-zinc-800 font-semibold">{student.address || "-"}</span>
             </div>
           </div>
 
@@ -208,7 +260,7 @@ export default function StudentProfilePage() {
               </Button>
             </Link>
             <Button
-              onClick={() => handleDelete(student.id, student.name, backUrl)}
+              onClick={() => handleDelete(student.id, student.full_name, backUrl)}
               variant="outline"
               className="flex-1 text-xs py-2 text-red-600 border-red-200 hover:bg-red-50/50"
             >

@@ -358,10 +358,12 @@ export default function StudentHomeworkPage() {
                           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Submitted Date</span>
                           <span className="font-bold text-zinc-700 text-xs"> {activeDetail.submission?.submitted_at_label  || "N/A"}</span>
                         </div>
-                        {activeDetail.marks !== null && (
+                        {(activeDetail.marks !== null && activeDetail.marks !== undefined || activeDetail.submission?.marks !== null && activeDetail.submission?.marks !== undefined) && (
                           <div className="space-y-1">
                             <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Marks Awarded</span>
-                            <span className="font-extrabold text-emerald-600 text-sm">{activeDetail.marks} / {activeDetail.max_marks}</span>
+                            <span className="font-extrabold text-emerald-600 text-sm">
+                              {activeDetail.submission?.marks !== undefined && activeDetail.submission?.marks !== null ? activeDetail.submission.marks : activeDetail.marks} / {activeDetail.max_marks || activeDetail.maximum_marks}
+                            </span>
                           </div>
                         )}
                       </div>

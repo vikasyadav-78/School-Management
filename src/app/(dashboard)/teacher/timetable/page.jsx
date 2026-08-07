@@ -1,88 +1,116 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
+import PageLoader from "@/components/common/PageLoader";
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaBookOpen } from "react-icons/fa";
+import { getTeacherTimetable } from "@/features/teachers/services/teacher.service";
+import { toast } from "sonner";
 
 export default function TeacherTimetablePage() {
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  
-  const schedule = {
-    "Monday": [
-      { time: "09:00 - 10:00 AM", subject: "Computer Science", class: "Class 10-A", room: "Lab 2" },
-      { time: "11:30 - 12:30 PM", subject: "Programming Lab", class: "Class 11-Sci", room: "Computer Lab 1" },
-      { time: "02:00 - 03:00 PM", subject: "Database Systems", class: "Class 12-Com", room: "Room 304" }
-    ],
-    "Tuesday": [
-      { time: "10:15 - 11:15 AM", subject: "Web Development", class: "Class 12-Sci", room: "Lab 2" },
-      { time: "01:00 - 02:00 PM", subject: "Computer Science", class: "Class 10-A", room: "Room 102" }
-    ],
-    "Wednesday": [
-      { time: "09:00 - 10:00 AM", subject: "Computer Science", class: "Class 10-A", room: "Lab 2" },
-      { time: "11:30 - 12:30 PM", subject: "Programming Lab", class: "Class 11-Sci", room: "Computer Lab 1" }
-    ],
-    "Thursday": [
-      { time: "10:15 - 11:15 AM", subject: "Web Development", class: "Class 12-Sci", room: "Lab 2" },
-      { time: "02:00 - 03:00 PM", subject: "Database Systems", class: "Class 12-Com", room: "Room 304" }
-    ],
-    "Friday": [
-      { time: "09:00 - 10:00 AM", subject: "Computer Science", class: "Class 10-A", room: "Lab 2" },
-      { time: "01:00 - 02:00 PM", subject: "Pedagogy Discussion", class: "Staff Room", room: "Conference Hall" }
-    ],
-    "Saturday": [
-      { time: "09:30 - 11:00 AM", subject: "Practical Assessment", class: "Class 11/12 Sci", room: "Lab 2" }
-    ]
-  };
+  const [timetable, setTimetable] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTimetable = async () => {
+      try {
+        setLoading(true);
+        const data = await getTeacherTimetable();
+        setTimetable(data);
+      } catch (err) {
+        toast.error("Failed to load timetable: " + (err.message || err));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTimetable();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <PageLoader />
+      </div>
+    );
+  }
+
+  const daysData = timetable?.days || [];
+  const byDay = timetable?.by_day || [];
+  const weekLabel = timetable?.week_label || "Active Week";
+
+  // Map days to slots conveniently
+  const scheduleData = byDay.length > 0 ? byDay : daysData.map(d => ({
+    key: d.key,
+    label: d.label,
+    date_label: d.date_label,
+    slots: (timetable?.slots || []).filter(s => s.day === d.key)
+  }));
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in text-left">
       <PageHeader
-        title="Teaching Timetable"
-        subtitle="View and manage your weekly lecture schedules, assigned subject periods, and lab hours."
+        title={`Teaching Timetable (${weekLabel})`}
+        subtitle="View your weekly lecture schedules, assigned subject periods, and lab hours."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {days.map((day) => {
-          const periods = schedule[day] || [];
+        {scheduleData.map((dayObj) => {
+          const periods = dayObj.slots || [];
+          const dateLabel = dayObj.date_label || daysData.find(d => d.key === dayObj.key)?.date_label;
           return (
-            <div key={day} className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 pb-3.5 border-b border-zinc-150 mb-4">
-                <FaCalendarAlt className="text-violet-500 w-4 h-4" />
-                <h3 className="text-sm font-extrabold text-zinc-800 uppercase tracking-wider">{day}</h3>
-              </div>
+            <div key={dayObj.key} className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3.5 border-b border-zinc-150 mb-4">
+                  <div className="flex items-center gap-2">
+                    <FaCalendarAlt className="text-violet-500 w-4 h-4 shrink-0" />
+                    <h3 className="text-sm font-extrabold text-zinc-800 uppercase tracking-wider">{dayObj.label}</h3>
+                  </div>
+                  {dateLabel && (
+                    <span className="px-2 py-0.5 bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] font-bold rounded-lg tracking-wide whitespace-nowrap">
+                      {dateLabel}
+                    </span>
+                  )}
+                </div>
 
-              {periods.length === 0 ? (
-                <div className="py-6 text-center text-xs text-zinc-400 font-semibold">
-                  No periods scheduled today.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {periods.map((p, idx) => (
-                    <div key={idx} className="p-3.5 bg-zinc-50 border border-zinc-100 rounded-xl space-y-2 hover:border-violet-300/30 transition-all">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-100 text-[9px] font-bold rounded-md uppercase tracking-wider">
-                          {p.time}
-                        </span>
+                {periods.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-zinc-400 font-bold uppercase tracking-wider">
+                    No periods scheduled.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {periods.map((p, idx) => (
+                      <div key={p.id || idx} className="p-3.5 bg-zinc-50 border border-zinc-100 rounded-xl space-y-2 hover:border-violet-300/30 transition-all text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-100 text-[9px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
+                            {p.time_label || `${p.start_time} – ${p.end_time}`}
+                          </span>
+                          {p.slot_type_label && (
+                            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                              {p.slot_type_label}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <h4 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5 capitalize">
+                          <FaBookOpen className="text-zinc-400 shrink-0" />
+                          {p.title || p.subject || p.slot_type_label || (p.slot_type === "lunch" ? "Lunch Break" : "Period")}
+                        </h4>
+                        
+                        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-2 border-t border-zinc-150/40">
+                          <span className="flex items-center gap-1 capitalize">
+                            <span className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+                            {p.class} - {p.section}
+                          </span>
+                          <span className="flex items-center gap-1 capitalize">
+                            <FaMapMarkerAlt className="text-zinc-400 shrink-0" />
+                            {p.room || "Room N/A"}
+                          </span>
+                        </div>
                       </div>
-                      
-                      <h4 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                        <FaBookOpen className="text-zinc-400 shrink-0" />
-                        {p.subject}
-                      </h4>
-                      
-                      <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-1 border-t border-zinc-100/50">
-                        <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                          {p.class}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FaMapMarkerAlt className="text-zinc-400" />
-                          {p.room}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

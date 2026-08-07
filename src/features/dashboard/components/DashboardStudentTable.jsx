@@ -1,8 +1,10 @@
 "use client";
 
 import DataTable from "@/components/tables/DataTable";
+import { useAppDialog } from "@/context/DialogContext";
 
 export default function DashboardStudentTable({ students = [], loading = false }) {
+  const dialog = useAppDialog();
   const columns = [
     { header: "No", accessor: "no" },
     { header: "Name", accessor: "name" },
@@ -30,8 +32,8 @@ export default function DashboardStudentTable({ students = [], loading = false }
   ];
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-zinc-800">New Admissions List</h3>
           <p className="text-[10px] text-zinc-400 font-semibold mt-0.5">Realtime list of student enrollment and admissions status</p>
@@ -41,8 +43,19 @@ export default function DashboardStudentTable({ students = [], loading = false }
         columns={columns}
         data={students}
         loading={loading}
-        onEdit={(row) => alert(`Editing student: ${row.name}`)}
-        onDelete={(row) => alert(`Deleting student: ${row.name}`)}
+        onEdit={(row) => dialog.alert({ title: "Edit Action", message: `Editing student: ${row.name} (Simulation)`, type: "info" })}
+        onDelete={async (row) => {
+          const confirmDelete = await dialog.confirm({
+            title: "Delete Student",
+            message: `Are you sure you want to delete student: ${row.name}?`,
+            type: "delete",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+          });
+          if (confirmDelete) {
+            dialog.alert({ title: "Delete Action", message: `Student ${row.name} deleted!`, type: "success" });
+          }
+        }}
       />
     </div>
   );

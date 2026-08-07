@@ -42,7 +42,7 @@ export default function StudentProfilePage() {
   // API Structure maps user details and role profiles
   const student = profile.student || profile.user?.student || {};
   const school = profile.school || profile.user?.school || {};
-  const documents = profile.documents || profile.user?.documents || {};
+  const documents = student.documents || profile.documents || profile.user?.documents || {};
   // const userEmail = profile.email || profile.user?.email || "N/A";
 
   const studentName = student.full_name || 
@@ -204,26 +204,64 @@ export default function StudentProfilePage() {
           <div>
             <h3 className="text-xs font-bold text-zinc-700 uppercase tracking-wider border-b border-zinc-100 pb-2 mb-4">Verification Documents</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1">
-                <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Birth Certificate</span>
-                <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5">
-                  <FaFileAlt className="text-zinc-400 w-3 h-3" />
-                  {documents.birth_certificate || "N/A"}
-                </span>
+              {/* Birth Certificate */}
+              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1.5 flex flex-col justify-between min-h-[75px]">
+                <div>
+                  <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Birth Certificate</span>
+                  <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5 max-w-full">
+                    <FaFileAlt className="text-zinc-400 w-3 h-3 shrink-0" />
+                    <span className="truncate text-zinc-800 font-bold">
+                      {documents.birth_certificate ? `✔ ${documents.birth_certificate.file_name || "Uploaded"}` : "N/A"}
+                    </span>
+                  </span>
+                </div>
+                {documents.birth_certificate?.url && (
+                  <div className="flex gap-2 text-[10px] border-t border-zinc-200/50 pt-1.5">
+                    <a href={documents.birth_certificate.url} target="_blank" rel="noreferrer" className="text-violet-600 font-bold hover:underline">View</a>
+                    <span className="text-zinc-300">|</span>
+                    <a href={documents.birth_certificate.url} download className="text-violet-600 font-bold hover:underline">Download</a>
+                  </div>
+                )}
               </div>
-              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1">
-                <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Aadhaar Card</span>
-                <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5">
-                  <FaFileAlt className="text-zinc-400 w-3 h-3" />
-                  {documents.aadhaar || "N/A"}
-                </span>
+
+              {/* Aadhaar Card */}
+              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1.5 flex flex-col justify-between min-h-[75px]">
+                <div>
+                  <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Aadhaar Card</span>
+                  <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5 max-w-full">
+                    <FaFileAlt className="text-zinc-400 w-3 h-3 shrink-0" />
+                    <span className="truncate text-zinc-800 font-bold">
+                      {documents.aadhaar ? `✔ ${documents.aadhaar.file_name || "Uploaded"}` : "N/A"}
+                    </span>
+                  </span>
+                </div>
+                {documents.aadhaar?.url && (
+                  <div className="flex gap-2 text-[10px] border-t border-zinc-200/50 pt-1.5">
+                    <a href={documents.aadhaar.url} target="_blank" rel="noreferrer" className="text-violet-600 font-bold hover:underline">View</a>
+                    <span className="text-zinc-300">|</span>
+                    <a href={documents.aadhaar.url} download className="text-violet-600 font-bold hover:underline">Download</a>
+                  </div>
+                )}
               </div>
-              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1">
-                <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Transfer Certificate</span>
-                <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5">
-                  <FaFileAlt className="text-zinc-400 w-3 h-3" />
-                  {documents.transfer_certificate || "N/A"}
-                </span>
+
+              {/* Transfer Certificate */}
+              <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1.5 flex flex-col justify-between min-h-[75px]">
+                <div>
+                  <span className="text-[9px] text-zinc-400 font-bold block uppercase tracking-wider">Transfer Certificate</span>
+                  <span className="font-semibold text-zinc-700 flex items-center gap-1.5 mt-0.5 max-w-full">
+                    <FaFileAlt className="text-zinc-400 w-3 h-3 shrink-0" />
+                    <span className="truncate text-zinc-800 font-bold">
+                      {documents.transfer_certificate ? `✔ ${documents.transfer_certificate.file_name || "Uploaded"}` : "N/A"}
+                    </span>
+                  </span>
+                </div>
+                {documents.transfer_certificate?.url && (
+                  <div className="flex gap-2 text-[10px] border-t border-zinc-200/50 pt-1.5">
+                    <a href={documents.transfer_certificate.url} target="_blank" rel="noreferrer" className="text-violet-600 font-bold hover:underline">View</a>
+                    <span className="text-zinc-300">|</span>
+                    <a href={documents.transfer_certificate.url} download className="text-violet-600 font-bold hover:underline">Download</a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

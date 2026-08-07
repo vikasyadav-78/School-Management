@@ -52,6 +52,24 @@ export default function StudentLeavesPage() {
       return;
     }
 
+    // Check for overlapping existing leave requests
+    const records = leaves?.leaves || [];
+    const newFrom = new Date(fromDate).getTime();
+    const newTo = new Date(toDate).getTime();
+    const overlappingLeave = records.find(leave => {
+      if (leave.status === "rejected") return false;
+      const existingFrom = new Date(leave.from_date).getTime();
+      const existingTo = new Date(leave.to_date).getTime();
+      return (newFrom <= existingTo && newTo >= existingFrom);
+    });
+
+    if (overlappingLeave) {
+      const msg = `A leave request already exists for selected dates (${overlappingLeave.from_date} to ${overlappingLeave.to_date}). Please choose different dates.`;
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+
     try {
       setSubmitting(true);
       

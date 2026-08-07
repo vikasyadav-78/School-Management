@@ -9,7 +9,7 @@ import PageLoader from "@/components/common/PageLoader";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/common/EmptyState";
 import { FaSearch, FaChevronRight, FaUsers, FaUserCheck, FaChalkboardTeacher } from "react-icons/fa";
-import { fetchStudentsList } from "@/features/students/redux/studentThunk";
+import { fetchStudentsMeta } from "@/features/students/redux/studentThunk";
 
 export default function StudentsClassDirectoryPage() {
   const dispatch = useDispatch();
@@ -17,7 +17,7 @@ export default function StudentsClassDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    dispatch(fetchStudentsList());
+    dispatch(fetchStudentsMeta());
   }, [dispatch]);
 
   // Real-time Class Card search filtering
@@ -42,17 +42,24 @@ export default function StudentsClassDirectoryPage() {
       {/* Class Search and Filter Row */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
         <h2 className="text-sm font-bold text-zinc-800">Class Directory</h2>
-        <div className="relative w-full sm:w-80">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-            <FaSearch className="w-3.5 h-3.5" />
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search classes (e.g. 10, Class 5)..."
-            className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
-          />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-80">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+              <FaSearch className="w-3.5 h-3.5" />
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search classes (e.g. 10, Class 5)..."
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
+            />
+          </div>
+          <Link href="/teacher/admin/classes">
+            <Button size="sm" className="whitespace-nowrap shadow-sm">
+              Create Class
+            </Button>
+          </Link>
         </div>
       </div>
 

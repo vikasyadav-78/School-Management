@@ -17,7 +17,11 @@ export default function Breadcrumb() {
         <span>Dashboard</span>
       </Link>
       {paths.map((path, idx) => {
-        const routeTo = `/${paths.slice(0, idx + 1).join("/")}`;
+        let routeTo = `/${paths.slice(0, idx + 1).join("/")}`;
+        if (routeTo === "/student") routeTo = "/student/dashboard";
+        if (routeTo === "/teacher") routeTo = "/teacher/dashboard";
+        if (routeTo === "/admin") routeTo = "/admin/dashboard";
+
         const isLast = idx === paths.length - 1;
 
         // Skip dynamic IDs from showing raw in breadcrumb

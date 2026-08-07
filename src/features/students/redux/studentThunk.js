@@ -5,7 +5,8 @@ export const fetchStudentsList = createAsyncThunk(
   "students/fetchList",
   async (params, { rejectWithValue }) => {
     try {
-      return await service.getList(params);
+      const response = await service.getList(params);
+      return response;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch list");
     }
@@ -16,8 +17,12 @@ export const fetchStudentsById = createAsyncThunk(
   "students/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      return await service.getById(id);
+      console.log("fetchStudentsById: id =", id);
+      const res = await service.getById(id);
+      console.log("fetchStudentsById success: res =", res);
+      return res;
     } catch (error) {
+      console.error("fetchStudentsById error:", error);
       return rejectWithValue(error.message || "Failed to fetch item");
     }
   }
@@ -60,9 +65,69 @@ export const fetchStudentsByClass = createAsyncThunk(
   "students/fetchByClass",
   async (className, { rejectWithValue }) => {
     try {
-      return await service.getStudentsByClass(className);
+      // Create a mapper/transformer so we don't break existing components.
+      // First, get meta to find the school_class_id matching className
+      const meta = await service.getStudentsMeta();
+      const clsNameStr = String(className).toLowerCase().replace(/class/i, '').trim();
+      const matchedClass = (meta.classes || []).find(
+        (c) => c.name.toLowerCase().replace(/class/i, '').trim() === clsNameStr
+      );
+      
+      let params = {};
+      if (matchedClass) {
+        params.school_class_id = matchedClass.id;
+      }
+      
+      const res = await service.getList(params);
+      // The API returns { success: true, students: [...] }
+      const data = res.students || res.data || res;
+      return { data };
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch class students");
+    }
+  }
+);
+
+export const fetchStudentsMeta = createAsyncThunk(
+  "students/fetchMeta",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await service.getStudentsMeta();
+    } catch (error) {
+      return rejectWithValue(error.message || "Failed to fetch meta");
+    }
+  }
+);
+
+export const toggleStudentStatus = createAsyncThunk(
+  "students/toggleStatus",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await service.toggleStudentStatus(id);
+    } catch (error) {
+      return rejectWithValue(error.message || "Failed to toggle status");
+    }
+  }
+);
+
+export const assignStudentId = createAsyncThunk(
+  "students/assignId",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await service.assignStudentId(id);
+    } catch (error) {
+      return rejectWithValue(error.message || "Failed to assign ID");
+    }
+  }
+);
+
+export const fetchStudentIdCard = createAsyncThunk(
+  "students/fetchIdCard",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await service.getStudentIdCard(id);
+    } catch (error) {
+      return rejectWithValue(error.message || "Failed to fetch ID card");
     }
   }
 );
@@ -111,7 +176,13 @@ export const applyStudentLeave = createAsyncThunk(
     try {
       return await createStudentLeave(leaveData);
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to submit leave request");
+      const serverMsg = error.response?.data?.errors?.from_date?.[0] ||
+                        error.response?.data?.errors?.to_date?.[0] ||
+                        error.response?.data?.errors?.reason?.[0] ||
+                        error.response?.data?.message ||
+                        error.message ||
+                        "Failed to submit leave request";
+      return rejectWithValue(serverMsg);
     }
   }
 );

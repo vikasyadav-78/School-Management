@@ -17,6 +17,9 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error) => {
@@ -30,8 +33,14 @@ axiosInstance.interceptors.response.use(
     const status = error.response ? error.response.status : null;
     if (status === 401) {
       if (typeof window !== "undefined") {
+        const role = localStorage.getItem("role");
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        localStorage.removeItem("role");
+        if (role === "admin") {
+          window.location.href = "/admin-login";
+        } else {
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(

@@ -36,7 +36,10 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/");
+      const role = localStorage.getItem("role");
+      if (role === "teacher") router.push("/teacher/dashboard");
+      else if (role === "student") router.push("/student/dashboard");
+      else if (role === "admin") router.push("/admin/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -48,7 +51,11 @@ export default function LoginPage() {
   const onSubmit = (data) => {
     dispatch(loginUser({ ...data, role: activeTab })).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
-        window.location.href = "/";
+        if (activeTab === "teacher") {
+          window.location.href = "/teacher/dashboard";
+        } else {
+          window.location.href = "/student/dashboard";
+        }
       }
     });
   };

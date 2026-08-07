@@ -20,15 +20,16 @@ export default function AdminLoginPage() {
   
   const formMethods = useForm({
     defaultValues: {
-      email: "admin@school.com",
-      password: "admin123"
+      email: "tanishqtour@gmail.com",
+      password: "12345678",
+      device_name: "admin-android"
     }
   });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/");
+      router.push("/admin/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -40,7 +41,7 @@ export default function AdminLoginPage() {
   const onSubmit = (data) => {
     dispatch(loginUser({ ...data, role: "admin" })).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
-        window.location.href = "/";
+        window.location.href = "/admin/dashboard";
       }
     });
   };
@@ -74,7 +75,7 @@ export default function AdminLoginPage() {
         <FormInput
           name="email"
           label="Email Address"
-          placeholder="admin@school.com"
+          placeholder="tanishqtour@gmail.com"
           type="email"
           labelClassName="text-zinc-300 font-medium"
           className="bg-zinc-950/40 border-zinc-800/80 text-white placeholder-zinc-500 focus:bg-zinc-900/50 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl"

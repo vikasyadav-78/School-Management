@@ -7,12 +7,19 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { FaGraduationCap } from "react-icons/fa";
 
+import { useAppDialog } from "@/context/DialogContext";
+
 export default function ForgotPasswordPage() {
+  const dialog = useAppDialog();
   const formMethods = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Forgot password request: ", data);
-    alert("Recovery password simulation email sent!");
+    await dialog.alert({
+      title: "Password Recovery",
+      message: "Recovery password simulation email sent!",
+      type: "success"
+    });
   };
 
   return (

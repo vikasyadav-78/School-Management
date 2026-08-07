@@ -5,8 +5,10 @@ import PageHeader from "@/components/common/PageHeader";
 import { APP_CONFIG } from "@/constants/appConfig";
 import Button from "@/components/ui/Button";
 import { FaUser, FaEnvelope, FaShieldAlt, FaMapMarkerAlt, FaBriefcase } from "react-icons/fa";
+import { useAppDialog } from "@/context/DialogContext";
 
 export default function ProfilePage() {
+  const dialog = useAppDialog();
   return (
     <DashboardLayout>
       <PageHeader 
@@ -65,7 +67,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="flex justify-end pt-4">
-            <Button size="sm" onClick={() => alert("Credentials saved (Simulation)")}>Save Changes</Button>
+            <Button size="sm" onClick={() => dialog.alert({ title: "Profile Settings", message: "Credentials saved successfully!", type: "success" })}>Save Changes</Button>
           </div>
         </div>
       </div>
