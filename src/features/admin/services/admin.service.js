@@ -886,6 +886,21 @@ export const getTeacherManageTeacherAttendanceHistory = async (params = {}) => {
   return response.data;
 };
 
+export const getStaffAttendanceRoster = async (params = {}) => {
+  const response = await api.get("/admin/staff-attendance", { params });
+  return response.data;
+};
+
+export const saveStaffAttendance = async (payload) => {
+  const response = await api.post("/admin/staff-attendance", payload);
+  return response.data;
+};
+
+export const getStaffAttendanceHistory = async (params = {}) => {
+  const response = await api.get("/admin/staff-attendance/history", { params });
+  return response.data;
+};
+
 // Teacher Payroll APIs
 export const getTeacherPayrollPending = async (params = {}) => {
   const response = await api.get("/admin/payroll", { params });

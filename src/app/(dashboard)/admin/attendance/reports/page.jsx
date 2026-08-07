@@ -3,7 +3,7 @@
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import { FaChalkboardTeacher, FaUserGraduate, FaArrowRight } from "react-icons/fa";
+import { FaChalkboardTeacher, FaUserGraduate, FaHospital, FaArrowRight } from "react-icons/fa";
 
 export default function AttendanceReportsLandingPage() {
   const options = [
@@ -28,6 +28,17 @@ export default function AttendanceReportsLandingPage() {
       iconClass: "bg-violet-50 text-violet-600 border-violet-100",
       buttonText: "View Students Report",
       buttonClass: "border-violet-200 text-violet-600 hover:bg-violet-50"
+    },
+    {
+      id: "staff",
+      title: "Staff Report",
+      description: "Review administrative staff attendance logs, leave remarks, and monthly summary reports.",
+      icon: FaHospital,
+      path: "/admin/attendance/reports/staff",
+      color: "sky",
+      iconClass: "bg-sky-50 text-sky-600 border-sky-100",
+      buttonText: "View Staff Report",
+      buttonClass: "border-sky-200 text-sky-600 hover:bg-sky-50"
     }
   ];
 
