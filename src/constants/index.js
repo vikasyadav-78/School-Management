@@ -48,7 +48,24 @@ export const ADMIN_NAVIGATION_ITEMS = [
       { title: "Reports", path: "/admin/live-classes/reports" }
     ]
   },
-  { title: "Online MCQ Exams", path: "/admin/online-mcq", icon: "FaFileAlt" },
+  {
+    title: "Online MCQ Exams",
+    path: "/admin/online-mcq",
+    icon: "FaFileAlt",
+    submenu: [
+      { title: "Exams", path: "/admin/online-mcq" },
+      { title: "Reports", path: "/admin/online-mcq/reports" }
+    ]
+  },
+  {
+    title: "Exams",
+    path: "/admin/exams",
+    icon: "FaGraduationCap",
+    submenu: [
+      { title: "Exams", path: "/admin/exams" },
+      { title: "Reports", path: "/admin/exams/reports" }
+    ]
+  },
   { title: "Notices Board", path: "/admin/notices", icon: "FaLock" },
   { title: "School Posts", path: "/admin/posts", icon: "FaFileAlt" },
   { title: "Holidays", path: "/admin/holidays", icon: "FaUmbrellaBeach" },

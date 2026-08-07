@@ -31,7 +31,8 @@ const iconMap = {
   FaLock,
   FaUmbrellaBeach,
   FaCalendarCheck,
-  FaVideo
+  FaVideo,
+  FaGraduationCap
 };
 
 import { useSidebar } from "@/context/SidebarContext";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
@@ -374,13 +375,23 @@ export default function AdminOnlineMcqPage() {
             title="Online MCQ Exam Creator"
             subtitle="Create exam drafts, manage question banks, and publish scheduled unit tests from a single admin flow."
           />
-          <button
-            onClick={handleOpenAddExam}
-            className="px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer shadow-sm text-xs uppercase tracking-wider"
-          >
-            <FaPlus className="w-3.5 h-3.5" />
-            Create Exam Draft
-          </button>
+          <div className="flex gap-2 self-start sm:self-auto">
+            <Link href="/admin/online-mcq/reports">
+              <button
+                type="button"
+                className="px-4 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm text-xs uppercase tracking-wider"
+              >
+                View Reports
+              </button>
+            </Link>
+            <button
+              onClick={handleOpenAddExam}
+              className="px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm text-xs uppercase tracking-wider"
+            >
+              <FaPlus className="w-3.5 h-3.5" />
+              Create Exam Draft
+            </button>
+          </div>
         </div>
 
         <div className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">

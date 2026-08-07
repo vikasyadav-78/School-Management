@@ -580,10 +580,10 @@ export default function MyStudentsPage() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleOpenDetail(student)}
-                          className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-500 hover:text-zinc-800 transition-colors"
+                          className="bg-zinc-50 hover:bg-zinc-100 text-zinc-600 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer border border-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
                           title="View Details"
                         >
-                          <FaEye className="w-4 h-4" />
+                          <FaEye className="w-3.5 h-3.5" /> View
                         </button>
                         <button
                           onClick={() => handleOpenEdit(student)}

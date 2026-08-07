@@ -67,7 +67,7 @@ export default function DataTable({
                 >
                   {columns.map((col, colIdx) => (
                     <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-xs text-zinc-700">
-                      {col.render ? col.render(row) : row[col.accessor]}
+                      {col.render ? col.render(row, rowIdx) : row[col.accessor]}
                     </td>
                   ))}
 
@@ -77,10 +77,10 @@ export default function DataTable({
                       {onView && (
                         <button
                           onClick={() => onView(row)}
-                          className="inline-flex p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 rounded-lg transition-colors"
+                          className="bg-zinc-50 hover:bg-zinc-100 text-zinc-600 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer border border-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
                           title="View"
                         >
-                          <FaEye className="w-3.5 h-3.5" />
+                          <FaEye className="w-3.5 h-3.5" /> View
                         </button>
                       )}
                       {onEdit && (

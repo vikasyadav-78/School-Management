@@ -4,6 +4,7 @@ import teachersReducer from "@/features/teachers/redux/teacherSlice";
 import studentsReducer from "@/features/students/redux/studentSlice";
 import attendanceReducer from "@/features/attendance/redux/attendanceSlice";
 import financeReducer from "@/features/finance/redux/financeSlice";
+import examsReducer from "@/features/exams/redux/examSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   students: studentsReducer,
   attendance: attendanceReducer,
   finance: financeReducer,
+  exams: examsReducer,
 });
 
 export default rootReducer;
