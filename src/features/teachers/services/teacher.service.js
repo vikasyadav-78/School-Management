@@ -774,4 +774,25 @@ export const getTeacherPayrollReceipt = async (payrollId) => {
   return response.data;
 };
 
+// Student Allocation & Transfer APIs (Teacher)
+export const assignTeacherStudentsToSection = async (payload) => {
+  const response = await api.post("/teacher/allocation/assign", payload);
+  return response.data;
+};
+
+export const transferTeacherStudents = async (payload) => {
+  const response = await api.post("/teacher/allocation/transfer", payload);
+  return response.data;
+};
+
+export const bulkAssignTeacherStudents = async (payload) => {
+  const response = await api.post("/teacher/allocation/bulk-assign", payload);
+  return response.data;
+};
+
+export const bulkTransferTeacherStudents = async (payload) => {
+  const response = await api.post("/teacher/allocation/bulk-transfer", payload);
+  return response.data;
+};
+
 

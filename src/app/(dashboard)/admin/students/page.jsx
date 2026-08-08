@@ -55,7 +55,7 @@ export default function StudentsClassDirectoryPage() {
               className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
             />
           </div>
-          <Link href="/teacher/admin/classes">
+          <Link href="/admin/classes">
             <Button size="sm" className="whitespace-nowrap shadow-sm">
               Create Class
             </Button>

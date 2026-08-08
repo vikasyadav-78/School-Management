@@ -40,7 +40,7 @@ export default function SubjectReportsPage() {
     try {
       setLoading(true);
       const data = await getClassNotesReportsSubject({ class_id: selectedClassId });
-      const list = data.reports || data.subject_reports || data.data || (Array.isArray(data) ? data : []);
+      const list = data.rows || data.reports || data.subject_reports || data.data || (Array.isArray(data) ? data : []);
       setReports(list);
     } catch (err) {
       toast.error("Failed to load subject reports: " + (err.message || err));
@@ -55,7 +55,7 @@ export default function SubjectReportsPage() {
 
   // Filter & search logic
   const filteredReports = reports.filter(r => 
-    String(r.subject_name || r.subject || "").toLowerCase().includes(search.toLowerCase())
+    String(r.subject_name || r.subject?.name || (typeof r.subject === "string" ? r.subject : "") || "").toLowerCase().includes(search.toLowerCase())
   );
 
   // Pagination logic
@@ -138,7 +138,7 @@ export default function SubjectReportsPage() {
                     <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                       <td className="px-6 py-3.5 capitalize flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                        {r.subject_name || r.subject || "Unknown Subject"}
+                        {r.subject_name || r.subject?.name || (typeof r.subject === "string" ? r.subject : "") || "Unknown Subject"}
                       </td>
                       <td className="px-6 py-3.5 text-right text-violet-600 font-extrabold">
                         {r.notes_count ?? r.count ?? 0}

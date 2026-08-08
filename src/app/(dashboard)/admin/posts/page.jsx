@@ -26,7 +26,7 @@ export default function SchoolPostsPage() {
   const [listLoading, setListLoading] = useState(false);
 
   // Filters State
-  const [audienceFilter, setAudienceFilter] = useState("all");
+  const [audienceFilter, setAudienceFilter] = useState("view_all");
 
   // Creation Modal & Form State
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function SchoolPostsPage() {
       const metaData = await getSchoolPostsMeta();
       setMeta(metaData.meta || metaData.data || metaData);
       
-      const listData = await getSchoolPostsList({ audience: audienceFilter === "all" ? undefined : audienceFilter });
+      const listData = await getSchoolPostsList({ audience: audienceFilter === "view_all" ? undefined : audienceFilter });
       setPosts(listData.posts || listData.data || (Array.isArray(listData) ? listData : []));
     } catch (err) {
       toast.error("Failed to load school posts: " + (err.message || err));
@@ -63,7 +63,7 @@ export default function SchoolPostsPage() {
   const fetchFilteredList = async () => {
     try {
       setListLoading(true);
-      const listData = await getSchoolPostsList({ audience: audienceFilter === "all" ? undefined : audienceFilter });
+      const listData = await getSchoolPostsList({ audience: audienceFilter === "view_all" ? undefined : audienceFilter });
       setPosts(listData.posts || listData.data || (Array.isArray(listData) ? listData : []));
     } catch (err) {
       console.error("Filter list failed:", err);
@@ -171,9 +171,9 @@ export default function SchoolPostsPage() {
         {/* Audience filter tab row */}
         <div className="flex border-b border-zinc-200 gap-2">
           <button
-            onClick={() => setAudienceFilter("all")}
+            onClick={() => setAudienceFilter("view_all")}
             className={`px-5 py-2.5 font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer text-xs ${
-              audienceFilter === "all" ? "border-violet-600 text-violet-600 bg-violet-50/50 rounded-t-xl" : "border-transparent text-zinc-400 hover:text-zinc-600"
+              audienceFilter === "view_all" ? "border-violet-600 text-violet-600 bg-violet-50/50 rounded-t-xl" : "border-transparent text-zinc-400 hover:text-zinc-600"
             }`}
           >
             All Audiences

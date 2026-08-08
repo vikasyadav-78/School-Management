@@ -13,8 +13,15 @@ export const ADMIN_NAVIGATION_ITEMS = [
     title: "Students", path: "/admin/students", icon: "FaUserGraduate",
     submenu: [
       { title: "All Students", path: "/admin/students" },
-      { title: "Add Student", path: "/admin/students/add" }
+      { title: "Add Student", path: "/admin/students/add" },
+      { title: "Allocation & Transfer", path: "/admin/students/allocation" }
     ]
+  },
+  {
+    title: "Classes & Sections", path: "/admin/classes", icon: "FaChalkboard"
+  },
+  {
+    title: "Subject Management", path: "/admin/subjects", icon: "FaBook"
   },
   {
     title: "Staff Management", path: "/admin/staff", icon: "FaUsers"
@@ -37,6 +44,15 @@ export const ADMIN_NAVIGATION_ITEMS = [
   { title: "Academic Sessions", path: "/admin/academic-years", icon: "FaCalendarAlt" },
   { title: "Timetable Management", path: "/admin/timetable", icon: "FaCalendarCheck" },
   { title: "Class Notes", path: "/admin/class-notes", icon: "FaFileAlt" },
+  {
+    title: "Homework",
+    path: "/admin/homework",
+    icon: "FaBookOpen",
+    submenu: [
+      { title: "Homework List", path: "/admin/homework" },
+      { title: "Reports", path: "/admin/homework/reports" }
+    ]
+  },
   { title: "Leave Applications", path: "/admin/leaves", icon: "FaFileAlt" },
   { title: "Shared Notes & Papers", path: "/admin/shared-notes", icon: "FaBook" },
   {
@@ -70,6 +86,18 @@ export const ADMIN_NAVIGATION_ITEMS = [
   { title: "School Posts", path: "/admin/posts", icon: "FaFileAlt" },
   { title: "Holidays", path: "/admin/holidays", icon: "FaUmbrellaBeach" },
   { title: "Certificates", path: "/admin/certificates", icon: "FaLock" },
+  {
+    title: "Inventory",
+    path: "/admin/inventory",
+    icon: "FaBoxes",
+    submenu: [
+      { title: "Dashboard", path: "/admin/inventory" },
+      { title: "Stock Items", path: "/admin/inventory/stock" },
+      { title: "Purchase Orders", path: "/admin/inventory/purchases" },
+      { title: "Student Sales", path: "/admin/inventory/sales" },
+      { title: "Reports", path: "/admin/inventory/reports" }
+    ]
+  },
   { title: "Email", path: "/admin/email", icon: "MdEmail" },
   { title: "Profile", path: "/admin/profile", icon: "FaUser" }
 ];

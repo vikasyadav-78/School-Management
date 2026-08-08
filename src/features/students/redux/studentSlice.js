@@ -172,24 +172,39 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudentsMeta.fulfilled, (state, action) => {
         state.loadingMeta = false;
-        state.meta = action.payload.data || action.payload;
         
+        const { meta, classes, students } = action.payload;
+        const metaData = meta?.data || meta || {};
+        state.meta = metaData;
+
+        const classesList = classes?.classes || classes?.data?.classes || [];
+        const studentsList = students?.students || students?.data?.students || [];
+
         // Populate classSummaries for the admin/students page
-        const metaData = action.payload.data || action.payload;
-        const classSummaries = (metaData.classes || []).map(c => ({
-          id: c.id,
-          className: c.name.replace(/class/i, '').trim() || c.name,
-          originalName: c.name,
-          sections: c.sections.map(s => s.name),
-          sectionsData: c.sections,
-          totalSections: c.sections.length || 1,
-          isStreamBased: false,
-          streams: [],
-          totalStudents: c.total_students !== undefined ? c.total_students : "N/A",
-          newStudents: c.new_students !== undefined ? c.new_students : "N/A",
-          existingStudents: c.existing_students !== undefined ? c.existing_students : "N/A",
-          classTeachers: c.class_teachers !== undefined ? c.class_teachers : "N/A"
-        }));
+        const classSummaries = (metaData.classes || []).map(c => {
+          // Find statistics from classes endpoint
+          const classStats = classesList.find(cls => cls.id === c.id);
+          
+          // Calculate new/existing students from list
+          const classStudents = studentsList.filter(s => s.school_class_id === c.id);
+          const newStudentsCount = classStudents.filter(s => s.admission_no && s.admission_no.includes("2026")).length;
+          const totalCount = classStats ? classStats.students_count : classStudents.length;
+
+          return {
+            id: c.id,
+            className: c.name.replace(/class/i, '').trim() || c.name,
+            originalName: c.name,
+            sections: c.sections.map(s => s.name),
+            sectionsData: c.sections,
+            totalSections: c.sections.length || 0,
+            isStreamBased: false,
+            streams: [],
+            totalStudents: totalCount,
+            newStudents: newStudentsCount,
+            existingStudents: Math.max(0, totalCount - newStudentsCount),
+            classTeachers: classStats?.class_teacher || "Unassigned"
+          };
+        });
         state.classSummaries = classSummaries;
       })
       .addCase(fetchStudentsMeta.rejected, (state) => {

@@ -21,7 +21,7 @@ export default function TeacherReportsPage() {
     try {
       setLoading(true);
       const data = await getClassNotesReportsTeacher({ month: month || undefined });
-      const list = data.reports || data.teacher_reports || data.data || (Array.isArray(data) ? data : []);
+      const list = data.rows || data.reports || data.teacher_reports || data.data || (Array.isArray(data) ? data : []);
       setReports(list);
     } catch (err) {
       toast.error("Failed to load teacher reports: " + (err.message || err));
@@ -36,7 +36,7 @@ export default function TeacherReportsPage() {
 
   // Filter & search logic
   const filteredReports = reports.filter(r => 
-    String(r.teacher_name || r.teacher || "").toLowerCase().includes(search.toLowerCase())
+    String(r.teacher_name || r.teacher?.full_name || r.teacher?.name || (typeof r.teacher === "string" ? r.teacher : "") || "").toLowerCase().includes(search.toLowerCase())
   );
 
   // Pagination logic
@@ -116,7 +116,7 @@ export default function TeacherReportsPage() {
                     <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                       <td className="px-6 py-3.5 capitalize flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                        {r.teacher_name || r.teacher || "Unknown Teacher"}
+                        {r.teacher_name || r.teacher?.full_name || r.teacher?.name || (typeof r.teacher === "string" ? r.teacher : "") || "Unknown Teacher"}
                       </td>
                       <td className="px-6 py-3.5 text-right text-violet-600 font-extrabold">
                         {r.notes_count ?? r.count ?? 0}

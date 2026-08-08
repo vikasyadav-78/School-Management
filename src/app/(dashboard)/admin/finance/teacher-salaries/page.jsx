@@ -17,9 +17,12 @@ import {
   getTeacherPayrollDetail,
   saveTeacherPayrollDeductions,
   markTeacherPayrollPaid,
-  getTeacherPayrollReceipt
+  getTeacherPayrollReceipt,
+  getTeacherTeacherDetail,
+  getAdminStaffDetail
 } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
+import { api } from "@/services/api";
 import { useAppDialog } from "@/context/DialogContext";
 import Link from "next/link";
 
@@ -38,6 +41,8 @@ export default function TeacherSalariesPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [forbidden, setForbidden] = useState(false);
   const [rawPayrollList, setRawPayrollList] = useState([]);
+  const [payrollDetailsMap, setPayrollDetailsMap] = useState({});
+  const [employeeProfilesMap, setEmployeeProfilesMap] = useState({});
 
   // Filters State
   const [selectedMonth, setSelectedMonth] = useState(getPreviousMonthString());
@@ -61,6 +66,42 @@ export default function TeacherSalariesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
+  const fetchDetailsForList = async (list) => {
+    const details = {};
+    const profiles = {};
+    await Promise.all(
+      list.map(async (p) => {
+        try {
+          const res = await getTeacherPayrollDetail(p.id);
+          const detailed = res.payroll || res.data || res;
+          details[p.id] = detailed;
+
+          const pid = detailed.payable_id || p.payable_id;
+          const ptype = detailed.payable_type || p.payable_type;
+          if (pid) {
+            if (ptype === "teacher") {
+              const teacherRes = await getTeacherTeacherDetail(pid);
+              const teacherData = teacherRes.teacher || teacherRes.data || teacherRes;
+              if (teacherData && teacherData.photo) {
+                profiles[p.id] = teacherData.photo;
+              }
+            } else if (ptype === "staff") {
+              const staffRes = await getAdminStaffDetail(pid);
+              const staffData = staffRes.staff || staffRes.data || staffRes;
+              if (staffData && staffData.photo) {
+                profiles[p.id] = staffData.photo;
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load details/profile for " + p.id, e);
+        }
+      })
+    );
+    setPayrollDetailsMap(prev => ({ ...prev, ...details }));
+    setEmployeeProfilesMap(prev => ({ ...prev, ...profiles }));
+  };
+
   const fetchPayroll = async (customParams = {}) => {
     try {
       setListLoading(true);
@@ -71,10 +112,14 @@ export default function TeacherSalariesPage() {
 
       if (activeTab === "pending") {
         const data = await getTeacherPayrollPending(params);
-        setRawPayrollList(data.payrolls || data.data || (Array.isArray(data) ? data : []));
+        const list = data.payrolls || data.data || (Array.isArray(data) ? data : []);
+        setRawPayrollList(list);
+        fetchDetailsForList(list);
       } else {
         const data = await getTeacherPayrollHistory(params);
-        setRawPayrollList(data.payrolls || data.history || data.data || (Array.isArray(data) ? data : []));
+        const list = data.payrolls || data.history || data.data || (Array.isArray(data) ? data : []);
+        setRawPayrollList(list);
+        fetchDetailsForList(list);
       }
     } catch (err) {
       if (err.status === 403 || err.statusCode === 403 || (err.message && err.message.includes("403"))) {
@@ -95,7 +140,7 @@ export default function TeacherSalariesPage() {
   // Client-side search filtering
   const payrollList = useMemo(() => {
     return rawPayrollList.filter(p => {
-      const name = (p.teacher_name || p.teacher?.full_name || p.staff_name || "").toLowerCase();
+      const name = (p.name || p.teacher_name || p.teacher?.full_name || p.staff_name || "").toLowerCase();
       const empId = (p.employee_id || p.teacher?.employee_id || String(p.id) || "").toLowerCase();
       const dept = (p.department || p.teacher?.department || "academic").toLowerCase();
       const desig = (p.designation || p.teacher?.designation || "teacher").toLowerCase();
@@ -267,6 +312,10 @@ export default function TeacherSalariesPage() {
       });
       toast.success("Payroll marked as paid successfully!");
       setIsMarkPaidModalOpen(false);
+      
+      // Auto-trigger receipt print format
+      handlePrintReceipt(activePayroll.id);
+
       fetchPayroll();
     } catch (err) {
       setFormError(err.response?.data?.message || err.message || "Failed to mark paid.");
@@ -275,16 +324,49 @@ export default function TeacherSalariesPage() {
     }
   };
 
-  const handlePrintReceipt = (payrollId) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const url = `https://erp.trishpay.in/api/admin/payroll/${payrollId}/receipt?format=print&token=${token}`;
-    window.open(url, "_blank");
+  const handlePrintReceipt = async (payrollId) => {
+    try {
+      toast.info("Opening receipt print view...");
+      const response = await api.get(`/admin/payroll/${payrollId}/receipt`, {
+        params: { format: "print" }
+      });
+      const htmlContent = response.data;
+      
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      } else {
+        toast.error("Popup blocker prevented opening print view.");
+      }
+    } catch (err) {
+      toast.error("Failed to open print receipt: " + (err.message || err));
+    }
   };
 
-  const handleDownloadReceipt = (payrollId) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const url = `https://erp.trishpay.in/api/admin/payroll/${payrollId}/receipt?token=${token}`;
-    window.open(url, "_blank");
+  const handleDownloadReceipt = async (payrollId) => {
+    try {
+      toast.info("Downloading receipt PDF...");
+      const response = await api.get(`/admin/payroll/${payrollId}/receipt`, {
+        responseType: "blob"
+      });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `receipt-${payrollId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Receipt downloaded successfully!");
+    } catch (err) {
+      toast.error("Failed to download receipt: " + (err.message || err));
+    }
   };
 
   const handleViewDetails = async (p) => {
@@ -335,7 +417,7 @@ export default function TeacherSalariesPage() {
         />
         <button
           onClick={() => { setGeneratePeriod(getPreviousMonthString()); setFormError(""); setIsGenerateModalOpen(true); }}
-          className="px-4.5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-750 hover:to-indigo-750 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md self-start sm:self-auto cursor-pointer text-xs"
+          className="px-4.5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md self-start sm:self-auto cursor-pointer text-xs"
         >
           <FaPlus className="w-3.5 h-3.5" /> Generate Monthly Payroll
         </button>
@@ -447,11 +529,17 @@ export default function TeacherSalariesPage() {
           {/* Desktop Table */}
           <div className="hidden md:block bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden text-left">
             <div className="overflow-x-auto">
-              <table className="min-w-max w-full text-left border-collapse text-xs">
+              <table className="min-w-max w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
+                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
                     <th className="px-6 py-4 min-w-[200px]">Employee</th>
                     <th className="px-6 py-4 min-w-[100px]">Month</th>
+                    <th className="px-6 py-4 text-center min-w-[110px]">Monthly Salary</th>
+                    <th className="px-6 py-4 text-center min-w-[80px]">Work Days</th>
+                    <th className="px-6 py-4 text-center min-w-[80px]">Present</th>
+                    <th className="px-6 py-4 text-center min-w-[80px]">Absent</th>
+                    <th className="px-6 py-4 text-center min-w-[80px]">Leave</th>
+                    <th className="px-6 py-4 text-center min-w-[80px]">Payable</th>
                     <th className="px-6 py-4 min-w-[120px]">Gross Salary</th>
                     <th className="px-6 py-4 min-w-[120px]">Deductions</th>
                     <th className="px-6 py-4 min-w-[120px]">Net Salary</th>
@@ -459,28 +547,55 @@ export default function TeacherSalariesPage() {
                     <th className="px-6 py-4 text-center min-w-[240px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-150 text-zinc-700">
+                <tbody className="divide-y divide-zinc-100 text-[13px] text-zinc-700">
                   {payrollList.map((p) => {
                     const gross = parseFloat(p.gross_salary || p.net_salary || p.salary || 0);
-                    const ded = parseFloat(p.deductions || 0);
                     const net = parseFloat(p.net_salary || p.net_amount || p.salary || 0);
+                    const ded = p.total_deductions !== undefined ? parseFloat(p.total_deductions) : (p.deductions !== undefined ? parseFloat(p.deductions) : Math.max(0, gross - net));
                     const isPaid = (p.status || "pending").toLowerCase() === "paid";
+                    const detailedBreakdown = payrollDetailsMap[p.id]?.breakdown;
                     
                     return (
-                      <tr key={p.id} className="hover:bg-zinc-50/50 transition-colors">
+                      <tr key={p.id} className="hover:bg-zinc-55/40 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-xs shrink-0 select-none">
-                              {p.teacher_name ? p.teacher_name.charAt(0) : (p.staff_name ? p.staff_name.charAt(0) : "S")}
-                            </div>
+                            {employeeProfilesMap[p.id] ? (
+                              <img
+                                src={employeeProfilesMap[p.id]}
+                                alt={p.name}
+                                className="w-8 h-8 rounded-full object-cover shrink-0 select-none border border-zinc-150"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                                {p.name ? p.name.charAt(0) : (p.teacher_name ? p.teacher_name.charAt(0) : (p.staff_name ? p.staff_name.charAt(0) : "S"))}
+                              </div>
+                            )}
                             <div>
-                              <p className="font-extrabold text-zinc-800">{p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}</p>
+                              <p className="font-extrabold text-zinc-800">{p.name || p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}</p>
                               <p className="text-[10px] text-zinc-400 font-bold mt-0.5">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + String(p.id).substring(0, 5).toUpperCase()}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-bold text-zinc-600 whitespace-nowrap">
+                        <td className="px-6 py-4 font-bold text-zinc-650 whitespace-nowrap">
                           {p.period || p.month || selectedMonth}
+                        </td>
+                        <td className="px-6 py-4 text-center font-semibold text-zinc-700 whitespace-nowrap">
+                          {detailedBreakdown ? `₹${detailedBreakdown.monthly_salary?.toLocaleString()}` : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center font-semibold text-zinc-600 whitespace-nowrap">
+                          {detailedBreakdown ? `${detailedBreakdown.working_days} Days` : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center font-bold text-emerald-600 whitespace-nowrap">
+                          {detailedBreakdown ? `${detailedBreakdown.present_days} Days` : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center font-bold text-rose-600 whitespace-nowrap">
+                          {detailedBreakdown ? `${detailedBreakdown.absent_days} Days` : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center font-bold text-blue-600 whitespace-nowrap">
+                          {detailedBreakdown ? `${detailedBreakdown.leave_days || 0} Days` : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center font-black text-violet-700 whitespace-nowrap">
+                          {detailedBreakdown ? `${detailedBreakdown.payable_days} Days` : "—"}
                         </td>
                         <td className="px-6 py-4 font-semibold text-zinc-700 whitespace-nowrap">
                           ₹{gross.toLocaleString()}
@@ -525,13 +640,13 @@ export default function TeacherSalariesPage() {
                               <>
                                 <button
                                   onClick={() => handlePrintReceipt(p.id)}
-                                  className="px-2.5 py-1 bg-zinc-150 hover:bg-zinc-200 text-zinc-700 font-bold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
                                 >
                                   <FaPrint className="w-2.5 h-2.5" /> Print
                                 </button>
                                 <button
                                   onClick={() => handleDownloadReceipt(p.id)}
-                                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-750 text-white font-extrabold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
                                 >
                                   <FaDownload className="w-2.5 h-2.5" /> PDF
                                 </button>
@@ -551,20 +666,38 @@ export default function TeacherSalariesPage() {
           <div className="md:hidden space-y-4 text-left">
             {payrollList.map((p) => {
               const gross = parseFloat(p.gross_salary || p.net_salary || p.salary || 0);
-              const ded = parseFloat(p.deductions || 0);
               const net = parseFloat(p.net_salary || p.net_amount || p.salary || 0);
+              const ded = p.total_deductions !== undefined ? parseFloat(p.total_deductions) : (p.deductions !== undefined ? parseFloat(p.deductions) : Math.max(0, gross - net));
               const isPaid = (p.status || "pending").toLowerCase() === "paid";
               
               return (
                 <div key={p.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-4 hover:shadow-md transition-all">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-xs shrink-0 select-none">
-                        {p.teacher_name ? p.teacher_name.charAt(0) : (p.staff_name ? p.staff_name.charAt(0) : "S")}
-                      </div>
+                      {employeeProfilesMap[p.id] ? (
+                        <img
+                          src={employeeProfilesMap[p.id]}
+                          alt={p.name}
+                          className="w-9 h-9 rounded-full object-cover shrink-0 select-none border border-zinc-150"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                          {p.name ? p.name.charAt(0) : (p.teacher_name ? p.teacher_name.charAt(0) : (p.staff_name ? p.staff_name.charAt(0) : "S"))}
+                        </div>
+                      )}
                       <div>
-                        <h4 className="font-extrabold text-zinc-800">{p.teacher_name || p.teacher?.full_name || p.staff_name}</h4>
-                        <p className="text-[9px] text-zinc-400 font-extrabold">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + String(p.id).substring(0, 5).toUpperCase()}</p>
+                        <h4 className="font-extrabold text-zinc-800">{p.name || p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}</h4>
+                        <p className="text-[9px] text-zinc-400 font-extrabold font-mono">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + String(p.id).substring(0, 5).toUpperCase()}</p>
+                        {payrollDetailsMap[p.id]?.breakdown && (
+                          <div className="mt-1 flex items-center gap-1 flex-wrap text-[8px] font-black text-zinc-500 uppercase tracking-tight">
+                            <span className="bg-violet-100 px-1 py-0.2 rounded text-violet-750">Base: ₹{payrollDetailsMap[p.id].breakdown.monthly_salary?.toLocaleString()}</span>
+                            <span className="bg-zinc-150 px-1 py-0.2 rounded text-zinc-650">Work: {payrollDetailsMap[p.id].breakdown.working_days}d</span>
+                            <span className="bg-emerald-50 px-1 py-0.2 rounded text-emerald-700">Pres: {payrollDetailsMap[p.id].breakdown.present_days}d</span>
+                            <span className="bg-rose-50 px-1 py-0.2 rounded text-rose-700">Abs: {payrollDetailsMap[p.id].breakdown.absent_days}d</span>
+                            <span className="bg-blue-50 px-1 py-0.2 rounded text-blue-700">Lve: {payrollDetailsMap[p.id].breakdown.leave_days || 0}d</span>
+                            <span className="bg-violet-50 px-1 py-0.2 rounded text-violet-700">Pay: {payrollDetailsMap[p.id].breakdown.payable_days}d</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <span className={`px-2.5 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
@@ -619,13 +752,13 @@ export default function TeacherSalariesPage() {
                       <>
                         <button
                           onClick={() => handlePrintReceipt(p.id)}
-                          className="flex-1 py-2 bg-zinc-150 hover:bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
                         >
                           <FaPrint className="w-3 h-3" /> Print
                         </button>
                         <button
                           onClick={() => handleDownloadReceipt(p.id)}
-                          className="flex-1 py-2 bg-violet-600 hover:bg-violet-750 text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
                         >
                           <FaDownload className="w-3 h-3" /> PDF
                         </button>
@@ -641,9 +774,9 @@ export default function TeacherSalariesPage() {
 
       {/* Generate Payroll Modal */}
       {isGenerateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in text-left">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50/50 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-extrabold text-zinc-800 text-sm">Generate Monthly Payroll</h3>
               <button onClick={() => setIsGenerateModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer"><FaTimes className="w-4 h-4" /></button>
             </div>
@@ -661,7 +794,7 @@ export default function TeacherSalariesPage() {
               </div>
               <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-100">
                 <button type="button" onClick={() => setIsGenerateModalOpen(false)} className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
-                <button type="submit" disabled={submitting} className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-750 hover:to-indigo-750 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm">{submitting ? "Generating..." : "Generate Payroll"}</button>
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm">{submitting ? "Generating..." : "Generate Payroll"}</button>
               </div>
             </form>
           </div>
@@ -670,9 +803,9 @@ export default function TeacherSalariesPage() {
 
       {/* Save Deductions Modal */}
       {isDeductionModalOpen && activePayroll && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in text-left">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50/50 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <div>
                 <h3 className="font-extrabold text-zinc-800 text-sm">Save Payroll Deductions</h3>
                 <p className="text-[9px] text-zinc-400 font-bold uppercase mt-0.5">Adjust pay for {activePayroll.teacher_name || activePayroll.staff_name}</p>
@@ -697,7 +830,7 @@ export default function TeacherSalariesPage() {
                   </div>
 
                   {deductionsRows.map((row, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-150 relative">
+                    <div key={idx} className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-100 relative">
                       <div className="flex-1 space-y-1">
                         <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Deduction Name</label>
                         <input 
@@ -705,7 +838,7 @@ export default function TeacherSalariesPage() {
                           placeholder="e.g. PF, Tax, Advance"
                           value={row.name}
                           onChange={(e) => handleDeductionRowChange(idx, "name", e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white"
+                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white text-black"
                           required
                         />
                       </div>
@@ -716,7 +849,7 @@ export default function TeacherSalariesPage() {
                           placeholder="0.00"
                           value={row.amount}
                           onChange={(e) => handleDeductionRowChange(idx, "amount", e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white"
+                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white text-black"
                           required
                         />
                       </div>
@@ -727,7 +860,7 @@ export default function TeacherSalariesPage() {
                           placeholder="Note/Reason"
                           value={row.remark}
                           onChange={(e) => handleDeductionRowChange(idx, "remark", e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white"
+                          className="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold outline-none focus:border-violet-500 bg-white text-black"
                         />
                       </div>
                       <button
@@ -743,9 +876,9 @@ export default function TeacherSalariesPage() {
                 </div>
               </div>
               
-              <div className="p-6 bg-zinc-50 border-t border-zinc-150 flex justify-end gap-2.5 shrink-0">
+              <div className="p-6 bg-zinc-50 border-t border-zinc-100 flex justify-end gap-2.5 shrink-0">
                 <button type="button" onClick={() => setIsDeductionModalOpen(false)} className="px-4 py-2 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
-                <button type="submit" disabled={submitting} className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-750 hover:to-indigo-750 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm">{submitting ? "Saving..." : "Save Deductions"}</button>
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm">{submitting ? "Saving..." : "Save Deductions"}</button>
               </div>
             </form>
           </div>
@@ -754,16 +887,16 @@ export default function TeacherSalariesPage() {
 
       {/* Pay Salary Modal */}
       {isMarkPaidModalOpen && activePayroll && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in text-left">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50/50 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-extrabold text-zinc-800 text-sm">Disburse Salary Payment</h3>
               <button onClick={() => setIsMarkPaidModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer"><FaTimes className="w-4 h-4" /></button>
             </div>
             <form onSubmit={handleMarkPaidSubmit} className="p-6 space-y-4">
               {formError && <div className="p-2.5 bg-rose-50 border border-rose-100 text-rose-600 text-[10px] rounded-xl font-bold">{formError}</div>}
               
-              <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-150 text-[11px] space-y-2">
+              <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 text-[11px] space-y-2">
                 <div className="flex justify-between font-bold text-zinc-700">
                   <span>Employee Name:</span>
                   <span>{activePayroll.teacher_name || activePayroll.staff_name}</span>
@@ -832,41 +965,61 @@ export default function TeacherSalariesPage() {
 
       {/* View Details Modal */}
       {isViewDetailModalOpen && activePayroll && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in text-left">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50/50 shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in text-left">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up flex flex-col">
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-extrabold text-zinc-800 text-sm">Payroll Slip Inspector</h3>
               <button onClick={() => setIsViewDetailModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer"><FaTimes className="w-4 h-4" /></button>
             </div>
-            <div className="p-6 space-y-5">
+            <div className="p-5 space-y-3.5 overflow-y-auto">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-sm shrink-0 select-none">
-                  {activePayroll.teacher_name ? activePayroll.teacher_name.charAt(0) : (activePayroll.staff_name ? activePayroll.staff_name.charAt(0) : "S")}
+                  {activePayroll.name ? activePayroll.name.charAt(0) : (activePayroll.teacher_name ? activePayroll.teacher_name.charAt(0) : (activePayroll.staff_name ? activePayroll.staff_name.charAt(0) : "S"))}
                 </div>
                 <div>
-                  <h4 className="font-black text-zinc-800">{activePayroll.teacher_name || activePayroll.teacher?.full_name || activePayroll.staff_name || "Staff Member"}</h4>
+                  <h4 className="font-black text-zinc-800">{activePayroll.name || activePayroll.teacher_name || activePayroll.teacher?.full_name || activePayroll.staff_name || "Staff Member"}</h4>
                   <p className="text-[9px] text-zinc-400 font-bold uppercase">ID: {activePayroll.employee_id || activePayroll.teacher?.employee_id || "EMP-" + String(activePayroll.id).substring(0, 5).toUpperCase()}</p>
                 </div>
               </div>
 
-              <div className="divide-y divide-zinc-100 border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50/40">
-                <div className="flex justify-between px-4 py-2.5">
+              <div className="divide-y divide-zinc-100 border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50/40 text-xs">
+                <div className="flex justify-between px-4 py-1.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Period Month</span>
                   <span className="font-bold text-zinc-700">{activePayroll.period || activePayroll.month || selectedMonth}</span>
                 </div>
-                <div className="flex justify-between px-4 py-2.5">
+                {activePayroll.breakdown && (
+                  <>
+                    <div className="flex justify-between px-4 py-1.5">
+                      <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Working Days</span>
+                      <span className="font-bold text-zinc-700">{activePayroll.breakdown.working_days} Days</span>
+                    </div>
+                    <div className="flex justify-between px-4 py-1.5">
+                      <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Present Days</span>
+                      <span className="font-bold text-emerald-600">{activePayroll.breakdown.present_days} Days</span>
+                    </div>
+                    <div className="flex justify-between px-4 py-1.5">
+                      <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Absent Days</span>
+                      <span className="font-bold text-rose-600">{activePayroll.breakdown.absent_days} Days</span>
+                    </div>
+                    <div className="flex justify-between px-4 py-1.5">
+                      <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Leave Days</span>
+                      <span className="font-bold text-blue-600">{(activePayroll.breakdown.leave_days !== undefined ? activePayroll.breakdown.leave_days : (activePayroll.breakdown.leave_days || 0))} Days</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between px-4 py-1.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Gross Salary</span>
                   <span className="font-bold text-zinc-700">₹{parseFloat(activePayroll.gross_salary || activePayroll.net_salary || activePayroll.salary || 0).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between px-4 py-2.5">
+                <div className="flex justify-between px-4 py-1.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Deductions</span>
-                  <span className="font-bold text-rose-600">₹{parseFloat(activePayroll.deductions || 0).toLocaleString()}</span>
+                  <span className="font-bold text-rose-600">₹{parseFloat(activePayroll.total_deductions !== undefined ? activePayroll.total_deductions : (activePayroll.deductions || 0)).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between px-4 py-2.5">
+                <div className="flex justify-between px-4 py-1.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Net Payable</span>
                   <span className="font-black text-zinc-900">₹{parseFloat(activePayroll.net_salary || activePayroll.net_amount || activePayroll.salary || 0).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between px-4 py-2.5">
+                <div className="flex justify-between px-4 py-1.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Status</span>
                   <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
                     (activePayroll.status || "pending").toLowerCase() === "paid" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-amber-50 text-amber-600 border border-amber-100"
@@ -875,13 +1028,13 @@ export default function TeacherSalariesPage() {
                   </span>
                 </div>
                 {activePayroll.payment_method && (
-                  <div className="flex justify-between px-4 py-2.5">
+                  <div className="flex justify-between px-4 py-1.5">
                     <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Method</span>
                     <span className="font-bold text-zinc-700 uppercase">{activePayroll.payment_method}</span>
                   </div>
                 )}
                 {activePayroll.payment_date && (
-                  <div className="flex justify-between px-4 py-2.5">
+                  <div className="flex justify-between px-4 py-1.5">
                     <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Paid On</span>
                     <span className="font-bold text-zinc-700">{activePayroll.payment_date}</span>
                   </div>
@@ -893,13 +1046,13 @@ export default function TeacherSalariesPage() {
                   <>
                     <button 
                       onClick={() => handlePrintReceipt(activePayroll.id)}
-                      className="px-4 py-2 bg-zinc-150 hover:bg-zinc-200 text-zinc-750 font-extrabold rounded-xl text-xs cursor-pointer flex items-center gap-1.5 transition-all"
+                      className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-extrabold rounded-xl text-xs cursor-pointer flex items-center gap-1.5 transition-all"
                     >
                       <FaPrint className="w-3.5 h-3.5" /> Print
                     </button>
                     <button 
                       onClick={() => handleDownloadReceipt(activePayroll.id)}
-                      className="px-4 py-2 bg-violet-600 hover:bg-violet-750 text-white font-extrabold rounded-xl text-xs cursor-pointer flex items-center gap-1.5 transition-all shadow-sm"
+                      className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-extrabold rounded-xl text-xs cursor-pointer flex items-center gap-1.5 transition-all shadow-sm"
                     >
                       <FaDownload className="w-3.5 h-3.5" /> PDF
                     </button>

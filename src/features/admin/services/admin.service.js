@@ -99,8 +99,8 @@ export const getTeacherTimetable = async () => {
 };
 
 // Homework API calls
-export const getHomeworkClasses = async () => {
-  const response = await api.get("/admin/homework/classes");
+export const getHomeworkMeta = async () => {
+  const response = await api.get("/admin/homework/meta");
   return response.data;
 };
 
@@ -123,8 +123,34 @@ export const createHomework = async (formData) => {
   return response.data;
 };
 
+export const deleteHomework = async (id) => {
+  const response = await api.delete(`/admin/homework/${id}`);
+  return response.data;
+};
+
 export const gradeHomeworkSubmission = async (homeworkId, submissionId, gradeData) => {
   const response = await api.post(`/admin/homework/${homeworkId}/submissions/${submissionId}/grade`, gradeData);
+  return response.data;
+};
+
+// Homework Reports
+export const getHomeworkReportTeacher = async (params) => {
+  const response = await api.get("/admin/homework/reports/teacher", { params });
+  return response.data;
+};
+
+export const getHomeworkReportStudent = async (params) => {
+  const response = await api.get("/admin/homework/reports/student", { params });
+  return response.data;
+};
+
+export const getHomeworkReportClass = async () => {
+  const response = await api.get("/admin/homework/reports/class");
+  return response.data;
+};
+
+export const getHomeworkReportMonthly = async (params) => {
+  const response = await api.get("/admin/homework/reports/monthly", { params });
   return response.data;
 };
 
@@ -383,6 +409,16 @@ export const toggleTeacherSubjectStatus = async (subjectId) => {
   return response.data;
 };
 
+export const getTeacherSubjectDetail = async (subjectId) => {
+  const response = await api.get(`/admin/subjects/${subjectId}`);
+  return response.data;
+};
+
+export const deleteTeacherSubject = async (subjectId) => {
+  const response = await api.delete(`/admin/subjects/${subjectId}`);
+  return response.data;
+};
+
 // Academic Years APIs
 export const getTeacherAcademicYears = async () => {
   const response = await api.get("/admin/academic-years");
@@ -578,6 +614,11 @@ export const deleteTeacherFeeStructure = async (structureId) => {
   return response.data;
 };
 
+export const getTeacherFeeStructuresReport = async () => {
+  const response = await api.get("/admin/fees/structures/report");
+  return response.data;
+};
+
 export const assignTeacherFee = async (payload) => {
   const response = await api.post("/admin/fees/assign", payload);
   return response.data;
@@ -620,6 +661,11 @@ export const clearTeacherLateFeeRule = async (payload) => {
 
 export const deleteTeacherLateFeeRuleHistory = async (ruleId) => {
   const response = await api.delete(`/admin/fees/late-fee-rules/${ruleId}`);
+  return response.data;
+};
+
+export const getOnlinePayments = async (params = {}) => {
+  const response = await api.get("/admin/fees/online-payments", { params });
   return response.data;
 };
 
@@ -1024,6 +1070,84 @@ export const getAdminStaffIdCard = async (staffId, params = {}) => {
   const response = await api.get(`/admin/staff/${staffId}/id-card`, { params });
   return response.data;
 };
+
+// Student Allocation & Transfer APIs
+export const getStudentAllocation = async (params = {}) => {
+  const response = await api.get("/admin/allocation", { params });
+  return response.data;
+};
+
+export const assignStudentsToSection = async (payload) => {
+  const response = await api.post("/admin/allocation/assign", payload);
+  return response.data;
+};
+
+export const transferStudents = async (payload) => {
+  const response = await api.post("/admin/allocation/transfer", payload);
+  return response.data;
+};
+
+export const bulkAssignStudents = async (payload) => {
+  const response = await api.post("/admin/allocation/bulk-assign", payload);
+  return response.data;
+};
+
+export const bulkTransferStudents = async (payload) => {
+  const response = await api.post("/admin/allocation/bulk-transfer", payload);
+  return response.data;
+};
+
+// Inventory APIs
+export const getInventoryDashboard = async () => {
+  const response = await api.get("/admin/inventory");
+  return response.data;
+};
+
+export const getInventoryMeta = async () => {
+  const response = await api.get("/admin/inventory/meta");
+  return response.data;
+};
+
+export const getInventoryCatalog = async () => {
+  const response = await api.get("/admin/inventory/catalog");
+  return response.data;
+};
+
+export const placePurchaseOrder = async (payload) => {
+  const response = await api.post("/admin/inventory/orders", payload);
+  return response.data;
+};
+
+export const getPurchaseOrders = async (params = {}) => {
+  const response = await api.get("/admin/inventory/purchases", { params });
+  return response.data;
+};
+
+export const getStudentTransfers = async (params = {}) => {
+  const response = await api.get("/admin/allocation/transfers", { params });
+  return response.data;
+};
+
+export const receivePurchaseOrder = async (orderId) => {
+  const response = await api.post(`/admin/inventory/orders/${orderId}/receive`);
+  return response.data;
+};
+
+export const sellInventoryItem = async (payload) => {
+  const response = await api.post("/admin/inventory/sell", payload);
+  return response.data;
+};
+
+export const getInventorySales = async (params = {}) => {
+  const response = await api.get("/admin/inventory/sales", { params });
+  return response.data;
+};
+
+export const getInventoryReport = async () => {
+  const response = await api.get("/admin/inventory/report");
+  return response.data;
+};
+
 
 
 

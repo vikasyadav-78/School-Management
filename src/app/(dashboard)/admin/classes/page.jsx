@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { 
   FaPlus, FaTimes, FaChalkboard, FaEdit, FaTrash, FaToggleOn, FaToggleOff, 
   FaFolder, FaBook, FaUsers, FaUserGraduate, FaLayerGroup, FaCog
@@ -24,11 +24,11 @@ import {
   generateTeacherSectionRollNumbers,
   updateTeacherClassSubject,
   deleteTeacherClassSubject
-} from "@/features/teachers/services/teacher.service";
+} from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
 
-export default function TeacherClassesPage() {
+export default function AdminClassesPage() {
   const dialog = useAppDialog();
   const [classesList, setClassesList] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -330,48 +330,45 @@ export default function TeacherClassesPage() {
 
   if (forbidden) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white border border-zinc-200 rounded-2xl p-8 text-center shadow-sm text-xs max-w-lg mx-auto mt-10">
-        <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mb-4 animate-bounce">
-          <FaTimes className="w-5 h-5" />
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white border border-zinc-200 rounded-2xl p-8 text-center shadow-sm text-xs max-w-lg mx-auto mt-10">
+          <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mb-4 animate-bounce">
+            <FaTimes className="w-5 h-5" />
+          </div>
+          <h2 className="text-sm font-extrabold text-zinc-800 uppercase tracking-wider">Access Restricted</h2>
+          <p className="text-zinc-500 font-bold leading-relaxed mt-2">
+            Classes feature is not enabled for your account. Contact school admin.
+          </p>
         </div>
-        <h2 className="text-sm font-extrabold text-zinc-800 uppercase tracking-wider">Access Restricted</h2>
-        <p className="text-zinc-500 font-bold leading-relaxed mt-2">
-          Classes feature is not enabled for your account. Contact school admin.
-        </p>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <PageLoader />
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <PageLoader />
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs text-left">
+    <DashboardLayout>
+      <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader 
           title="Classes & Sections Manager"
           subtitle="Configure classroom sections, assign subject teachers, and manage roll numbers."
         />
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Link href="/teacher/admin/classes/allocation">
-            <button className="px-4 py-2 border border-zinc-200 hover:bg-zinc-50 text-zinc-700 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-              <FaUserGraduate className="w-3.5 h-3.5" />
-              Allocation & Transfer
-            </button>
-          </Link>
-          <button
-            onClick={handleOpenAddClass}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-          >
-            <FaPlus className="w-3.5 h-3.5" />
-            Create New Class
-          </button>
-        </div>
+        <button
+          onClick={handleOpenAddClass}
+          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
+        >
+          <FaPlus className="w-3.5 h-3.5" />
+          Create New Class
+        </button>
       </div>
 
       {/* Roster Listing Grid */}
@@ -627,7 +624,7 @@ export default function TeacherClassesPage() {
                 {(() => {
                   const assignedSubjects = activeClass.class_subjects || activeClass.subjects || activeClass.classSubjects || [];
                   if (assignedSubjects.length === 0) {
-                    return <p className="text-[10px] text-zinc-400 italic">No subject teachers assigned yet.</p>;
+                     return <p className="text-[10px] text-zinc-400 italic">No subject teachers assigned yet.</p>;
                   }
                   return (
                     <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
@@ -780,5 +777,6 @@ export default function TeacherClassesPage() {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 }

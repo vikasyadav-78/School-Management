@@ -5,6 +5,7 @@ import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "@/services/api";
 import { 
   FaSearch, FaPlus, FaTimes, FaUser, FaFileAlt,
   FaEye, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaIdCard, FaCamera, 
@@ -336,10 +337,24 @@ export default function AdminStaffPage() {
     }
   }, [selectedTheme]);
 
-  const handlePrintIdCard = () => {
+  const handlePrintIdCard = async () => {
     if (!targetStaffIdCard) return;
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "https://erp.trishpay.in"}/api/admin/staff/${targetStaffIdCard.id}/id-card?theme=${selectedTheme}&format=print&token=${localStorage.getItem("token")}`;
-    window.open(url, "_blank");
+    try {
+      toast.loading("Generating print layout...", { id: "print-id-card" });
+      const printUrl = `/admin/staff/${targetStaffIdCard.id}/id-card?theme=${selectedTheme}&format=print`;
+      const response = await api.get(printUrl, { responseType: "blob" });
+      const blob = new Blob([response.data], { type: response.headers["content-type"] || "text/html" });
+      const blobUrl = window.URL.createObjectURL(blob);
+      const newTab = window.open(blobUrl, "_blank");
+      if (newTab) {
+        newTab.focus();
+      } else {
+        toast.error("Popup blocked! Please allow popups for this site.");
+      }
+      toast.dismiss("print-id-card");
+    } catch (err) {
+      toast.error("Failed to load print layout: " + (err.message || err), { id: "print-id-card" });
+    }
   };
 
   const handlePhotoChange = (e) => {
@@ -482,9 +497,38 @@ export default function AdminStaffPage() {
     }
   };
 
-  const getThemeTextSec = () => {
-    if (selectedTheme === "classic") return "text-zinc-500";
+  const getThemeHeaderBg = () => {
+    switch (selectedTheme) {
+      case "navy":
+        return "bg-slate-800";
+      case "green":
+        return "bg-teal-800";
+      case "wave":
+        return "bg-violet-850";
+      case "classic":
+      default:
+        return "bg-violet-600";
+    }
+  };
+
+  const getThemeTextPrimary = () => {
+    if (selectedTheme === "classic") return "text-zinc-800";
+    return "text-white";
+  };
+
+  const getThemeTextSecondary = () => {
+    if (selectedTheme === "classic") return "text-zinc-550";
     return "text-zinc-300";
+  };
+
+  const getThemeTextValue = () => {
+    if (selectedTheme === "classic") return "text-zinc-850";
+    return "text-zinc-100";
+  };
+
+  const getThemeBorder = () => {
+    if (selectedTheme === "classic") return "border-zinc-100";
+    return "border-zinc-700/50";
   };
 
   if (forbidden) {
@@ -1295,59 +1339,86 @@ export default function AdminStaffPage() {
                     <PageLoader />
                   </div>
                 ) : idCardData ? (
-                  /* ID Card Render */
-                  <div className={`w-[260px] h-[400px] ${getThemeBackground()} rounded-3xl p-5 shadow-xl flex flex-col items-center text-center justify-between border-t-8 border-violet-500 transition-all duration-300 relative overflow-hidden`}>
-                    
-                    {/* Header info */}
-                    <div className="w-full space-y-1">
-                      <div className="font-extrabold text-[10px] uppercase tracking-widest text-violet-500 block">
-                        {idCardData.school_name || "SCHOOL ACADEMY"}
+                  <div className={`w-[290px] h-[435px] shrink-0 ${getThemeBackground()} rounded-2xl border ${getThemeBorder()} shadow-xl relative overflow-hidden flex flex-col justify-between`}>
+                    {/* Decorative Header Bar */}
+                    <div className="bg-[#111e3b] px-4 py-3 text-center text-white shrink-0 relative flex items-center justify-between border-b border-t border-[#81c784]">
+                      <div className="flex items-center gap-1.5 text-left">
+                        {idCardData.school?.logo && (
+                          <img src={idCardData.school.logo} alt="Logo" className="w-5 h-5 object-contain rounded-full bg-white p-0.5" />
+                        )}
+                        <div>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wide block text-white select-none truncate max-w-[150px]">
+                            {idCardData.school?.name || "SCHOOL ACADEMY"}
+                          </span>
+                          <span className="text-[6px] text-zinc-300 font-bold uppercase tracking-widest block">STAFF IDENTITY CARD</span>
+                        </div>
                       </div>
-                      <div className={`text-[8px] uppercase tracking-wider font-semibold ${getThemeTextSec()}`}>
-                        Staff Identity Card
+                      <div className="text-[6px] px-1 py-0.5 bg-[#81c784] text-zinc-950 font-black rounded uppercase tracking-wider">
+                        Active
                       </div>
                     </div>
 
-                    {/* QR Code Background Circle */}
-                    <div className="absolute top-16 -right-16 w-32 h-32 bg-violet-500/5 rounded-full blur-xl pointer-events-none" />
-                    
-                    {/* Profile image */}
-                    <div className="space-y-2 mt-4 relative z-10">
-                      {idCardData.photo ? (
-                        <img src={idCardData.photo} alt={idCardData.full_name} className="w-20 h-20 rounded-full object-cover border-4 border-violet-500 mx-auto" />
-                      ) : (
-                        <div className="w-20 h-20 rounded-full bg-violet-100 border-4 border-violet-500 flex items-center justify-center text-violet-600 font-extrabold text-3xl mx-auto">
-                          {(idCardData.full_name || "S").charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      
+                    {/* Body Content */}
+                    <div className="p-4 flex-1 flex flex-col items-center justify-center text-center space-y-2.5">
+                      {/* Photo */}
+                      <div className="relative w-16 h-16 rounded-full bg-zinc-100 border-4 border-[#81c784] overflow-hidden shadow-md flex items-center justify-center shrink-0">
+                        {idCardData.staff?.photo ? (
+                          <img src={idCardData.staff.photo} alt="Photo" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400 font-extrabold text-2xl">
+                            {(idCardData.staff?.full_name || "S").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Name & Title */}
                       <div>
-                        <div className="font-extrabold text-sm tracking-wide">{idCardData.full_name}</div>
-                        <div className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 text-violet-500`}>
-                          {idCardData.designation}
+                        <h4 className="font-extrabold text-zinc-900 text-xs tracking-tight">
+                          {idCardData.staff?.full_name}
+                        </h4>
+                        <span className="inline-block mt-0.5 px-2.5 py-0.5 bg-[#81c784]/20 border border-[#81c784] text-[#2e7d32] rounded-full text-[7px] font-extrabold uppercase tracking-wider">
+                          {idCardData.staff?.designation || "Staff Member"}
+                        </span>
+                      </div>
+
+                      {/* Key Attributes List */}
+                      <div className="w-full space-y-1 text-[8px] text-zinc-550 font-bold px-2 pt-2 border-t border-zinc-100 text-left">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Emp ID</span>
+                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.employee_id || "—"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Phone</span>
+                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.phone || "—"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Dept.</span>
+                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.department || "—"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Joining</span>
+                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.joining_date_label || idCardData.staff?.joining_date || "—"}</span>
                         </div>
                       </div>
+
+                      {/* QR Code */}
+                      {idCardData.qr_image ? (
+                        <div className="shrink-0 bg-white p-1 rounded-lg shadow-inner border border-zinc-100 flex items-center justify-center aspect-square w-12">
+                          <img src={idCardData.qr_image} alt="QR ID lookup" className="w-10 h-10" />
+                        </div>
+                      ) : (
+                        <div className="h-2" />
+                      )}
                     </div>
 
-                    {/* Metadata items */}
-                    <div className="w-full grid grid-cols-2 gap-x-2 gap-y-1 text-left text-[8px] font-bold mt-4 border-t border-b border-zinc-200/20 py-2.5">
-                      <div className={`${getThemeTextSec()}`}>ID Number: <span className="block font-extrabold text-current mt-0.5">{idCardData.employee_id}</span></div>
-                      <div className={`${getThemeTextSec()}`}>Department: <span className="block font-extrabold text-current mt-0.5">{idCardData.department || "General"}</span></div>
-                      <div className={`${getThemeTextSec()}`}>Contact: <span className="block font-extrabold text-current mt-0.5">{idCardData.phone || "—"}</span></div>
-                      <div className={`${getThemeTextSec()}`}>Joining: <span className="block font-extrabold text-current mt-0.5">{idCardData.joining_date || "—"}</span></div>
-                    </div>
-
-                    {/* QR Code or barcode representation */}
-                    {idCardData.qr_code ? (
-                      <div className="mt-4 shrink-0 bg-white p-1 rounded-xl shadow-inner border border-zinc-100 flex items-center justify-center aspect-square w-16">
-                        <img src={idCardData.qr_code} alt="QR ID lookup" className="w-14 h-14" />
+                    {/* Bottom Address Footer */}
+                    <div className="bg-[#111e3b] text-white py-2 px-3 text-center shrink-0 border-t-2 border-[#81c784]">
+                      <div className="text-[6px] font-bold text-zinc-300 truncate">
+                        {idCardData.school?.address || "Jaipur, Rajasthan, India"}
                       </div>
-                    ) : (
-                      <div className="h-6" />
-                    )}
-
-                    <div className="text-[7px] text-zinc-400 font-semibold tracking-wide uppercase mt-2">
-                      Powered by TrishPay ERP
+                      <div className="text-[6px] font-black text-white mt-0.5">
+                        📞 {idCardData.school?.phone || "8484848484"}
+                      </div>
                     </div>
                   </div>
                 ) : (

@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import * as service from "../services/module.service";
+import { api } from "@/services/api";
 
 export const fetchStudentsList = createAsyncThunk(
   "students/fetchList",
@@ -92,7 +93,16 @@ export const fetchStudentsMeta = createAsyncThunk(
   "students/fetchMeta",
   async (_, { rejectWithValue }) => {
     try {
-      return await service.getStudentsMeta();
+      const [metaRes, classesRes, studentsRes] = await Promise.all([
+        api.get("/admin/students/meta"),
+        api.get("/admin/classes"),
+        api.get("/admin/students?limit=200")
+      ]);
+      return {
+        meta: metaRes.data,
+        classes: classesRes.data,
+        students: studentsRes.data
+      };
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch meta");
     }

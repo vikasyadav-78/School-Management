@@ -21,7 +21,7 @@ export default function ClassWiseReportsPage() {
       try {
         setLoading(true);
         const data = await getClassNotesReportsClass();
-        const list = data.reports || data.class_reports || data.data || (Array.isArray(data) ? data : []);
+        const list = data.rows || data.reports || data.class_reports || data.data || (Array.isArray(data) ? data : []);
         setReports(list);
       } catch (err) {
         toast.error("Failed to load class reports: " + (err.message || err));
@@ -34,7 +34,7 @@ export default function ClassWiseReportsPage() {
 
   // Filter & search logic
   const filteredReports = reports.filter(r => 
-    String(r.class_name || r.class || "").toLowerCase().includes(search.toLowerCase())
+    String(r.class_name || r.class?.name || (typeof r.class === "string" ? r.class : "") || "").toLowerCase().includes(search.toLowerCase())
   );
 
   // Pagination logic
@@ -101,7 +101,7 @@ export default function ClassWiseReportsPage() {
                     <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                       <td className="px-6 py-3.5 capitalize flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                        {r.class_name || r.class || "Unknown Class"}
+                        {r.class_name || r.class?.name || (typeof r.class === "string" ? r.class : "") || "Unknown Class"}
                       </td>
                       <td className="px-6 py-3.5 text-right text-violet-600 font-extrabold">
                         {r.notes_count ?? r.count ?? 0}
