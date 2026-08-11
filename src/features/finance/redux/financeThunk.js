@@ -104,15 +104,60 @@ export const fetchSalaryHistory = createAsyncThunk(
   }
 );
 
-// ================= GENERAL FINANCE REPORTS =================
+// ================= GENERAL FINANCE REPORTS (UPDATED) =================
 
 export const fetchFinanceReportSummary = createAsyncThunk(
   "finance/fetchReportSummary",
   async (filters = {}, { rejectWithValue }) => {
     try {
-      return await service.getFinanceReportSummary(filters);
+      const response = await service.getFinanceReportSummary(filters);
+
+      // Extract response arrays and stats safely
+      const stats = response?.stats || response?.data?.stats || {};
+      const payments = response?.payments || response?.data?.payments || [];
+
+      // 1. Map API Payments to UI Transactions Table Structure
+      const transformedTransactions = payments.map((p) => ({
+        id: p.id,
+        receiptNo: p.receipt_no || "N/A",
+        description: `${p.student_name || "Guest / Unnamed"} - ${p.fee_name || "Fee"}`,
+        category: p.fee_name || "General Fee",
+        type: p.status === "paid" ? "Income" : "Outgoing",
+        method: p.payment_method ? p.payment_method.toUpperCase() : "N/A",
+        amount: p.paid_amount || p.amount || 0,
+        dueAmount: p.due_amount || 0,
+        date: p.paid_at 
+          ? new Date(p.paid_at).toLocaleDateString() 
+          : (p.due_date_label || "N/A"),
+        status: p.status || "pending",
+        studentName: p.student_name,
+        rollNo: p.roll_no,
+        className: p.class,
+        section: p.section
+      }));
+
+      // 2. Build Category Breakdown dynamically
+      const expenseBreakdown = payments.reduce((acc, p) => {
+        const categoryName = p.fee_name || "Other Fees";
+        acc[categoryName] = (acc[categoryName] || 0) + (p.paid_amount || 0);
+        return acc;
+      }, {});
+
+      // 3. Return mapped object structure matching UI expectations
+      return {
+        summary: {
+          totalCollection: stats.total_collected || stats.paid || 0,
+          totalAssigned: stats.total_assigned || stats.assigned || 0,
+          totalExpenses: stats.total_late_fee || 0,
+          netBalance: stats.total_collected || 0,
+          totalDue: stats.total_due || stats.due || 0,
+          pendingCount: stats.pending_count || 0
+        },
+        expenseBreakdown,
+        transactions: transformedTransactions
+      };
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to fetch financial report summary");
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch financial report summary");
     }
   }
 );

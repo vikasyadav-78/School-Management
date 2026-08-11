@@ -24,7 +24,9 @@ function DashboardLayoutContent({ children }) {
     const adminToken = localStorage.getItem("admin_token");
     const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
-    if (adminToken && currentPath.startsWith("/admin") && role !== "admin") {
+    const isTransitioning = currentPath.startsWith("/admin/students") || currentPath.startsWith("/admin/teachers");
+
+    if (adminToken && currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
       localStorage.setItem("token", adminToken);
       localStorage.setItem("role", "admin");
       localStorage.removeItem("admin_token");

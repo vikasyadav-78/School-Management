@@ -91,7 +91,7 @@ export default function SchoolPostDetailPage({ params }) {
             <div className="space-y-3">
               <div>
                 <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Description Body</span>
-                <p className="text-zinc-650 font-semibold leading-relaxed whitespace-pre-line mt-1">
+                <p className="text-zinc-600 font-semibold leading-relaxed whitespace-pre-line mt-1">
                   {detail.body || "No text description provided for this post."}
                 </p>
               </div>

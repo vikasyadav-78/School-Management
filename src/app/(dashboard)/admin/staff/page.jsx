@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
@@ -24,7 +25,10 @@ import {
 } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 
-export default function AdminStaffPage() {
+function StaffManagementContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
   const [staffList, setStaffList] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, per_page: 30, total: 0 });
   const [meta, setMeta] = useState(null);
@@ -258,17 +262,8 @@ export default function AdminStaffPage() {
     }
   };
 
-  const handleOpenDetail = async (staff) => {
-    try {
-      setListLoading(true);
-      const detailed = await getAdminStaffDetail(staff.id);
-      setActiveStaff(detailed.staff || detailed.data || detailed);
-      setIsDetailModalOpen(true);
-    } catch (err) {
-      toast.error("Failed to get staff details: " + (err.message || err));
-    } finally {
-      setListLoading(false);
-    }
+  const handleOpenDetail = (staff) => {
+    router.push(`/admin/staff/profile/${staff.id}`);
   };
 
   const handleToggleStatus = async (staff) => {
@@ -307,42 +302,20 @@ export default function AdminStaffPage() {
   };
 
   const handleOpenIdCard = async (staff) => {
+    const rawUrl = staff.id_card_url || `/admin/staff/${staff.id}/id-card?format=print`;
     try {
-      setTargetStaffIdCard(staff);
-      setLoadingIdCard(true);
-      setIsIdCardModalOpen(true);
-      const idCard = await getAdminStaffIdCard(staff.id, { theme: selectedTheme, format: "json" });
-      setIdCardData(idCard.data || idCard);
-    } catch (err) {
-      toast.error("Failed to load ID card profile: " + (err.message || err));
-    } finally {
-      setLoadingIdCard(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isIdCardModalOpen && targetStaffIdCard) {
-      const reloadIdCardTheme = async () => {
-        try {
-          setLoadingIdCard(true);
-          const idCard = await getAdminStaffIdCard(targetStaffIdCard.id, { theme: selectedTheme, format: "json" });
-          setIdCardData(idCard.data || idCard);
-        } catch (err) {
-          console.warn("Failed to reload card theme:", err);
-        } finally {
-          setLoadingIdCard(false);
-        }
-      };
-      reloadIdCardTheme();
-    }
-  }, [selectedTheme]);
-
-  const handlePrintIdCard = async () => {
-    if (!targetStaffIdCard) return;
-    try {
-      toast.loading("Generating print layout...", { id: "print-id-card" });
-      const printUrl = `/admin/staff/${targetStaffIdCard.id}/id-card?theme=${selectedTheme}&format=print`;
-      const response = await api.get(printUrl, { responseType: "blob" });
+      toast.loading("Loading official ID Card...", { id: "load-id-card" });
+      
+      let requestPath = rawUrl;
+      if (rawUrl.includes("://")) {
+        const urlObj = new URL(rawUrl);
+        requestPath = urlObj.pathname + urlObj.search;
+      }
+      
+      // Strip leading "/api" or "api" because Axios instance already prefixes it
+      requestPath = requestPath.replace(/^\/?api\//, "/");
+      
+      const response = await api.get(requestPath, { responseType: "blob" });
       const blob = new Blob([response.data], { type: response.headers["content-type"] || "text/html" });
       const blobUrl = window.URL.createObjectURL(blob);
       const newTab = window.open(blobUrl, "_blank");
@@ -351,11 +324,13 @@ export default function AdminStaffPage() {
       } else {
         toast.error("Popup blocked! Please allow popups for this site.");
       }
-      toast.dismiss("print-id-card");
+      toast.dismiss("load-id-card");
     } catch (err) {
-      toast.error("Failed to load print layout: " + (err.message || err), { id: "print-id-card" });
+      toast.error("Failed to load ID Card: " + (err.message || err), { id: "load-id-card" });
     }
   };
+
+
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -657,7 +632,7 @@ export default function AdminStaffPage() {
                               className="p-1.5 hover:bg-violet-50 rounded-lg text-violet-600 hover:text-violet-750 transition-colors cursor-pointer"
                               title="View Staff ID Card"
                             >
-                              <FaIdCard className="w-4 h-4" />
+                              <FaIdCard className="w-6 h-6" />
                             </button>
                             <button
                               onClick={() => handleOpenDetail(staff)}
@@ -1302,149 +1277,16 @@ export default function AdminStaffPage() {
           </div>
         )}
 
-        {/* ID Card Viewer Modal */}
-        {isIdCardModalOpen && targetStaffIdCard && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
-                <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-                  <FaIdCard className="text-violet-500" /> Staff Identity Badge
-                </h3>
-                <button 
-                  onClick={() => setIsIdCardModalOpen(false)}
-                  className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
-                >
-                  <FaTimes className="w-4 h-4" />
-                </button>
-              </div>
 
-              <div className="p-6 space-y-6 flex-1 overflow-y-auto max-h-[70vh] custom-scrollbar flex flex-col items-center">
-                {/* Theme Selector */}
-                <div className="w-full flex items-center justify-between gap-4 p-3 bg-zinc-50 border border-zinc-100 rounded-xl">
-                  <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wider block">ID Card Theme</span>
-                  <select
-                    value={selectedTheme}
-                    onChange={(e) => setSelectedTheme(e.target.value)}
-                    className="px-3 py-1 border border-zinc-200 rounded-xl bg-white outline-none text-xs font-bold text-zinc-700 cursor-pointer"
-                  >
-                    <option value="classic">Classic</option>
-                    <option value="wave">Wave</option>
-                    <option value="green">Emerald Green</option>
-                    <option value="navy">Navy Dark</option>
-                  </select>
-                </div>
-
-                {loadingIdCard ? (
-                  <div className="flex items-center justify-center h-72">
-                    <PageLoader />
-                  </div>
-                ) : idCardData ? (
-                  <div className={`w-[290px] h-[435px] shrink-0 ${getThemeBackground()} rounded-2xl border ${getThemeBorder()} shadow-xl relative overflow-hidden flex flex-col justify-between`}>
-                    {/* Decorative Header Bar */}
-                    <div className="bg-[#111e3b] px-4 py-3 text-center text-white shrink-0 relative flex items-center justify-between border-b border-t border-[#81c784]">
-                      <div className="flex items-center gap-1.5 text-left">
-                        {idCardData.school?.logo && (
-                          <img src={idCardData.school.logo} alt="Logo" className="w-5 h-5 object-contain rounded-full bg-white p-0.5" />
-                        )}
-                        <div>
-                          <span className="text-[9px] font-extrabold uppercase tracking-wide block text-white select-none truncate max-w-[150px]">
-                            {idCardData.school?.name || "SCHOOL ACADEMY"}
-                          </span>
-                          <span className="text-[6px] text-zinc-300 font-bold uppercase tracking-widest block">STAFF IDENTITY CARD</span>
-                        </div>
-                      </div>
-                      <div className="text-[6px] px-1 py-0.5 bg-[#81c784] text-zinc-950 font-black rounded uppercase tracking-wider">
-                        Active
-                      </div>
-                    </div>
-
-                    {/* Body Content */}
-                    <div className="p-4 flex-1 flex flex-col items-center justify-center text-center space-y-2.5">
-                      {/* Photo */}
-                      <div className="relative w-16 h-16 rounded-full bg-zinc-100 border-4 border-[#81c784] overflow-hidden shadow-md flex items-center justify-center shrink-0">
-                        {idCardData.staff?.photo ? (
-                          <img src={idCardData.staff.photo} alt="Photo" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400 font-extrabold text-2xl">
-                            {(idCardData.staff?.full_name || "S").charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Name & Title */}
-                      <div>
-                        <h4 className="font-extrabold text-zinc-900 text-xs tracking-tight">
-                          {idCardData.staff?.full_name}
-                        </h4>
-                        <span className="inline-block mt-0.5 px-2.5 py-0.5 bg-[#81c784]/20 border border-[#81c784] text-[#2e7d32] rounded-full text-[7px] font-extrabold uppercase tracking-wider">
-                          {idCardData.staff?.designation || "Staff Member"}
-                        </span>
-                      </div>
-
-                      {/* Key Attributes List */}
-                      <div className="w-full space-y-1 text-[8px] text-zinc-550 font-bold px-2 pt-2 border-t border-zinc-100 text-left">
-                        <div className="flex justify-between">
-                          <span className="text-zinc-400">Emp ID</span>
-                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.employee_id || "—"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-400">Phone</span>
-                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.phone || "—"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-400">Dept.</span>
-                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.department || "—"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-400">Joining</span>
-                          <span className="text-zinc-800 font-extrabold">{idCardData.staff?.joining_date_label || idCardData.staff?.joining_date || "—"}</span>
-                        </div>
-                      </div>
-
-                      {/* QR Code */}
-                      {idCardData.qr_image ? (
-                        <div className="shrink-0 bg-white p-1 rounded-lg shadow-inner border border-zinc-100 flex items-center justify-center aspect-square w-12">
-                          <img src={idCardData.qr_image} alt="QR ID lookup" className="w-10 h-10" />
-                        </div>
-                      ) : (
-                        <div className="h-2" />
-                      )}
-                    </div>
-
-                    {/* Bottom Address Footer */}
-                    <div className="bg-[#111e3b] text-white py-2 px-3 text-center shrink-0 border-t-2 border-[#81c784]">
-                      <div className="text-[6px] font-bold text-zinc-300 truncate">
-                        {idCardData.school?.address || "Jaipur, Rajasthan, India"}
-                      </div>
-                      <div className="text-[6px] font-black text-white mt-0.5">
-                        📞 {idCardData.school?.phone || "8484848484"}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center font-bold text-zinc-400 italic">Failed to render card preview.</div>
-                )}
-              </div>
-
-              <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between shrink-0">
-                <button
-                  onClick={handlePrintIdCard}
-                  disabled={!idCardData}
-                  className="px-4 py-2 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
-                >
-                  <FaPrint className="w-3.5 h-3.5" /> Print Card
-                </button>
-                <button 
-                  onClick={() => setIsIdCardModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold rounded-xl cursor-pointer transition-colors"
-                >
-                  Close Viewer
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function AdminStaffPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><PageLoader /></div>}>
+      <StaffManagementContent />
+    </Suspense>
   );
 }

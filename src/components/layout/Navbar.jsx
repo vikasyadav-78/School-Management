@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FaBars, FaBell, FaSearch, FaUserCircle, FaSignOutAlt, FaTimes } from "react-icons/fa";
+import { FaBars, FaBell, FaSearch, FaUserCircle, FaSignOutAlt, FaTimes, FaArrowLeft } from "react-icons/fa";
 import { logoutUser } from "@/features/auth/redux/moduleSlice";
 import { APP_CONFIG } from "@/constants/appConfig";
 import Link from "next/link";
@@ -93,6 +93,18 @@ export default function Navbar() {
     dispatch(logoutUser());
   };
 
+  const handleBackToAdmin = () => {
+    if (typeof window !== "undefined") {
+      const adminToken = localStorage.getItem("admin_token");
+      if (adminToken) {
+        localStorage.setItem("token", adminToken);
+        localStorage.setItem("role", "admin");
+        localStorage.removeItem("admin_token");
+        window.location.href = "/admin/dashboard";
+      }
+    }
+  };
+
   const dummyNotifications = [
     { id: 1, title: "New Student Enrolled", time: "5 mins ago", desc: "Alice Johnson registered in Class 10." },
     { id: 2, title: "Fee Collection Success", time: "2 hrs ago", desc: "Bob Smith paid tuition fees." },
@@ -178,6 +190,16 @@ export default function Navbar() {
 
       {/* Notifications & Profile dropdown */}
       <div className="flex items-center gap-4">
+        {/* Back to School Admin */}
+        {typeof window !== "undefined" && localStorage.getItem("admin_token") && (
+          <button
+            onClick={handleBackToAdmin}
+            className="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-extrabold rounded-xl py-2 px-3 text-[10px] cursor-pointer flex items-center justify-center gap-1 transition-all uppercase tracking-wider shadow-sm animate-pulse mr-2"
+          >
+            <FaArrowLeft className="w-3 h-3 text-amber-600 animate-bounce" /> Back to School Admin
+          </button>
+        )}
+
         {/* Notifications */}
         <div className="relative">
           <button

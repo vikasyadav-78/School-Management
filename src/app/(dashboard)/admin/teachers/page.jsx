@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import PageHeader from "@/components/common/PageHeader";
@@ -10,7 +10,7 @@ import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
   FaPlus, FaTimes, FaChalkboardTeacher, FaEdit, FaToggleOn, FaToggleOff, FaUser, FaPhone, 
-  FaGraduationCap, FaEye, FaCheckCircle, FaTrash, FaSignInAlt, FaFolder, FaIdCard
+  FaGraduationCap, FaEye, FaCheckCircle, FaTrash, FaSignInAlt, FaFolder, FaIdCard, FaSearch
 } from "react-icons/fa";
 import { 
   getTeacherTeachersMeta,
@@ -33,7 +33,39 @@ function TeacherManagementContent() {
   const searchParams = useSearchParams();
   const dialog = useAppDialog();
   const editId = searchParams.get("edit");
+  const processedEditIdRef = useRef(null);
   const [teachersList, setTeachersList] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const filteredTeachers = useMemo(() => {
+    return teachersList.filter((t) => {
+      // 1. Search Query Filter
+      const searchLower = searchQuery.toLowerCase().trim();
+      const fullName = (t.full_name || `${t.first_name || ""} ${t.last_name || ""}`).toLowerCase();
+      const empId = (t.employee_id || "").toLowerCase();
+      const emailVal = (t.email || "").toLowerCase();
+      const phoneVal = (t.phone || "").toLowerCase();
+
+      const matchesSearch = 
+        !searchLower || 
+        fullName.includes(searchLower) || 
+        empId.includes(searchLower) || 
+        emailVal.includes(searchLower) || 
+        phoneVal.includes(searchLower);
+
+      // 2. Status Filter
+      let matchesStatus = true;
+      if (statusFilter === "active") {
+        matchesStatus = t.is_active === true || t.is_active === 1;
+      } else if (statusFilter === "inactive") {
+        matchesStatus = t.is_active === false || t.is_active === 0;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [teachersList, searchQuery, statusFilter]);
+
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
@@ -98,16 +130,113 @@ function TeacherManagementContent() {
     }
   };
 
+  const handleExport = async (format) => {
+    try {
+      toast.loading(`Preparing ${format.toUpperCase()} export...`, { id: "export-teachers" });
+
+      if (filteredTeachers.length === 0) {
+        toast.error("No teacher data available to export.", { id: "export-teachers" });
+        return;
+      }
+
+      const headers = [
+        "Full Name", "Employee ID", "Email", "Phone", "Gender", 
+        "Date of Birth", "Qualification", "Specialization", 
+        "Joining Date", "Salary", "Experience", "Previous Schools", 
+        "Address", "Bank Account Holder", "Bank Name", 
+        "Account Number", "IFSC Code", "Account Type", "PAN Number"
+      ];
+
+      const worksheetData = [headers];
+
+      filteredTeachers.forEach(t => {
+        worksheetData.push([
+          t.full_name || `${t.first_name || ""} ${t.last_name || ""}`.trim() || "—",
+          t.employee_id || "—",
+          t.email || "—",
+          t.phone || "—",
+          t.gender || "—",
+          t.date_of_birth || "—",
+          t.qualification || "—",
+          t.specialization || "—",
+          t.joining_date || "—",
+          t.salary || "—",
+          t.total_experience || "—",
+          t.previous_schools || "—",
+          t.address || "—",
+          t.account_holder_name || "—",
+          t.bank_name || "—",
+          t.account_number || "—",
+          t.ifsc_code || "—",
+          t.account_type || "—",
+          t.pan_number || "—"
+        ]);
+      });
+
+      if (format === "excel") {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+        const maxLen = worksheetData[0].map((_, colIdx) => 
+          Math.max(...worksheetData.map(row => String(row[colIdx] || "").length))
+        );
+        worksheet["!cols"] = maxLen.map(len => ({ wch: Math.max(len + 3, 12) }));
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Teachers Roster");
+        XLSX.writeFile(workbook, "Teachers_Roster_Export.xlsx");
+        toast.success("Excel exported successfully!", { id: "export-teachers" });
+      } else if (format === "pdf") {
+        const { default: jsPDF } = await import("jspdf");
+        const { default: autoTable } = await import("jspdf-autotable");
+
+        const doc = new jsPDF("l", "mm", "a3");
+        
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("Teachers Roster List", 14, 15);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Exported: ${new Date().toLocaleDateString()}`, 14, 21);
+
+        autoTable(doc, {
+          startY: 26,
+          head: [headers],
+          body: worksheetData.slice(1),
+          theme: "grid",
+          headStyles: { fillColor: [79, 70, 229], halign: "center", valign: "middle" },
+          styles: { fontSize: 8, halign: "center", valign: "middle" },
+          columnStyles: {
+            0: { halign: "left" }
+          }
+        });
+
+        doc.save("Teachers_Roster_Export.pdf");
+        toast.success("PDF exported successfully!", { id: "export-teachers" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed: " + (err.message || err), { id: "export-teachers" });
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
 
   useEffect(() => {
     if (editId && teachersList.length > 0) {
-      const matched = teachersList.find(t => t.id === editId);
-      if (matched) {
-        handleOpenEdit(matched);
+      if (processedEditIdRef.current !== editId) {
+        const matched = teachersList.find(t => t.id === editId);
+        if (matched) {
+          processedEditIdRef.current = editId;
+          handleOpenEdit(matched);
+        }
       }
+    } else if (!editId) {
+      processedEditIdRef.current = null;
     }
   }, [editId, teachersList]);
 
@@ -159,6 +288,15 @@ function TeacherManagementContent() {
   const handleOpenAdd = () => {
     resetForm();
     setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingTeacherId(null);
+    resetForm();
+    if (editId) {
+      router.replace("/admin/teachers");
+    }
   };
 
   const handleOpenPreview = async (t) => {
@@ -263,7 +401,7 @@ function TeacherManagementContent() {
         toast.success("New teacher profile created!");
       }
 
-      setIsModalOpen(false);
+      handleCloseModal();
       refreshList();
     } catch (err) {
       setFormError(err.response?.data?.message || err.message || "Failed to save teacher.");
@@ -307,7 +445,7 @@ function TeacherManagementContent() {
       const resultAction = await dispatch(impersonateTeacherUser(teacherId));
       if (impersonateTeacherUser.fulfilled.match(resultAction)) {
         toast.success("Logged in as teacher successfully!");
-        router.push("/teacher/dashboard");
+        window.location.href = "/teacher/dashboard";
       } else {
         toast.error(resultAction.payload || "Failed to login as teacher.");
       }
@@ -370,22 +508,69 @@ function TeacherManagementContent() {
           title="Teacher Roster Management"
           subtitle="Add new faculty teachers, update qualifications, and manage active status."
         />
-        <button
-          onClick={handleOpenAdd}
-          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
-        >
-          <FaPlus className="w-3.5 h-3.5" /> Add New Teacher
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => handleExport("excel")}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            Export Excel
+          </button>
+          <button
+            onClick={() => handleExport("pdf")}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <FaPlus className="w-3.5 h-3.5" /> Add New Teacher
+          </button>
+        </div>
+      </div>
+
+      {/* Search and Status Filter Row */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
+        <h2 className="text-sm font-bold text-zinc-800">Teacher Directory</h2>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-60">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+              <FaSearch className="w-3.5 h-3.5" />
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, ID, email..."
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
+            />
+          </div>
+
+          {/* Status Dropdown */}
+          <div className="relative w-full sm:w-40">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs text-zinc-705 cursor-pointer font-semibold text-zinc-700"
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Roster Listing Grid */}
       {listLoading ? (
         <div className="flex items-center justify-center py-20"><PageLoader /></div>
-      ) : teachersList.length === 0 ? (
-        <EmptyState title="No Teachers Found" desc="Add faculty teachers to your school roster." />
+      ) : filteredTeachers.length === 0 ? (
+        <EmptyState title="No Teachers Found" desc="Refine your search/filter parameters or add faculty teachers." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teachersList.map((t) => (
+          {filteredTeachers.map((t) => (
             <div 
               key={t.id} 
               onClick={() => handleOpenPreview(t)}
@@ -506,7 +691,7 @@ function TeacherManagementContent() {
                 <FaChalkboardTeacher className="text-violet-500" />
                 {editingTeacherId ? "Modify Teacher Profile" : "Create New Teacher Record"}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+              <button onClick={handleCloseModal} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar text-xs text-zinc-600 font-semibold">
@@ -672,7 +857,7 @@ function TeacherManagementContent() {
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-zinc-100 text-zinc-600 font-bold rounded-xl text-xs hover:bg-zinc-200 transition-colors">Cancel</button>
+                <button type="button" onClick={handleCloseModal} className="px-4 py-2 bg-zinc-100 text-zinc-600 font-bold rounded-xl text-xs hover:bg-zinc-200 transition-colors">Cancel</button>
                 <button type="submit" disabled={submitting} className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm">
                   {submitting ? "Saving..." : "Save Teacher"}
                 </button>

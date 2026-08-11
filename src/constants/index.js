@@ -3,102 +3,117 @@ export const USE_MOCK = false;
 export const ADMIN_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/admin/dashboard", icon: "MdDashboard" },
   {
-    title: "Teachers", path: "/admin/teachers", icon: "FaChalkboardTeacher",
-    submenu: [
-      { title: "All Teachers", path: "/admin/teachers" },
-      { title: "Add Teacher", path: "/admin/teachers/add" }
-    ]
-  },
-  {
-    title: "Students", path: "/admin/students", icon: "FaUserGraduate",
+    title: "Students",
+    path: "/admin/students",
+    icon: "FaUserGraduate",
     submenu: [
       { title: "All Students", path: "/admin/students" },
       { title: "Add Student", path: "/admin/students/add" },
-      { title: "Allocation & Transfer", path: "/admin/students/allocation" }
+      { title: "Allocation & Transfer", path: "/admin/students/allocation" },
+      { title: "Subjects", path: "/admin/subjects" }
     ]
   },
   {
-    title: "Classes & Sections", path: "/admin/classes", icon: "FaChalkboard"
-  },
-  {
-    title: "Subject Management", path: "/admin/subjects", icon: "FaBook"
-  },
-  {
-    title: "Staff Management", path: "/admin/staff", icon: "FaUsers"
-  },
-  {
-    title: "Attendance", path: "/admin/attendance", icon: "FaCalendarTimes",
+    title: "Staff",
+    path: "/admin/teachers",
+    icon: "FaUsers",
     submenu: [
-      { title: "Mark Attendance", path: "/admin/attendance" },
-      { title: "Attendance Reports", path: "/admin/attendance/reports" }
+      { title: "Teachers", path: "/admin/teachers" },
+      { title: "Staff Management", path: "/admin/staff" },
+      { title: "Payroll", path: "/admin/finance/teacher-salaries" }
     ]
   },
   {
-    title: "Finance Management", path: "/admin/finance", icon: "FaMoneyBillWave",
+    title: "Academics",
+    path: "/admin/classes",
+    icon: "FaGraduationCap",
+    submenu: [
+      { title: "Classes & Sections", path: "/admin/classes" },
+      {
+        title: "Attendance",
+        path: "/admin/attendance",
+        submenu: [
+          { title: "Mark Attendance", path: "/admin/attendance" },
+          { title: "Attendance Reports", path: "/admin/attendance/reports" }
+        ]
+      },
+      {
+        title: "Homework",
+        path: "/admin/homework",
+        submenu: [
+          { title: "Homework List", path: "/admin/homework" },
+          { title: "Reports", path: "/admin/homework/reports" }
+        ]
+      },
+      { title: "Class Notes", path: "/admin/class-notes" },
+      {
+        title: "Exams",
+        path: "/admin/exams",
+        submenu: [
+          { title: "Exams", path: "/admin/exams" },
+          { title: "Reports", path: "/admin/exams/reports" }
+        ]
+      },
+      {
+        title: "Online MCQ Exams",
+        path: "/admin/online-mcq",
+        submenu: [
+          { title: "Exams", path: "/admin/online-mcq" },
+          { title: "Reports", path: "/admin/online-mcq/reports" }
+        ]
+      },
+      {
+        title: "Live Classes",
+        path: "/admin/live-classes",
+        submenu: [
+          { title: "Live Classes", path: "/admin/live-classes" },
+          { title: "Reports", path: "/admin/live-classes/reports" }
+        ]
+      },
+      { title: "Timetable Management", path: "/admin/timetable" },
+      { title: "Academic Sessions", path: "/admin/academic-years" }
+    ]
+  },
+  {
+    title: "Finance",
+    path: "/admin/finance/student-fees",
+    icon: "FaMoneyBillWave",
     submenu: [
       { title: "Student Fees", path: "/admin/finance/student-fees" },
-      { title: "Payroll Management", path: "/admin/finance/teacher-salaries" },
       { title: "Finance Reports", path: "/admin/finance/reports" }
     ]
   },
-  { title: "Academic Sessions", path: "/admin/academic-years", icon: "FaCalendarAlt" },
-  { title: "Timetable Management", path: "/admin/timetable", icon: "FaCalendarCheck" },
-  { title: "Class Notes", path: "/admin/class-notes", icon: "FaFileAlt" },
   {
-    title: "Homework",
-    path: "/admin/homework",
-    icon: "FaBookOpen",
+    title: "Resources",
+    path: "/admin/shared-notes",
+    icon: "FaBook",
     submenu: [
-      { title: "Homework List", path: "/admin/homework" },
-      { title: "Reports", path: "/admin/homework/reports" }
-    ]
-  },
-  { title: "Leave Applications", path: "/admin/leaves", icon: "FaFileAlt" },
-  { title: "Shared Notes & Papers", path: "/admin/shared-notes", icon: "FaBook" },
-  {
-    title: "Live Classes",
-    path: "/admin/live-classes",
-    icon: "FaVideo",
-    submenu: [
-      { title: "Live Classes", path: "/admin/live-classes" },
-      { title: "Reports", path: "/admin/live-classes/reports" }
+      { title: "Shared Notes & Papers", path: "/admin/shared-notes" },
+      { title: "Notices Board", path: "/admin/notices" },
+      { title: "School Posts", path: "/admin/posts" },
+      { title: "Certificates", path: "/admin/certificates" }
     ]
   },
   {
-    title: "Online MCQ Exams",
-    path: "/admin/online-mcq",
-    icon: "FaFileAlt",
-    submenu: [
-      { title: "Exams", path: "/admin/online-mcq" },
-      { title: "Reports", path: "/admin/online-mcq/reports" }
-    ]
-  },
-  {
-    title: "Exams",
-    path: "/admin/exams",
-    icon: "FaGraduationCap",
-    submenu: [
-      { title: "Exams", path: "/admin/exams" },
-      { title: "Reports", path: "/admin/exams/reports" }
-    ]
-  },
-  { title: "Notices Board", path: "/admin/notices", icon: "FaLock" },
-  { title: "School Posts", path: "/admin/posts", icon: "FaFileAlt" },
-  { title: "Holidays", path: "/admin/holidays", icon: "FaUmbrellaBeach" },
-  { title: "Certificates", path: "/admin/certificates", icon: "FaLock" },
-  {
-    title: "Inventory",
+    title: "Operations",
     path: "/admin/inventory",
     icon: "FaBoxes",
     submenu: [
-      { title: "Dashboard", path: "/admin/inventory" },
-      { title: "Stock Items", path: "/admin/inventory/stock" },
-      { title: "Purchase Orders", path: "/admin/inventory/purchases" },
-      { title: "Student Sales", path: "/admin/inventory/sales" },
-      { title: "Reports", path: "/admin/inventory/reports" }
+      {
+        title: "Inventory",
+        path: "/admin/inventory",
+        submenu: [
+          { title: "Dashboard", path: "/admin/inventory" },
+          { title: "Stock Items", path: "/admin/inventory/stock" },
+          { title: "Purchase Orders", path: "/admin/inventory/purchases" },
+          { title: "Student Sales", path: "/admin/inventory/sales" },
+          { title: "Reports", path: "/admin/inventory/reports" }
+        ]
+      },
+      { title: "Leave Applications", path: "/admin/leaves" },
+      { title: "Holidays", path: "/admin/holidays" }
     ]
   },
-  { title: "Email", path: "/admin/email", icon: "MdEmail" },
   { title: "Profile", path: "/admin/profile", icon: "FaUser" }
 ];
 

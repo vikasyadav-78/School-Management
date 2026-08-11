@@ -289,6 +289,15 @@ export default function TeacherManageTimetablePage() {
   };
 
   const handleAutoGenerate = async () => {
+    if (!selectedClassId) {
+      toast.error("Please select a Class first to auto-generate the timetable.");
+      return;
+    }
+    if (!selectedSectionId) {
+      toast.error("Please select a Section first to auto-generate the timetable.");
+      return;
+    }
+
     const isConfirmed = await dialog.confirm({
       title: "Auto-Generate Timetable",
       message: "Are you sure you want to AI Auto-Generate the timetable schedule?",
@@ -301,7 +310,7 @@ export default function TeacherManageTimetablePage() {
       setListLoading(true);
       await autoGenerateTeacherManageTimetable({
         school_class_id: selectedClassId,
-        section_id: selectedSectionId || null
+        section_id: selectedSectionId
       });
       toast.success("Timetable auto-generated successfully!");
       fetchTimetableData();
@@ -398,9 +407,17 @@ export default function TeacherManageTimetablePage() {
               className="px-3 py-1.5 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700"
             >
               <option value="">Choose Class</option>
-              {meta?.classes?.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {meta?.classes?.map(c => {
+                const formatClassName = (name) => {
+                  if (!name) return "";
+                  const match = name.match(/class\s*-?\s*(\d+)/i);
+                  if (match) return `Class ${match[1]}`;
+                  return name;
+                };
+                return (
+                  <option key={c.id} value={c.id}>{formatClassName(c.name)}</option>
+                );
+              })}
             </select>
 
             <select

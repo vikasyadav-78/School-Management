@@ -375,7 +375,7 @@ export default function TeacherStudentAllocationPage() {
                       placeholder="Search name or ID..."
                       value={studentSearchQuery}
                       onChange={(e) => setStudentSearchQuery(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 border border-zinc-200 rounded-xl text-[10px] font-semibold outline-none focus:border-violet-500 bg-zinc-50 focus:bg-white text-black text-black"
+                      className="w-full pl-8 pr-3 py-1.5 border border-zinc-200 rounded-xl text-[10px] font-semibold outline-none focus:border-violet-500 bg-zinc-50 focus:bg-white text-black"
                     />
                   </div>
 

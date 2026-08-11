@@ -93,7 +93,7 @@ export default function AdminExamsListPage() {
       render: (row) => (
         <button
           onClick={() => handleTogglePublish(row)}
-          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
+          className={`inline-flex px-3 py-1 rounded-full text-[13px] font-bold transition-colors ${
             row.is_published
               ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
               : "bg-amber-50 text-amber-700 hover:bg-amber-100"

@@ -5,13 +5,13 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import Button from "@/components/ui/Button";
-import { 
-  FaCalendarAlt, FaUserGraduate, FaCheckCircle, FaTimesCircle, 
+import {
+  FaCalendarAlt, FaUserGraduate, FaCheckCircle, FaTimesCircle,
   FaQrcode, FaSearch, FaCheck, FaTimes, FaUserClock, FaAdjust, FaArrowLeft, FaExclamationCircle
 } from "react-icons/fa";
-import { 
-  getAttendanceClasses, 
-  getAttendanceRoster, 
+import {
+  getAttendanceClasses,
+  getAttendanceRoster,
   saveAttendanceRoster,
   qrLookup,
   qrMark
@@ -28,7 +28,7 @@ export default function StudentAttendancePage() {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
-  
+
   const [roster, setRoster] = useState([]);
   const [loading, setLoading] = useState(false);
   const [metaLoading, setMetaLoading] = useState(true);
@@ -229,7 +229,7 @@ export default function StudentAttendancePage() {
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in text-xs text-left">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <PageHeader 
+          <PageHeader
             title="Student Roster Attendance"
             subtitle="View, modify, and distribute daily student attendance logs with QR lookup validation."
           />
@@ -253,7 +253,7 @@ export default function StudentAttendancePage() {
         <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1 w-full">
             <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Attendance Date</label>
-            <input 
+            <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -268,9 +268,38 @@ export default function StudentAttendancePage() {
               onChange={handleClassChange}
               className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs text-black font-semibold outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all cursor-pointer"
             >
-              {classes.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              <option value="all">All Classes</option>
+
+              {[...(classes || [])]
+                .sort((a, b) => {
+                  const getNumericVal = (name) => {
+                    if (!name) return 999;
+
+                    const match = String(name).match(/\d+/);
+                    return match ? parseInt(match[0], 10) : 999;
+                  };
+
+                  return getNumericVal(a.name) - getNumericVal(b.name);
+                })
+                .map((cls) => {
+                  const formatClassName = (name) => {
+                    if (!name) return "";
+
+                    const match = String(name).match(/class\s*-?\s*(\d+)/i);
+
+                    if (match) {
+                      return `Class ${match[1]}`;
+                    }
+
+                    return name;
+                  };
+
+                  return (
+                    <option key={cls.id} value={cls.id}>
+                      {formatClassName(cls.name)}
+                    </option>
+                  );
+                })}
             </select>
           </div>
 
@@ -340,7 +369,7 @@ export default function StudentAttendancePage() {
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
                   <FaSearch className="w-3.5 h-3.5" />
                 </span>
-                <input 
+                <input
                   type="text"
                   placeholder="Search student name or ADM code..."
                   value={searchTerm}
@@ -406,9 +435,8 @@ export default function StudentAttendancePage() {
                               <button
                                 key={opt.key}
                                 onClick={() => handleStatusChange(student.id, opt.key)}
-                                className={`w-8 h-8 rounded-lg border font-bold text-[10px] uppercase transition-all flex items-center justify-center cursor-pointer ${
-                                  active ? opt.activeBg : `${opt.bg} hover:scale-105`
-                                }`}
+                                className={`w-8 h-8 rounded-lg border font-bold text-[10px] uppercase transition-all flex items-center justify-center cursor-pointer ${active ? opt.activeBg : `${opt.bg} hover:scale-105`
+                                  }`}
                                 title={opt.key.toUpperCase()}
                               >
                                 {opt.label}
@@ -468,7 +496,7 @@ export default function StudentAttendancePage() {
                 <form onSubmit={handleQrLookup} className="space-y-2">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Scan QR Code / Code ID Input</label>
                   <div className="flex gap-2">
-                    <input 
+                    <input
                       type="text"
                       required
                       placeholder="Scan qr code or enter code (e.g. STU-001)"

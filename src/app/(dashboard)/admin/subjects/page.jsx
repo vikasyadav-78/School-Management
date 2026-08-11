@@ -455,7 +455,7 @@ export default function AdminSubjectsPage() {
                 {classes.length === 0 ? (
                   <p className="text-[10px] text-zinc-400 italic">No classes configured. Please create classes first.</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 bg-zinc-55 border border-zinc-155 p-3 rounded-xl max-h-[140px] overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-2 bg-zinc-55 border border-zinc-155 p-3 rounded-xl max-h-[140px] overflow-y-auto text-black">
                     {classes.map((cls) => {
                       const isChecked = selectedClassIds.includes(cls.id);
                       return (
@@ -492,7 +492,7 @@ export default function AdminSubjectsPage() {
                 <button
                   type="button"
                   onClick={() => setIsFormModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-655 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>

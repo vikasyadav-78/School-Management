@@ -96,7 +96,7 @@ export default function ClassWiseReportsPage() {
                     <th className="px-6 py-3.5 text-right">Notes Count</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 text-zinc-650 font-bold">
+                <tbody className="divide-y divide-zinc-100 text-zinc-600 font-bold">
                   {currentItems.map((r, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                       <td className="px-6 py-3.5 capitalize flex items-center gap-2">

@@ -123,7 +123,7 @@ export default function StudentAttendanceReportsPage() {
               placeholder="Search by student name..."
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 font-semibold"
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 font-semibold text-black"
             />
           </div>
 
@@ -223,7 +223,7 @@ export default function StudentAttendanceReportsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-3.5 font-semibold text-zinc-600">
-                          {rec.class} • Section {rec.section || "A"}
+                          {rec.name || "Class N/A"} • Section {rec.section_name || "N/A"}
                         </td>
                         <td className="px-6 py-3.5">
                           <div className="flex justify-center">

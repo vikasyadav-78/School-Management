@@ -264,7 +264,7 @@ export default function SchoolPostsPage() {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/admin/posts/${post.id}`}
-                      className="flex-1 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-650 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all text-[10px] uppercase tracking-wider cursor-pointer"
+                      className="flex-1 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-600 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all text-[10px] uppercase tracking-wider cursor-pointer"
                     >
                       <FaEye className="w-3 h-3" /> Inspect
                     </Link>

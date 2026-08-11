@@ -607,7 +607,7 @@ export default function TeacherSalariesPage() {
                           ₹{net.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-center whitespace-nowrap">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider whitespace-nowrap ${
+                          <span className={`inline-flex px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${
                             isPaid ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-amber-50 border-amber-100 text-amber-600"
                           }`}>
                             {p.status || "Pending"}
@@ -617,7 +617,7 @@ export default function TeacherSalariesPage() {
                           <div className="flex items-center justify-center gap-1.5 flex-nowrap whitespace-nowrap">
                             <button
                               onClick={() => handleViewDetails(p)}
-                              className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-[9px] rounded-lg cursor-pointer transition-all"
+                              className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-[12px] rounded-lg cursor-pointer transition-all"
                             >
                               View
                             </button>
@@ -625,13 +625,13 @@ export default function TeacherSalariesPage() {
                               <>
                                 <button
                                   onClick={() => handleOpenDeductions(p)}
-                                  className="px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold text-[9px] rounded-lg cursor-pointer transition-all border border-violet-100 whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold text-[12px] rounded-lg cursor-pointer transition-all border border-violet-100 whitespace-nowrap"
                                 >
                                   Deduction
                                 </button>
                                 <button
                                   onClick={() => handleOpenMarkPaid(p)}
-                                  className="px-2.5 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-[9px] rounded-lg cursor-pointer transition-all shadow-sm whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-[12px] rounded-lg cursor-pointer transition-all shadow-sm whitespace-nowrap"
                                 >
                                   Pay Salary
                                 </button>
@@ -640,13 +640,13 @@ export default function TeacherSalariesPage() {
                               <>
                                 <button
                                   onClick={() => handlePrintReceipt(p.id)}
-                                  className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-[12px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
                                 >
                                   <FaPrint className="w-2.5 h-2.5" /> Print
                                 </button>
                                 <button
                                   onClick={() => handleDownloadReceipt(p.id)}
-                                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[9px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
+                                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[12px] rounded-lg cursor-pointer flex items-center gap-1 transition-all whitespace-nowrap"
                                 >
                                   <FaDownload className="w-2.5 h-2.5" /> PDF
                                 </button>

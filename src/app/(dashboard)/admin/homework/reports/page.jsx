@@ -111,28 +111,28 @@ export default function AdminHomeworkReportsPage() {
         </div>
 
         {/* Tab Headers */}
-        <div className="bg-white border border-zinc-250 p-1.5 rounded-2xl shadow-sm flex flex-wrap gap-1">
+        <div className="bg-white border border-zinc-200 p-1.5 rounded-2xl shadow-sm flex flex-wrap gap-1">
           <button
             onClick={() => setActiveTab("class")}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "class" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-650"}`}
+            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "class" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-600"}`}
           >
             <FaChalkboard className="w-3.5 h-3.5" /> Class Reports
           </button>
           <button
             onClick={() => setActiveTab("teacher")}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "teacher" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-650"}`}
+            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "teacher" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-600"}`}
           >
             <FaUser className="w-3.5 h-3.5" /> Teacher Reports
           </button>
           <button
             onClick={() => setActiveTab("student")}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "student" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-650"}`}
+            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "student" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-600"}`}
           >
             <FaClipboardList className="w-3.5 h-3.5" /> Student Reports
           </button>
           <button
             onClick={() => setActiveTab("monthly")}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "monthly" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-650"}`}
+            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${activeTab === "monthly" ? "bg-violet-600 text-white shadow-sm" : "hover:bg-zinc-50 text-zinc-600"}`}
           >
             <FaCalendarAlt className="w-3.5 h-3.5" /> Monthly Summary
           </button>
@@ -222,7 +222,7 @@ export default function AdminHomeworkReportsPage() {
                 {activeTab === "class" && (
                   <>
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-150 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
                         <th className="px-6 py-4">Class</th>
                         <th className="px-6 py-4">Section</th>
                         <th className="px-6 py-4 text-center">Homework Count</th>
@@ -234,7 +234,7 @@ export default function AdminHomeworkReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-zinc-100 text-xs font-semibold text-zinc-700">
                       {dataRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-55/50 transition-colors">
+                        <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                           <td className="px-6 py-4 font-bold text-zinc-800">{row.class?.name}</td>
                           <td className="px-6 py-4">Section {row.section?.name}</td>
                           <td className="px-6 py-4 text-center font-extrabold">{row.homework_count}</td>
@@ -242,7 +242,7 @@ export default function AdminHomeworkReportsPage() {
                           <td className="px-6 py-4 text-center font-extrabold text-emerald-600">{row.submissions}</td>
                           <td className="px-6 py-4 text-center text-zinc-500">{row.expected}</td>
                           <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black bg-violet-50 text-violet-650 border border-violet-100">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black bg-violet-50 text-violet-600 border border-violet-100">
                               {row.completion_rate}%
                             </span>
                           </td>
@@ -256,7 +256,7 @@ export default function AdminHomeworkReportsPage() {
                 {activeTab === "teacher" && (
                   <>
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-150 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
                         <th className="px-6 py-4">Teacher Name</th>
                         <th className="px-6 py-4">Employee ID</th>
                         <th className="px-6 py-4 text-center">Homework Assigned</th>
@@ -266,13 +266,13 @@ export default function AdminHomeworkReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-zinc-100 text-xs font-semibold text-zinc-700">
                       {dataRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-55/50 transition-colors">
-                          <td className="px-6 py-4 font-bold text-zinc-805">{row.teacher?.full_name}</td>
+                        <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-zinc-800">{row.teacher?.full_name}</td>
                           <td className="px-6 py-4 text-zinc-500 uppercase">{row.teacher?.employee_id || "N/A"}</td>
                           <td className="px-6 py-4 text-center font-extrabold">{row.homework_count}</td>
                           <td className="px-6 py-4 text-center font-extrabold text-emerald-600">{row.submission_count}</td>
                           <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-650 border border-violet-100 uppercase">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-600 border border-violet-100 uppercase">
                               {row.graded_count} Graded
                             </span>
                           </td>
@@ -286,7 +286,7 @@ export default function AdminHomeworkReportsPage() {
                 {activeTab === "student" && (
                   <>
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-150 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
                         <th className="px-6 py-4">Student Info</th>
                         <th className="px-6 py-4">Class Room</th>
                         <th className="px-6 py-4 text-center">Assigned Homework</th>
@@ -297,7 +297,7 @@ export default function AdminHomeworkReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-zinc-100 text-xs font-semibold text-zinc-700">
                       {dataRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-55/50 transition-colors">
+                        <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                           <td className="px-6 py-4">
                             <div>
                               <span className="font-bold text-zinc-800 block">{row.student?.full_name}</span>
@@ -311,7 +311,7 @@ export default function AdminHomeworkReportsPage() {
                           <td className="px-6 py-4 text-center font-extrabold text-emerald-600">{row.submitted}</td>
                           <td className="px-6 py-4 text-center text-amber-600 font-extrabold">{row.pending}</td>
                           <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-650 border border-violet-100 uppercase">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-600 border border-violet-100 uppercase">
                               {row.graded} Graded
                             </span>
                           </td>
@@ -325,7 +325,7 @@ export default function AdminHomeworkReportsPage() {
                 {activeTab === "monthly" && (
                   <>
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-150 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
                         <th className="px-6 py-4">Month</th>
                         <th className="px-6 py-4 text-center">Homework Count</th>
                         <th className="px-6 py-4 text-center">Submissions Received</th>
@@ -334,12 +334,12 @@ export default function AdminHomeworkReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-zinc-100 text-xs font-semibold text-zinc-700">
                       {dataRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-55/50 transition-colors">
+                        <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                           <td className="px-6 py-4 font-bold text-zinc-800">{row.label}</td>
                           <td className="px-6 py-4 text-center font-extrabold">{row.homework_count}</td>
                           <td className="px-6 py-4 text-center font-extrabold text-emerald-600">{row.submission_count}</td>
                           <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-605 border border-violet-100 uppercase">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-600 border border-violet-100 uppercase">
                               {row.graded_count} Graded
                             </span>
                           </td>

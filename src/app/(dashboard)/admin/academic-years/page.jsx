@@ -242,11 +242,11 @@ export default function TeacherAcademicYearsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       {year.is_current ? (
-                        <span className="inline-flex px-2.5 py-0.5 text-[8px] font-extrabold rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-wider">
+                        <span className="inline-flex px-2.5 py-0.5 text-[10px] font-extrabold rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-wider">
                           Current Year
                         </span>
                       ) : (
-                        <span className="inline-flex px-2.5 py-0.5 text-[8px] font-bold rounded-lg bg-zinc-50 text-zinc-450 border border-zinc-200 uppercase tracking-wider">
+                        <span className="inline-flex px-2.5 py-0.5 text-[10px] font-bold rounded-lg bg-zinc-50 text-zinc-450 border border-zinc-200 uppercase tracking-wider">
                           Inactive
                         </span>
                       )}
@@ -264,10 +264,11 @@ export default function TeacherAcademicYearsPage() {
                           <>
                             <button
                               onClick={() => handleSetCurrent(year.id)}
-                              className="p-1 hover:bg-emerald-50 rounded-lg text-emerald-500 transition-colors"
+                              className="p-1.5 hover:bg-emerald-50 rounded-lg bg-emerald-50 text-emerald-500 transition-colors text-[12px] font-extrabold"
                               title="Set Current Year"
                             >
-                              <FaCheckCircle className="w-5 h-5" />
+                              {/* <FaCheckCircle className="w-5 h-5" /> */}
+                              Set Cureent Year
                             </button>
                             <button
                               onClick={() => handleDelete(year)}

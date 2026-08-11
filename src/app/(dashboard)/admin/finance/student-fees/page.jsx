@@ -5,10 +5,10 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
+import {
   FaSearch, FaPlus, FaTimes, FaMoneyBillWave, FaTrash, FaCheck, FaBell, FaClock, FaHistory, FaUserCheck, FaLayerGroup, FaCalendarAlt, FaChartLine, FaFilter, FaPrint
 } from "react-icons/fa";
-import { 
+import {
   getTeacherFeesMeta,
   getTeacherFees,
   getTeacherFeeStructures,
@@ -132,7 +132,7 @@ export default function AdminFeesPage() {
       if (classFilter !== "all") params.class_id = classFilter;
       if (sectionFilter !== "all") params.section_id = sectionFilter;
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      
+
       const data = await getTeacherFees(params);
       setPayments(data.payments || data.data || []);
       setStats(data.stats || null);
@@ -308,7 +308,7 @@ export default function AdminFeesPage() {
       });
       toast.success("Fee structure created successfully!");
       setIsStructureModalOpen(false);
-      
+
       // Reset form
       setStructureName("");
       setStructureAmount("");
@@ -382,7 +382,7 @@ export default function AdminFeesPage() {
         });
         toast.success("Fee structure assigned bulk to class successfully!");
       }
-      
+
       // Reset assignment state
       setSelectedStudentId("");
       setSelectedClassId("");
@@ -480,7 +480,7 @@ export default function AdminFeesPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in text-xs text-left">
-        <PageHeader 
+        <PageHeader
           title="Student Fees Management"
           subtitle="Define session fee structures, assign terms classes dues, record payments, and inspect collection summaries."
         />
@@ -600,7 +600,7 @@ export default function AdminFeesPage() {
                   ))}
                 </select>
 
-                <button 
+                <button
                   onClick={loadPayments}
                   className="px-3.5 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer transition-all border border-violet-100"
                 >
@@ -770,7 +770,7 @@ export default function AdminFeesPage() {
         )}
 
         {/* ========================================================
-            TAB 3: STRUCTURE REPORTS
+            TAB 3: STRUCTURE REPORTS (FIXED)
             ======================================================== */}
         {activeTab === "structure-report" && (
           <div className="space-y-6 animate-fade-in text-left">
@@ -782,21 +782,22 @@ export default function AdminFeesPage() {
               <EmptyState title="No Metrics Available" desc="Failed to load structure-wise collection records." />
             ) : (
               <div className="space-y-4">
-                {structureReport.map((row, index) => {
-                  const st = row.structure || {};
-                  const isExpanded = expandedStructureId === st.id;
-                  const rowPayments = st.payments || [];
+                {structureReport.map((row) => {
+                  const structureId = row.id;
+                  const isExpanded = expandedStructureId === structureId;
+                  const studentsList = row.students || [];
 
                   return (
-                    <div key={st.id || index} className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
-                      <div 
-                        onClick={() => setExpandedStructureId(isExpanded ? null : st.id)}
+                    <div key={structureId} className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+                      {/* Header Summary Row */}
+                      <div
+                        onClick={() => setExpandedStructureId(isExpanded ? null : structureId)}
                         className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-zinc-50/40 transition-colors"
                       >
                         <div>
-                          <h4 className="font-extrabold text-zinc-800 text-sm capitalize">{st.name}</h4>
+                          <h4 className="font-extrabold text-zinc-800 text-sm capitalize">{row.name || "Unnamed Structure"}</h4>
                           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mt-0.5">
-                            Class: {st.class_name || st.school_class?.name || "All"} • Amount: ₹{st.amount} • Frequency: {st.frequency}
+                            Class: {row.class_name || "All"} • Amount: ₹{row.amount?.toLocaleString() || 0} • Frequency: {row.frequency || "N/A"}
                           </span>
                         </div>
 
@@ -820,35 +821,54 @@ export default function AdminFeesPage() {
                         </div>
                       </div>
 
+                      {/* Collapsible Accordion Students List */}
                       {isExpanded && (
                         <div className="px-5 pb-5 border-t border-zinc-100 bg-zinc-50/20">
                           <h5 className="font-bold text-zinc-800 text-[11px] my-3">Associated Student Payment Dues</h5>
-                          {rowPayments.length === 0 ? (
+                          {studentsList.length === 0 ? (
                             <p className="text-[10px] text-zinc-400 italic">No student payments associated with this structure.</p>
                           ) : (
                             <div className="overflow-x-auto border border-zinc-200 rounded-xl bg-white">
                               <table className="w-full text-left text-[11px]">
                                 <thead>
                                   <tr className="bg-zinc-50 border-b border-zinc-200 text-[9px] text-zinc-400 font-extrabold uppercase">
-                                    <th className="px-4 py-2.5">Student ID</th>
-                                    <th className="px-4 py-2.5 text-center">Amount Due</th>
-                                    <th className="px-4 py-2.5 text-center">Late Fee</th>
-                                    <th className="px-4 py-2.5 text-center">Total Payable</th>
-                                    <th className="px-4 py-2.5 text-center">Receipt No</th>
+                                    <th className="px-4 py-2.5">Student Name</th>
+                                    <th className="px-4 py-2.5">Student Code</th>
+                                    <th className="px-4 py-2.5 text-center">Class / Sec</th>
+                                    <th className="px-4 py-2.5 text-center">Amount</th>
+                                    <th className="px-4 py-2.5 text-center">Paid Amount</th>
+                                    <th className="px-4 py-2.5 text-center">Due Amount</th>
+                                    <th className="px-4 py-2.5 text-center">Due Date</th>
                                     <th className="px-4 py-2.5 text-right">Status</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-zinc-100 font-bold text-zinc-600">
-                                  {rowPayments.map((pay) => (
-                                    <tr key={pay.id} className="hover:bg-zinc-50/50">
-                                      <td className="px-4 py-2.5 font-semibold text-zinc-500">{pay.receipt_no || pay.id?.substring(0, 8)}</td>
-                                      <td className="px-4 py-2.5 text-center">₹{parseFloat(pay.amount || 0).toLocaleString()}</td>
-                                      <td className="px-4 py-2.5 text-center text-amber-600">₹{pay.late_fee_amount || 0}</td>
-                                      <td className="px-4 py-2.5 text-center text-zinc-800">₹{pay.total_payable?.toLocaleString()}</td>
-                                      <td className="px-4 py-2.5 text-center text-zinc-500 font-mono">{pay.receipt_no || "N/A"}</td>
+                                  {studentsList.map((stStudent, sIdx) => (
+                                    <tr key={stStudent.payment_id || sIdx} className="hover:bg-zinc-50/50">
+                                      <td className="px-4 py-2.5 font-bold text-zinc-800 capitalize">
+                                        {stStudent.student_name || "Guest / Unnamed"}
+                                      </td>
+                                      <td className="px-4 py-2.5 font-mono text-zinc-500">
+                                        {stStudent.student_code || "N/A"}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center">
+                                        {stStudent.class_name ? `${stStudent.class_name} ${stStudent.section_name ? `(${stStudent.section_name})` : ''}` : "N/A"}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center">
+                                        ₹{parseFloat(stStudent.amount || 0).toLocaleString()}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center text-emerald-600">
+                                        ₹{parseFloat(stStudent.paid_amount || 0).toLocaleString()}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center text-rose-600">
+                                        ₹{parseFloat(stStudent.due_amount || 0).toLocaleString()}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center text-zinc-500">
+                                        {stStudent.due_date || "N/A"}
+                                      </td>
                                       <td className="px-4 py-2.5 text-right">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-black ${pay.status === "paid" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                                          {pay.status}
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-black ${stStudent.status === "paid" ? "bg-emerald-50 text-emerald-700" : stStudent.status === "partial" ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700"}`}>
+                                          {stStudent.status}
                                         </span>
                                       </td>
                                     </tr>
@@ -926,11 +946,18 @@ export default function AdminFeesPage() {
                       className="w-full px-3.5 py-2 border border-zinc-200 rounded-xl bg-white text-zinc-700 font-bold outline-none focus:border-violet-500"
                     >
                       <option value="">Select Student</option>
-                      {studentsList?.map(student => (
-                        <option key={student.id} value={student.id}>
-                          {student.name} ({student.class || student.class_name || "No Class"} - {student.section || student.section_name || "No Section"})
-                        </option>
-                      ))}
+                      {studentsList?.map((student) => {
+                        const studentId = student.id;
+                        const studentName = student.name || student.full_name || `${student.first_name || ""} ${student.last_name || ""}`.trim() || "Unnamed Student";
+                        const className = student.class?.name || student.class || student.class_name || "No Class";
+                        const sectionName = student.section?.name || student.section || student.section_name || "No Section";
+
+                        return (
+                          <option key={studentId} value={studentId}>
+                            {studentName} ({className} - {sectionName})
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 

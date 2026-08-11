@@ -24,8 +24,13 @@ export default function Breadcrumb() {
 
         const isLast = idx === paths.length - 1;
 
-        // Skip dynamic IDs from showing raw in breadcrumb
-        if (path.startsWith("[") || (path.match(/^[a-f0-9-]{36}$/i)) || (path.match(/^[0-9]+$/))) {
+        // Skip dynamic IDs and role segments from showing raw in breadcrumb
+        if (
+          path.startsWith("[") || 
+          path.match(/^[a-f0-9-]{36}$/i) || 
+          path.match(/^[0-9]+$/) ||
+          ["admin", "teacher", "student"].includes(path.toLowerCase())
+        ) {
           return null;
         }
 

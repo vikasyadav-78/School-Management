@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { 
   FaPlus, FaTimes, FaChalkboard, FaEdit, FaTrash, FaToggleOn, FaToggleOff, 
-  FaFolder, FaBook, FaUsers, FaUserGraduate, FaLayerGroup, FaCog
+  FaFolder, FaBook, FaUsers, FaUserGraduate, FaLayerGroup, FaCog, FaSearch
 } from "react-icons/fa";
 import { 
   getTeacherClassesMeta,
@@ -31,6 +31,44 @@ import { useAppDialog } from "@/context/DialogContext";
 export default function AdminClassesPage() {
   const dialog = useAppDialog();
   const [classesList, setClassesList] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [academicYearFilter, setAcademicYearFilter] = useState("all");
+
+  const filteredClasses = useMemo(() => {
+    return classesList.filter((cls) => {
+      // 1. Search filter (class name or code)
+      const searchLower = searchQuery.toLowerCase().trim();
+      const formatClassName = (name) => {
+        if (!name) return "";
+        const match = name.match(/class\s*-?\s*(\d+)/i);
+        if (match) return `class ${match[1]}`;
+        return name.toLowerCase();
+      };
+      
+      const nameMatch = cls.name && formatClassName(cls.name).includes(searchLower);
+      const rawNameMatch = cls.name && cls.name.toLowerCase().includes(searchLower);
+      const codeMatch = cls.code && cls.code.toLowerCase().includes(searchLower);
+      const matchesSearch = !searchLower || nameMatch || rawNameMatch || codeMatch;
+
+      // 2. Status filter
+      let matchesStatus = true;
+      if (statusFilter === "active") {
+        matchesStatus = cls.is_active === true || cls.is_active === 1;
+      } else if (statusFilter === "inactive") {
+        matchesStatus = cls.is_active === false || cls.is_active === 0;
+      }
+
+      // 3. Academic year filter
+      let matchesYear = true;
+      if (academicYearFilter !== "all") {
+        matchesYear = String(cls.academic_year_id) === String(academicYearFilter);
+      }
+
+      return matchesSearch && matchesStatus && matchesYear;
+    });
+  }, [classesList, searchQuery, statusFilter, academicYearFilter]);
+
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
@@ -371,57 +409,121 @@ export default function AdminClassesPage() {
         </button>
       </div>
 
+      {/* Search and Filters Row */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
+        <h2 className="text-sm font-bold text-zinc-800">Class Directories</h2>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-60">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+              <FaSearch className="w-3.5 h-3.5" />
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search classes (e.g. 10, Class 5)..."
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
+            />
+          </div>
+
+          {/* Status Dropdown */}
+          <div className="relative w-full sm:w-36">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs text-zinc-707 cursor-pointer font-semibold text-zinc-700"
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          {/* Academic Session Dropdown */}
+          <div className="relative w-full sm:w-44">
+            <select
+              value={academicYearFilter}
+              onChange={(e) => setAcademicYearFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs text-zinc-707 cursor-pointer font-semibold text-zinc-700"
+            >
+              <option value="all">All Sessions</option>
+              {meta?.academic_years?.map(ay => (
+                <option key={ay.id} value={ay.id}>{ay.name || ay.title}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Roster Listing Grid */}
-      {classesList.length === 0 ? (
+      {filteredClasses.length === 0 ? (
         <EmptyState 
           title="No Classes Configured"
-          desc="Get started by creating your first school class setup."
+          desc="Refine your search/filters or create your first school class setup."
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classesList.map((cls) => (
-            <div key={cls.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm relative flex flex-col justify-between hover:shadow-md transition-all">
-              <div>
-                <div className="flex justify-between items-start gap-2 mb-2">
-                  <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
-                    cls.is_active ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-rose-50 border-rose-100 text-rose-600"
-                  }`}>
-                    {cls.is_active ? "Active" : "Inactive"}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleToggleStatus(cls)}
-                      className={`p-1 rounded transition-colors ${cls.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"}`}
-                      title={cls.is_active ? "Deactivate" : "Activate"}
-                    >
-                      {cls.is_active ? <FaToggleOn className="w-5 h-5" /> : <FaToggleOff className="w-5 h-5" />}
-                    </button>
-                    <button
-                      onClick={() => handleOpenEditClass(cls)}
-                      className="p-1 text-zinc-400 hover:text-violet-600 rounded transition-colors"
-                      title="Edit Class"
-                    >
-                      <FaEdit className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClass(cls.id)}
-                      className="p-1 text-zinc-400 hover:text-rose-600 rounded transition-colors"
-                      title="Delete Class"
-                    >
-                      <FaTrash className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
+          {[...filteredClasses].sort((a, b) => {
+            const getNumericVal = (name) => {
+              if (!name) return 999;
+              const match = String(name).match(/\d+/);
+              return match ? parseInt(match[0], 10) : 999;
+            };
+            return getNumericVal(a.name) - getNumericVal(b.name);
+          }).map((cls) => {
+            const formatClassName = (name) => {
+              if (!name) return "";
+              const match = name.match(/class\s*-?\s*(\d+)/i);
+              if (match) {
+                return `Class ${match[1]}`;
+              }
+              return name;
+            };
 
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 font-extrabold text-sm">
-                    <FaChalkboard className="w-5 h-5" />
+            return (
+              <div key={cls.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm relative flex flex-col justify-between hover:shadow-md transition-all">
+                <div>
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
+                      cls.is_active ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-rose-50 border-rose-100 text-rose-600"
+                    }`}>
+                      {cls.is_active ? "Active" : "Inactive"}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleToggleStatus(cls)}
+                        className={`p-1 rounded transition-colors ${cls.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"}`}
+                        title={cls.is_active ? "Deactivate" : "Activate"}
+                      >
+                        {cls.is_active ? <FaToggleOn className="w-5 h-5" /> : <FaToggleOff className="w-5 h-5" />}
+                      </button>
+                      <button
+                        onClick={() => handleOpenEditClass(cls)}
+                        className="p-1 text-zinc-400 hover:text-violet-600 rounded transition-colors"
+                        title="Edit Class"
+                      >
+                        <FaEdit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClass(cls.id)}
+                        className="p-1 text-zinc-400 hover:text-rose-600 rounded transition-colors"
+                        title="Delete Class"
+                      >
+                        <FaTrash className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-zinc-800 text-sm">{cls.name}</h4>
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Code: {cls.code || "—"}</span>
+
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 font-extrabold text-sm">
+                      <FaChalkboard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-zinc-800 text-sm">{formatClassName(cls.name)}</h4>
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Code: {cls.code || "—"}</span>
+                    </div>
                   </div>
-                </div>
 
                 <div className="space-y-1.5 text-[10px] font-semibold text-zinc-500 mb-4 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
                   <div className="flex justify-between">
@@ -451,7 +553,8 @@ export default function AdminClassesPage() {
                 Manage Class Setup
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

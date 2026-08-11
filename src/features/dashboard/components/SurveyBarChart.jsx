@@ -46,9 +46,18 @@ export default function SurveyBarChart({ data = [], height = 300 }) {
             }}
           />
           <Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-          <Bar dataKey="Math" name="Mathematics" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="Science" name="Science" fill="#10b981" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="English" name="English" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+          {data.length > 0 && Object.keys(data[0]).filter(k => k !== "name").map((key, idx) => {
+            const colors = ["#f59e0b", "#7c3aed", "#10b981", "#06b6d4", "#ec4899", "#6366f1"];
+            return (
+              <Bar 
+                key={key} 
+                dataKey={key} 
+                name={key.charAt(0).toUpperCase() + key.slice(1)} 
+                fill={colors[idx % colors.length]} 
+                radius={[4, 4, 0, 0]} 
+              />
+            );
+          })}
         </ReBarChart>
       </ResponsiveContainer>
     </div>

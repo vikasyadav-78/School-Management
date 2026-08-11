@@ -245,3 +245,19 @@ export const getStudentLiveClassMessages = async (id) => {
   const response = await api.get(`/student/live-classes/${id}/messages`);
   return response.data;
 };
+
+export const downloadImportTemplate = async () => {
+  const response = await api.get("/admin/students/import-template", {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
+export const importStudents = async (formData) => {
+  const response = await api.post("/admin/students/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};

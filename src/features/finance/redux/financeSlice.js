@@ -40,11 +40,10 @@ const initialState = {
   reportSummary: {
     summary: {
       totalCollection: 0,
-      totalSalaries: 0,
-      totalExpenses: 0,
+      totalAssigned: 0,
+      totalDue: 0,
       netBalance: 0
     },
-    expensesList: [],
     expenseBreakdown: {},
     transactions: []
   },
@@ -73,7 +72,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchStudentFeeDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.studentFeeDetails = action.payload.data;
+        state.studentFeeDetails = action.payload?.data || action.payload;
       })
       .addCase(fetchStudentFeeDetails.rejected, (state, action) => {
         state.loading = false;
@@ -86,7 +85,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchClassStudentsFees.fulfilled, (state, action) => {
         state.loading = false;
-        state.classFees = action.payload.data;
+        state.classFees = action.payload?.data || action.payload;
       })
       .addCase(fetchClassStudentsFees.rejected, (state, action) => {
         state.loading = false;
@@ -99,7 +98,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchPendingFeesList.fulfilled, (state, action) => {
         state.loading = false;
-        state.pendingFees = action.payload.data;
+        state.pendingFees = action.payload?.data || action.payload;
       })
       .addCase(fetchPendingFeesList.rejected, (state, action) => {
         state.loading = false;
@@ -112,12 +111,15 @@ const financeSlice = createSlice({
       })
       .addCase(collectFeePayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.studentFeeDetails = action.payload.data;
-        state.currentReceipt = action.payload.receipt;
-        // Increment collections live in state
-        state.totalCollection += action.payload.receipt.amount;
-        state.reportSummary.summary.totalCollection += action.payload.receipt.amount;
-        state.reportSummary.summary.netBalance += action.payload.receipt.amount;
+        state.studentFeeDetails = action.payload?.data || action.payload;
+        state.currentReceipt = action.payload?.receipt;
+        if (action.payload?.receipt?.amount) {
+          state.totalCollection += action.payload.receipt.amount;
+          if (state.reportSummary?.summary) {
+            state.reportSummary.summary.totalCollection += action.payload.receipt.amount;
+            state.reportSummary.summary.netBalance += action.payload.receipt.amount;
+          }
+        }
       })
       .addCase(collectFeePayment.rejected, (state, action) => {
         state.loading = false;
@@ -130,7 +132,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchFeesReport.fulfilled, (state, action) => {
         state.loading = false;
-        state.feesReport = action.payload.data;
+        state.feesReport = action.payload?.data || action.payload;
       })
       .addCase(fetchFeesReport.rejected, (state, action) => {
         state.loading = false;
@@ -143,7 +145,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchTotalCollection.fulfilled, (state, action) => {
         state.loading = false;
-        state.totalCollection = action.payload.data;
+        state.totalCollection = action.payload?.data || action.payload;
       })
       .addCase(fetchTotalCollection.rejected, (state, action) => {
         state.loading = false;
@@ -157,7 +159,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchTeacherSalaries.fulfilled, (state, action) => {
         state.loading = false;
-        state.salariesList = action.payload.data;
+        state.salariesList = action.payload?.data || action.payload;
       })
       .addCase(fetchTeacherSalaries.rejected, (state, action) => {
         state.loading = false;
@@ -170,16 +172,13 @@ const financeSlice = createSlice({
       })
       .addCase(payTeacherSalary.fulfilled, (state, action) => {
         state.loading = false;
-        const paidRecord = action.payload.data;
-        // Update salaries list entry status
-        const idx = state.salariesList.findIndex((s) => s.id === paidRecord.id);
-        if (idx !== -1) {
-          state.salariesList[idx] = paidRecord;
+        const paidRecord = action.payload?.data || action.payload;
+        if (paidRecord?.id) {
+          const idx = state.salariesList.findIndex((s) => s.id === paidRecord.id);
+          if (idx !== -1) {
+            state.salariesList[idx] = paidRecord;
+          }
         }
-        // Update general finance state live
-        state.reportSummary.summary.totalSalaries += paidRecord.finalSalary;
-        state.reportSummary.summary.totalExpenses += paidRecord.finalSalary;
-        state.reportSummary.summary.netBalance -= paidRecord.finalSalary;
       })
       .addCase(payTeacherSalary.rejected, (state, action) => {
         state.loading = false;
@@ -192,7 +191,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchSalaryHistory.fulfilled, (state, action) => {
         state.loading = false;
-        state.salaryHistory = action.payload.data;
+        state.salaryHistory = action.payload?.data || action.payload;
       })
       .addCase(fetchSalaryHistory.rejected, (state, action) => {
         state.loading = false;
@@ -206,7 +205,7 @@ const financeSlice = createSlice({
       })
       .addCase(fetchFinanceReportSummary.fulfilled, (state, action) => {
         state.loading = false;
-        state.reportSummary = action.payload.data;
+        state.reportSummary = action.payload;
       })
       .addCase(fetchFinanceReportSummary.rejected, (state, action) => {
         state.loading = false;
@@ -219,7 +218,6 @@ const financeSlice = createSlice({
       })
       .addCase(addSchoolExpense.fulfilled, (state) => {
         state.loading = false;
-        // Report state can be refetched by components
       })
       .addCase(addSchoolExpense.rejected, (state, action) => {
         state.loading = false;

@@ -180,19 +180,43 @@ const studentsSlice = createSlice({
         const classesList = classes?.classes || classes?.data?.classes || [];
         const studentsList = students?.students || students?.data?.students || [];
 
+        // Save student list in state
+        state.list = studentsList;
+
         // Populate classSummaries for the admin/students page
+        const getCreationDateFromId = (id) => {
+          if (!id || typeof id !== "string") return null;
+          const cleanId = id.replace(/-/g, "");
+          if (cleanId.length < 12) return null;
+          const hexTimestamp = cleanId.substring(0, 12);
+          const ms = parseInt(hexTimestamp, 16);
+          if (isNaN(ms) || ms < 1000000000000) return null;
+          return new Date(ms);
+        };
+
+        const getStudentDate = (s) => {
+          if (s.admission_date) return new Date(s.admission_date);
+          return getCreationDateFromId(s.id);
+        };
+
         const classSummaries = (metaData.classes || []).map(c => {
           // Find statistics from classes endpoint
           const classStats = classesList.find(cls => cls.id === c.id);
           
           // Calculate new/existing students from list
           const classStudents = studentsList.filter(s => s.school_class_id === c.id);
-          const newStudentsCount = classStudents.filter(s => s.admission_no && s.admission_no.includes("2026")).length;
+          
+          // Default to August 2026 for initial load
+          const newStudentsCount = classStudents.filter(s => {
+            const date = getStudentDate(s);
+            return date && date.getMonth() === 7 && date.getFullYear() === 2026;
+          }).length;
+
           const totalCount = classStats ? classStats.students_count : classStudents.length;
 
           return {
             id: c.id,
-            className: c.name.replace(/class/i, '').trim() || c.name,
+            className: c.name.replace(/class\s*-?/i, '').trim() || c.name,
             originalName: c.name,
             sections: c.sections.map(s => s.name),
             sectionsData: c.sections,

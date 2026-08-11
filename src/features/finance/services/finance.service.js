@@ -61,11 +61,11 @@ export const getSalaryHistory = async () => {
   return response.data;
 };
 
-// ================= GENERAL FINANCE REPORTS =================
+// ================= GENERAL FINANCE REPORTS (FIXED) =================
 
-export const getFinanceReportSummary = async (filters = {}) => {
-  if (USE_MOCK) return mockService.fetchFinanceReportSummary(filters);
-  const response = await api.get(`${ENDPOINTS.FINANCE.BASE}/reports/summary`, { params: filters });
+export const getFinanceReportSummary = async (params = {}) => {
+  // Configured api instance ka use ho raha hai jisse base URL and tokens automatically attach ho sakein
+  const response = await api.get("/admin/fees/", { params });
   return response.data;
 };
 

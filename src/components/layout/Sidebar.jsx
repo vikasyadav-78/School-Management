@@ -7,7 +7,7 @@ import {
   FaChalkboardTeacher, FaUserGraduate, FaBook, FaBuilding,
   FaUsers, FaCalendarTimes, FaMoneyBillWave, FaCalendarAlt,
   FaShoppingCart, FaFileAlt, FaUser, FaChevronDown, FaChevronRight,
-  FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo
+  FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo, FaArrowLeft
 } from "react-icons/fa";
 import { MdDashboard, MdEmail } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -303,6 +303,28 @@ export default function Sidebar() {
             </div>
           );
         })}
+        {typeof window !== "undefined" && localStorage.getItem("admin_token") && (
+          <div className="pt-4 border-t border-zinc-800 mt-4 px-2">
+            <button
+              onClick={() => {
+                const token = localStorage.getItem("admin_token");
+                if (token) {
+                  localStorage.setItem("token", token);
+                  localStorage.setItem("role", "admin");
+                  localStorage.removeItem("admin_token");
+                  window.location.href = "/admin/dashboard";
+                }
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-amber-500 hover:text-white hover:bg-amber-950/40 border border-amber-950 transition-all duration-200 text-sm font-bold uppercase tracking-wider ${
+                isOpen ? "justify-start" : "justify-center"
+              }`}
+              title="Back to School Admin"
+            >
+              <FaArrowLeft className="w-4 h-4 shrink-0 text-amber-500" />
+              {isOpen && <span className="whitespace-nowrap">School Admin</span>}
+            </button>
+          </div>
+        )}
       </nav>
     </aside>
   );
