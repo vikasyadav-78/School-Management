@@ -687,6 +687,27 @@ export const deleteTeacherOnlineMcqExam = async (examId) => {
   return response.data;
 };
 
+// Teacher Online MCQ Reports APIs
+export const getTeacherOnlineMcqReports = async (params = {}) => {
+  const response = await api.get("/teacher/online-mcq/reports", { params });
+  return response.data;
+};
+
+export const getTeacherOnlineMcqReportDetail = async (examId) => {
+  const response = await api.get(`/teacher/online-mcq/reports/${examId}`);
+  return response.data;
+};
+
+export const getTeacherOnlineMcqAttempt = async (examId, attemptId) => {
+  const response = await api.get(`/teacher/online-mcq/reports/${examId}/attempts/${attemptId}`);
+  return response.data;
+};
+
+export const getTeacherOnlineMcqAttemptPdf = async (examId, attemptId) => {
+  const response = await api.get(`/teacher/online-mcq/reports/${examId}/attempts/${attemptId}/pdf`, { responseType: 'blob' });
+  return response.data;
+};
+
 // Teacher Teachers (Create/Manage) APIs
 export const getTeacherTeachersMeta = async () => {
   const response = await api.get("/teacher/teachers/meta");
@@ -778,6 +799,29 @@ export const getTeacherPayrollReceipt = async (payrollId) => {
 export const assignTeacherStudentsToSection = async (payload) => {
   const response = await api.post("/teacher/allocation/assign", payload);
   return response.data;
+};
+
+export const getTeacherSalaryReport = async (params) => {
+  const response = await api.get("/teacher/my-salary", { params });
+  return response.data;
+};
+
+export const getTeacherSalaryDetail = async (id) => {
+  const response = await api.get(`/teacher/my-salary/${id}`);
+  return response.data;
+};
+
+export const downloadTeacherSalaryReceipt = async (url, format, filename) => {
+  const response = await api.get(url, { responseType: 'blob' });
+  const blob = new Blob([response.data]);
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(blobUrl);
 };
 
 export const transferTeacherStudents = async (payload) => {

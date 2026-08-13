@@ -5,7 +5,7 @@ import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
-  FaClock, FaFileAlt, FaCheckCircle, FaAward, FaTrophy, FaArrowRight, FaTimes, FaShieldAlt, FaInfoCircle, FaCalendarAlt, FaLayerGroup, FaExclamationTriangle, FaArrowLeft
+  FaClock, FaFileAlt, FaCheckCircle, FaAward, FaTrophy, FaArrowRight, FaTimes, FaShieldAlt, FaInfoCircle, FaCalendarAlt, FaLayerGroup, FaExclamationTriangle, FaArrowLeft, FaSearch
 } from "react-icons/fa";
 import { 
   getStudentOnlineMcqExams,
@@ -24,6 +24,7 @@ import { useAppDialog } from "@/context/DialogContext";
 export default function StudentOnlineMcqPage() {
   const dialog = useAppDialog();
   const [activeTab, setActiveTab] = useState("available"); // "available" | "upcoming" | "completed"
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
 
@@ -283,13 +284,10 @@ export default function StudentOnlineMcqPage() {
     try {
       if (isDetailModalOpen) setIsDetailModalOpen(false);
       setIsResultModalOpen(true);
-      setLoadingResult(true);
-      const res = await getStudentOnlineMcqResult(exam.id);
-      setResultData(res.result || res.data || res);
+      // Removed broken API call; we already have result data in the exam object itself
+      setResultData(exam);
     } catch (err) {
       toast.error("Failed to load exam result: " + (err.message || err));
-    } finally {
-      setLoadingResult(false);
     }
   };
 
@@ -534,8 +532,17 @@ export default function StudentOnlineMcqPage() {
     );
   }
 
-  // Active Tab Exam List Selection
-  const currentExamsList = activeTab === "available" ? availableExams : activeTab === "upcoming" ? upcomingExams : completedExams;
+  // Active Tab Exam List Selection with Search Filter
+  const baseExamsList = activeTab === "available" ? availableExams : activeTab === "upcoming" ? upcomingExams : completedExams;
+  const currentExamsList = baseExamsList.filter(e => {
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.toLowerCase();
+    const matchTitle = (e.title || "").toLowerCase().includes(q);
+    const matchSubject = (e.subject || e.subject_name || "").toLowerCase().includes(q);
+    const matchClass = (e.class || "").toLowerCase().includes(q);
+    const matchSection = (e.section || "").toLowerCase().includes(q);
+    return matchTitle || matchSubject || matchClass || matchSection;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
@@ -583,6 +590,16 @@ export default function StudentOnlineMcqPage() {
             </span>
           </button>
         </div>
+        <div className="relative w-full sm:w-64">
+          <FaSearch className="absolute left-3 top-2.5 text-zinc-400 w-3.5 h-3.5" />
+          <input
+            type="text"
+            placeholder="Search exams..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-1.5 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-800"
+          />
+        </div>
       </div>
 
       {/* Exam Cards Grid */}
@@ -590,8 +607,8 @@ export default function StudentOnlineMcqPage() {
         <div className="flex items-center justify-center py-20"><PageLoader /></div>
       ) : currentExamsList.length === 0 ? (
         <EmptyState 
-          title={activeTab === "upcoming" ? "No Upcoming Exams" : activeTab === "completed" ? "No Completed Exams" : "No Available Exams"} 
-          desc={activeTab === "upcoming" ? "No examinations currently scheduled for upcoming dates." : activeTab === "completed" ? "No completed examinations in your history." : "No active examinations currently available for attempt."} 
+          title={searchTerm.trim() ? "No exams found" : activeTab === "upcoming" ? "No Upcoming Exams" : activeTab === "completed" ? "No Completed Exams" : "No Available Exams"} 
+          desc={searchTerm.trim() ? "No examinations match your search criteria." : activeTab === "upcoming" ? "No examinations currently scheduled for upcoming dates." : activeTab === "completed" ? "No completed examinations in your history." : "No active examinations currently available for attempt."} 
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -780,7 +797,7 @@ export default function StudentOnlineMcqPage() {
     <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
       <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
         <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-          <FaTrophy className="text-violet-500" /> Exam Result & Leaderboard
+          <FaTrophy className="text-violet-500" /> Exam Result
         </h3>
         <button onClick={() => setIsResultModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
           <FaTimes className="w-4 h-4" />
@@ -795,30 +812,19 @@ export default function StudentOnlineMcqPage() {
             <div className="p-4 bg-violet-50 border border-violet-100 rounded-2xl text-center space-y-1">
               <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Your Final Score</span>
               
-              {/* Har tarah ki API key mapping handle ki gayi hai */}
               <span className="text-2xl font-black text-violet-900">
-                {resultData.score ?? resultData.marks_obtained ?? resultData.data?.score ?? 0} / {resultData.total_marks ?? resultData.totalMarks ?? resultData.data?.total_marks ?? 0}
+                {resultData.score ?? 0} / {resultData.total_marks ?? 0}
               </span>
 
               <span className="text-xs font-extrabold text-violet-700 block">
-                Grade: {resultData.grade ?? resultData.data?.grade ?? "N/A"} ({resultData.percentage ?? resultData.data?.percentage ?? 0}%)
+                Grade: {resultData.grade ?? "N/A"} ({resultData.percentage ?? 0}%)
               </span>
             </div>
 
-            {/* Leaderboard Section */}
-            {(resultData.leaderboard || resultData.data?.leaderboard) && (
-              <div className="space-y-2 pt-2">
-                <h4 className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">Leaderboard Top Performers</h4>
-                <div className="divide-y divide-zinc-100 text-xs">
-                  {(resultData.leaderboard || resultData.data?.leaderboard || []).map((lb, i) => (
-                    <div key={lb.id || i} className="py-2 flex justify-between items-center">
-                      <span className="font-bold text-zinc-800">#{i + 1} {lb.student_name || lb.name}</span>
-                      <span className="font-black text-violet-600">{lb.score ?? lb.marks ?? 0} Marks</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-3 mt-4 text-xs bg-zinc-50 p-4 rounded-2xl border border-zinc-100 font-semibold text-zinc-600">
+              <div>Total Questions: <strong className="text-zinc-800">{resultData.total_questions ?? "—"}</strong></div>
+              <div>Attempt: <strong className="text-zinc-800 capitalize">{resultData.attempt_status ?? (resultData.is_submitted ? "Submitted" : "—")}</strong></div>
+            </div>
           </>
         ) : null}
       </div>

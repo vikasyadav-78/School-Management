@@ -578,6 +578,39 @@ export const generateTeacherSectionRollNumbers = async (sectionId) => {
   return response.data;
 };
 
+// ==========================================
+// STREAMS (Class 11/12)
+// ==========================================
+export const getAdminStreams = async (params) => {
+  const response = await api.get("/admin/streams", { params });
+  return response.data;
+};
+
+export const getAdminClassStreams = async (classId) => {
+  const response = await api.get(`/admin/classes/${classId}/streams`);
+  return response.data;
+};
+
+export const addAdminStream = async (classId, payload) => {
+  const response = await api.post(`/admin/classes/${classId}/streams`, payload);
+  return response.data;
+};
+
+export const getAdminStreamDetail = async (streamId) => {
+  const response = await api.get(`/admin/streams/${streamId}`);
+  return response.data;
+};
+
+export const updateAdminStream = async (streamId, payload) => {
+  const response = await api.post(`/admin/streams/${streamId}`, payload);
+  return response.data;
+};
+
+export const deleteAdminStream = async (streamId) => {
+  const response = await api.delete(`/admin/streams/${streamId}`);
+  return response.data;
+};
+
 export const updateTeacherClassSubject = async (classSubjectId, payload) => {
   const response = await api.post(`/admin/class-subjects/${classSubjectId}`, payload);
   return response.data;

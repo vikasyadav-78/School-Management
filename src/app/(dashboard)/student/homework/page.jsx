@@ -261,7 +261,7 @@ export default function StudentHomeworkPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <FaGraduationCap className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                    <span>Max Marks: <strong className="text-zinc-700">{h.max_marks || "100"}</strong></span>
+                    <span>Max Marks: <strong className="text-zinc-700">{h.max_marks !== null ? h.max_marks : "—"}</strong></span>
                   </div>
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function StudentHomeworkPage() {
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Max Marks</span>
-                      <span className="font-bold text-zinc-700 text-xs block">{activeDetail.max_marks} Marks</span>
+                      <span className="font-bold text-zinc-700 text-xs block">{activeDetail.max_marks !== null ? `${activeDetail.max_marks} Marks` : "—"}</span>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Assigned Date</span>
@@ -358,11 +358,11 @@ export default function StudentHomeworkPage() {
                           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Submitted Date</span>
                           <span className="font-bold text-zinc-700 text-xs"> {activeDetail.submission?.submitted_at_label  || "N/A"}</span>
                         </div>
-                        {(activeDetail.marks !== null && activeDetail.marks !== undefined || activeDetail.submission?.marks !== null && activeDetail.submission?.marks !== undefined) && (
+                        {activeDetail.submission?.marks !== null && activeDetail.submission?.marks !== undefined && (
                           <div className="space-y-1">
                             <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Marks Awarded</span>
                             <span className="font-extrabold text-emerald-600 text-sm">
-                              {activeDetail.submission?.marks !== undefined && activeDetail.submission?.marks !== null ? activeDetail.submission.marks : activeDetail.marks} / {activeDetail.max_marks || activeDetail.maximum_marks}
+                              {activeDetail.submission.marks} {activeDetail.max_marks !== null ? `/ ${activeDetail.max_marks}` : ""}
                             </span>
                           </div>
                         )}

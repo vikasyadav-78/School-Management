@@ -632,7 +632,15 @@ function ClassMarksEntryContent() {
                         )}
                         <div>
                           <span className="font-bold text-zinc-800 block">{student.full_name}</span>
-                          <span className="text-[10px] text-zinc-400">Entry: {student.subjects_entered || 0} / {student.subjects_total || 0}</span>
+                          <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                            {student.is_complete ? (
+                              <span className="text-emerald-600 font-bold flex items-center gap-1">
+                                <FaCheckCircle className="w-2.5 h-2.5" /> Completed
+                              </span>
+                            ) : (
+                              `Entry: ${student.subjects_entered || 0} / ${student.subjects_total || 0}`
+                            )}
+                          </span>
                         </div>
                       </div>
                     </td>

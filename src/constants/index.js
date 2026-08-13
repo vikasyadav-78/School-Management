@@ -138,7 +138,24 @@ export const TEACHER_NAVIGATION_ITEMS = [
   { title: "Marks Entry", path: "/teacher/marks", icon: "FaGraduationCap" },
   { title: "My Salary", path: "/teacher/salary", icon: "FaMoneyBillWave" },
   { title: "Timetable", path: "/teacher/timetable", icon: "FaCalendarAlt" },
-  { title: "My Live Classes", path: "/teacher/live-classes", icon: "FaVideo" },
+  {
+    title: "Online MCQ",
+    path: "/teacher/online-mcq",
+    icon: "FaLaptopCode",
+    submenu: [
+      { title: "My Online MCQ", path: "/teacher/online-mcq" },
+      { title: "Reports", path: "/teacher/online-mcq/reports" }
+    ]
+  },
+  {
+    title: "Live Classes",
+    path: "/teacher/live-classes",
+    icon: "FaVideo",
+    submenu: [
+      { title: "My Live Classes", path: "/teacher/live-classes" },
+      { title: "Reports", path: "/teacher/live-classes/reports" }
+    ]
+  },
   { title: "My Profile", path: "/teacher/profile", icon: "FaUser" },
   
   // Administrative Operations expandable submenu
@@ -147,28 +164,54 @@ export const TEACHER_NAVIGATION_ITEMS = [
     path: "/teacher/admin",
     icon: "FaLock",
     submenu: [
-      { title: "Staff Management", path: "/teacher/admin/staff" },
-      { title: "Teacher Management", path: "/teacher/admin/teachers" },
-      { title: "Teacher Attendance", path: "/teacher/admin/teacher-attendance" },
-      { title: "Payroll Management", path: "/teacher/admin/payroll" },
-      { title: "Classes & Sections", path: "/teacher/admin/classes" },
-      { title: "Subject Management", path: "/teacher/admin/subjects" },
-      { title: "Academic Years", path: "/teacher/admin/academic-years" },
-      { title: "Fee Management", path: "/teacher/admin/fees" },
-      { title: "Manage Notices", path: "/teacher/admin/notices" },
-      { title: "Manage Holidays", path: "/teacher/admin/holidays" },
-      { title: "Manage Leave Requests", path: "/teacher/admin/leaves" },
-      { title: "Certificates", path: "/teacher/admin/certificates" },
       {
-        title: "Live Classes",
-        path: "/teacher/admin/live-classes",
+        title: "Staff",
         submenu: [
-          { title: "Live Classes", path: "/teacher/admin/live-classes" },
-          { title: "Reports", path: "/teacher/admin/live-classes/reports" }
+          { title: "Staff Management", path: "/teacher/admin/staff" },
+          { title: "Teacher Management", path: "/teacher/admin/teachers" },
+          { title: "Teacher Attendance", path: "/teacher/admin/teacher-attendance" },
+          { title: "Payroll Management", path: "/teacher/admin/payroll" }
         ]
       },
-      { title: "Manage Timetable", path: "/teacher/admin/manage-timetable" },
-      { title: "Online MCQ Exams", path: "/teacher/admin/online-mcq" }
+      {
+        title: "Academics",
+        submenu: [
+          { title: "Students", path: "/teacher/admin/students" },
+          { title: "Classes & Sections", path: "/teacher/admin/classes" },
+          { title: "Subject Management", path: "/teacher/admin/subjects" },
+          { title: "Academic Years", path: "/teacher/admin/academic-years" },
+          { title: "Manage Timetable", path: "/teacher/admin/manage-timetable" },
+          { title: "Online MCQ Exams", path: "/teacher/admin/online-mcq" },
+          {
+            title: "Live Classes",
+            path: "/teacher/admin/live-classes",
+            submenu: [
+              { title: "Live Classes", path: "/teacher/admin/live-classes" },
+              { title: "Reports", path: "/teacher/admin/live-classes/reports" }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Finance",
+        submenu: [
+          { title: "Fee Management", path: "/teacher/admin/fees" }
+        ]
+      },
+      {
+        title: "Communication",
+        submenu: [
+          { title: "Manage Notices", path: "/teacher/admin/notices" },
+          { title: "Manage Holidays", path: "/teacher/admin/holidays" }
+        ]
+      },
+      {
+        title: "Administration",
+        submenu: [
+          { title: "Manage Leave Requests", path: "/teacher/admin/leaves" },
+          { title: "Certificates", path: "/teacher/admin/certificates" }
+        ]
+      }
     ]
   }
 ];
@@ -195,5 +238,6 @@ export const STUDENT_NAVIGATION_ITEMS = [
       { title: "Admit Cards", path: "/student/examinations/admit-cards" }
     ]
   },
+  { title: "My Bus Location", path: "/student/transport", icon: "FaBuilding" },
   { title: "My Profile", path: "/student/profile", icon: "FaUser" }
 ];

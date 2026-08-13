@@ -375,21 +375,32 @@ export default function TeacherMarksExamsPage() {
                           {/* Right Side: Action & Status Stacking */}
                           <div className="flex flex-col items-end gap-2 shrink-0">
                             <span className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider whitespace-nowrap min-w-[120px] text-center min-h-[28px] ${
-                              isComplete 
-                                ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                                : "bg-amber-50 text-amber-600 border-amber-100"
+                              totalSubjects === 0
+                                ? "bg-zinc-50 text-zinc-400 border-zinc-200"
+                                : isComplete 
+                                  ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                  : "bg-amber-50 text-amber-600 border-amber-100"
                             }`}>
-                              {isComplete ? <FaCheckCircle className="shrink-0 w-3 h-3" /> : <FaHourglassHalf className="shrink-0 w-3 h-3" />}
-                              {isComplete ? "Completed" : `${completedSubjects} / ${totalSubjects} Completed`}
+                              {totalSubjects === 0 ? <FaTimes className="shrink-0 w-3 h-3" /> : isComplete ? <FaCheckCircle className="shrink-0 w-3 h-3" /> : <FaHourglassHalf className="shrink-0 w-3 h-3" />}
+                              {totalSubjects === 0 ? "No Schedule" : isComplete ? "Completed" : `${completedSubjects} / ${totalSubjects} Completed`}
                             </span>
 
-                            <Link 
-                              href={`/teacher/marks/entry?exam_id=${exam.id}&class_id=${c.school_class_id}&section_id=${c.section_id}`}
-                              className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 hover:shadow-md text-white rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all text-[10px] whitespace-nowrap min-w-[120px] text-center min-h-[28px]"
-                            >
-                              <span>Enter Marks</span>
-                              <FaArrowRight className="w-2.5 h-2.5 shrink-0" />
-                            </Link>
+                            {totalSubjects > 0 ? (
+                              <Link 
+                                href={`/teacher/marks/entry?exam_id=${exam.id}&class_id=${c.school_class_id}&section_id=${c.section_id}`}
+                                className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 hover:shadow-md text-white rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all text-[10px] whitespace-nowrap min-w-[120px] text-center min-h-[28px]"
+                              >
+                                <span>Enter Marks</span>
+                                <FaArrowRight className="w-2.5 h-2.5 shrink-0" />
+                              </Link>
+                            ) : (
+                              <button 
+                                disabled
+                                className="px-3 py-1.5 bg-zinc-100 text-zinc-400 rounded-lg font-bold flex items-center justify-center gap-1.5 text-[10px] whitespace-nowrap min-w-[120px] text-center min-h-[28px] cursor-not-allowed opacity-70 border border-zinc-200/50"
+                              >
+                                <span>No Subjects</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       );

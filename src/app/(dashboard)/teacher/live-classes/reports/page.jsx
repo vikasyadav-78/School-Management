@@ -2,13 +2,15 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTeacherProfile } from "@/features/teachers/redux/teacherThunk";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
   FaVideo, FaFileAlt, FaUsers, FaClock, FaCheckCircle, 
   FaTimesCircle, FaClock as FaClockIcon, FaExclamationTriangle, 
-  FaSearch, FaChevronLeft, FaChevronRight 
+  FaSearch, FaChevronLeft, FaChevronRight, FaTimes
 } from "react-icons/fa";
 import { 
   getTeacherLiveClassReports,
@@ -20,6 +22,10 @@ export default function TeacherLiveClassReportsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const dispatch = useDispatch();
+
+  // Profile data from Redux
+  const { profile } = useSelector((state) => state.teachers);
 
   // API Data
   const [reportsData, setReportsData] = useState(null);
@@ -70,6 +76,11 @@ export default function TeacherLiveClassReportsPage() {
     try {
       if (isInitial) setLoading(true);
       else setListLoading(true);
+
+      // Fetch profile if not loaded
+      if (!profile) {
+        await dispatch(fetchTeacherProfile()).unwrap();
+      }
 
       const params = {
         per_page: perPage,

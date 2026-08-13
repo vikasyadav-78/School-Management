@@ -8,13 +8,17 @@ import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
   FaVideo, FaEye, FaCalendarAlt, FaClock, FaSearch, FaTimesCircle, 
-  FaCheckCircle, FaExclamationTriangle, FaTimes, FaCalendarDay, FaPlus 
+  FaCheckCircle, FaExclamationTriangle, FaTimes, FaCalendarDay, FaPlus, FaTrash
 } from "react-icons/fa";
 import { 
   getTeacherManageLiveClassesMeta,
-  getTeacherManageLiveClasses
+  getTeacherManageLiveClasses,
+  addTeacherManageLiveClass,
+  deleteTeacherManageLiveClass,
+  getTeacherManageLiveClassDetail
 } from "@/features/teachers/services/teacher.service";
 import { fetchTeacherProfile } from "@/features/teachers/redux/teacherThunk";
+import { useAppDialog } from "@/context/DialogContext";
 import { toast } from "sonner";
 
 export default function TeacherMyLiveClassesPage() {
@@ -39,6 +43,23 @@ export default function TeacherMyLiveClassesPage() {
   const [dateFilter, setDateFilter] = useState("");
 
   const searchTimeoutRef = useRef(null);
+  const dialog = useAppDialog();
+
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [activeClass, setActiveClass] = useState(null);
+  const [title, setTitle] = useState("");
+  const [topic, setTopic] = useState("");
+  const [subjectId, setSubjectId] = useState("");
+  const [classId, setClassId] = useState("");
+  const [sectionId, setSectionId] = useState("");
+  const [platform, setPlatform] = useState("google_meet");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("10:00");
+  const [endTime, setEndTime] = useState("11:00");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const handleSearchChange = (val) => {
     setSearch(val);
@@ -97,6 +118,96 @@ export default function TeacherMyLiveClassesPage() {
       </div>
     );
   }
+
+  const resetForm = () => {
+    setTitle("");
+    setTopic("");
+    setSubjectId("");
+    setClassId("");
+    setSectionId("");
+    setPlatform("google_meet");
+    setMeetingUrl("");
+    setDate("");
+    setStartTime("10:00");
+    setEndTime("11:00");
+    setFormError("");
+  };
+
+  const handleOpenAdd = () => {
+    resetForm();
+    setIsFormModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    if (!title.trim() || !subjectId || !classId || !date) {
+      setFormError("Title, Subject, Class, and Date are required.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const payload = {
+        title: title.trim(),
+        topic: topic.trim() || title.trim(),
+        teacher_id: profile?.teacher?.id,
+        subject_id: subjectId,
+        school_class_id: classId,
+        class_id: classId,
+        platform: platform || "google_meet",
+        meeting_url: meetingUrl.trim() || "https://meet.google.com/",
+        join_url: meetingUrl.trim() || "https://meet.google.com/",
+        date,
+        start_time: startTime,
+        end_time: endTime
+      };
+
+      if (sectionId) {
+        payload.section_id = sectionId;
+      }
+
+      await addTeacherManageLiveClass(payload);
+      toast.success("Live class scheduled successfully!");
+      setIsFormModalOpen(false);
+      refreshList();
+    } catch (err) {
+      setFormError(err.response?.data?.message || err.message || "Failed to schedule live class.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (liveClassId) => {
+    const isConfirmed = await dialog.confirm({
+      title: "Delete Live Class",
+      message: "Are you sure you want to delete this live class session?",
+      type: "delete",
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
+    if (!isConfirmed) return;
+    try {
+      await deleteTeacherManageLiveClass(liveClassId);
+      toast.success("Live class session deleted!");
+      if (activeClass?.id === liveClassId) setIsDetailModalOpen(false);
+      refreshList();
+    } catch (err) {
+      toast.error("Failed to delete live class: " + (err.message || err));
+    }
+  };
+
+  const handleOpenDetail = async (lc) => {
+    try {
+      const detailed = await getTeacherManageLiveClassDetail(lc.id);
+      const detail = detailed.live_class || detailed.data || detailed || lc;
+      setActiveClass(detail);
+      setIsDetailModalOpen(true);
+    } catch (err) {
+      toast.error("Failed to load live class details: " + (err.message || err));
+    }
+  };
 
   const teacherId = profile?.teacher?.id;
 
@@ -166,13 +277,6 @@ export default function TeacherMyLiveClassesPage() {
     return true;
   });
 
-  const hasManageLiveClassesPermission = 
-    profile?.can_manage_live_classes === true || 
-    profile?.can_manage_live_classes === "true" ||
-    profile?.can_manage_live_classes === 1 ||
-    profile?.can_manage_live_classes === "1" ||
-    profile?.enabled_features?.includes("live_classes");
-
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex justify-between items-center">
@@ -180,15 +284,13 @@ export default function TeacherMyLiveClassesPage() {
           title="My Live Classes"
           subtitle="Manage and launch your assigned virtual class meetings."
         />
-        {hasManageLiveClassesPermission && (
-          <button
-            onClick={() => router.push("/teacher/admin/live-classes?schedule=true")}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-xs shadow-sm"
-          >
-            <FaPlus className="w-3.5 h-3.5" />
-            Schedule Live Class
-          </button>
-        )}
+        <button
+          onClick={handleOpenAdd}
+          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-xs shadow-sm"
+        >
+          <FaPlus className="w-3.5 h-3.5" />
+          Schedule Live Class
+        </button>
       </div>
 
       {/* Filter and Search Bar */}
@@ -315,6 +417,9 @@ export default function TeacherMyLiveClassesPage() {
                     }`}>
                       {lc.platform_label || lc.platform || "LIVE"} • {computedStatus.toUpperCase()}
                     </span>
+                    <button onClick={() => handleDelete(lc.id)} className="p-1 text-zinc-400 hover:text-rose-600 rounded cursor-pointer" title="Delete Live Class">
+                      <FaTrash className="w-3.5 h-3.5" />
+                    </button>
                   </div>
 
                   <h4 className="font-extrabold text-zinc-800 text-sm mb-1">{lc.title}</h4>
@@ -336,39 +441,173 @@ export default function TeacherMyLiveClassesPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  {isCompleted ? (
-                    <button
-                      onClick={() => router.push(`/teacher/admin/live-classes/reports/${lc.id}`)}
-                      className="flex-1 py-2 bg-zinc-100 hover:bg-violet-50 hover:text-violet-600 text-zinc-700 font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs border border-zinc-200"
-                    >
-                      <FaEye className="w-3.5 h-3.5" /> View Report
-                    </button>
+                <div className="flex gap-2 pt-2 border-t border-zinc-100">
+                  <button onClick={() => handleOpenDetail(lc)} className="flex-1 py-2 bg-zinc-100 hover:bg-violet-50 hover:text-violet-600 text-zinc-700 font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                    <FaEye className="w-3.5 h-3.5" /> View
+                  </button>
+                  {joinUrl && isJoinable ? (
+                    <a href={joinUrl} target="_blank" rel="noreferrer" className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs shadow-sm">
+                      <FaVideo className="w-3.5 h-3.5" /> {joinButtonText}
+                    </a>
                   ) : (
-                    joinUrl && (
-                      isJoinable ? (
-                        <a
-                          href={joinUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer text-xs"
-                        >
-                          <FaVideo className="w-3.5 h-3.5" /> {joinButtonText}
-                        </a>
-                      ) : (
-                        <button
-                          disabled
-                          className="flex-1 py-2 bg-zinc-100 text-zinc-400 font-bold rounded-xl border border-zinc-200 transition-all flex items-center justify-center gap-1 cursor-not-allowed text-xs"
-                        >
-                          <FaVideo className="w-3.5 h-3.5" /> {joinButtonText}
-                        </button>
-                      )
-                    )
+                    <button onClick={() => router.push(`/teacher/live-classes/reports/${lc.id}`)} className="flex-1 py-2 bg-zinc-100 hover:bg-violet-50 hover:text-violet-600 text-zinc-700 font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                      <FaVideo className="w-3.5 h-3.5" /> {joinButtonText}
+                    </button>
                   )}
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* CREATE MODAL */}
+      {isFormModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+                <FaVideo className="text-violet-500" />
+                Schedule New Live Class
+              </h3>
+              <button onClick={() => setIsFormModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[78vh] overflow-y-auto custom-scrollbar">
+              {formError && <div className="p-3 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-xl font-bold">{formError}</div>}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Title *</label>
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Science Revision Class" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Topic</label>
+                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic / Lesson focus" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Subject *</label>
+                  <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700 cursor-pointer">
+                    <option value="">Select Subject</option>
+                    {meta?.subjects?.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Platform</label>
+                  <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700 cursor-pointer">
+                    {meta?.platforms?.map((p) => (
+                      <option key={p.key} value={p.key}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Class *</label>
+                  <select value={classId} onChange={(e) => { setClassId(e.target.value); setSectionId(""); }} className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700 cursor-pointer">
+                    <option value="">Select Class</option>
+                    {meta?.classes?.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Section</label>
+                  <select value={sectionId} onChange={(e) => setSectionId(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700 cursor-pointer">
+                    <option value="">All Sections</option>
+                    {(meta?.classes?.find((c) => c.id === classId)?.sections || []).map((sec) => (
+                      <option key={sec.id} value={sec.id}>{sec.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Meeting URL</label>
+                <input type="text" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://meet.google.com/" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Date *</label>
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Schedule Time</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                    <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100">
+                <button type="button" onClick={() => setIsFormModalOpen(false)} className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-xs cursor-pointer">{submitting ? "Scheduling..." : "Schedule Live Class"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DETAIL MODAL */}
+      {isDetailModalOpen && activeClass && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-3xl overflow-hidden animate-scale-up text-left flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+                <FaEye className="text-violet-500" />
+                Live Class Details
+              </h3>
+              <button onClick={() => setIsDetailModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+            </div>
+
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Title</span>
+                    <span className="font-extrabold text-zinc-800 text-sm">{activeClass.title}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Topic</span>
+                    <span className="font-semibold text-zinc-600 text-xs">{activeClass.topic || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Platform</span>
+                    <span className="font-semibold text-zinc-600 text-xs">{activeClass.platform_label || activeClass.platform || "—"}</span>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Schedule</span>
+                    <span className="font-semibold text-zinc-600 text-xs">{activeClass.scheduled_at_label || activeClass.scheduled_at}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Duration</span>
+                    <span className="font-semibold text-zinc-600 text-xs">{activeClass.duration_minutes || 0} Minutes</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Class / Subject</span>
+                    <span className="font-semibold text-zinc-600 text-xs">
+                      {activeClass.subject} • {activeClass.class} {activeClass.section ? `(${activeClass.section})` : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end gap-3 shrink-0">
+              <button onClick={() => setIsDetailModalOpen(false)} className="px-5 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold rounded-xl text-xs transition-colors">Close</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

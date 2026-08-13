@@ -23,7 +23,11 @@ import {
   deleteTeacherSection,
   generateTeacherSectionRollNumbers,
   updateTeacherClassSubject,
-  deleteTeacherClassSubject
+  deleteTeacherClassSubject,
+  getAdminClassStreams,
+  addAdminStream,
+  updateAdminStream,
+  deleteAdminStream
 } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
@@ -92,6 +96,15 @@ export default function AdminClassesPage() {
   const [roomNumber, setRoomNumber] = useState("");
   const [capacity, setCapacity] = useState("40");
 
+  // Stream Modal
+  const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
+  const [editingStreamId, setEditingStreamId] = useState(null);
+  const [streamName, setStreamName] = useState("");
+  const [streamCode, setStreamCode] = useState("");
+  const [streamSortOrder, setStreamSortOrder] = useState("1");
+  const [streamActive, setStreamActive] = useState(true);
+  const [activeClassStreams, setActiveClassStreams] = useState([]);
+
   // Subject Assignment Modal
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [editingClassSubjectId, setEditingClassSubjectId] = useState(null);
@@ -138,7 +151,25 @@ export default function AdminClassesPage() {
   const handleOpenDetail = async (cls) => {
     try {
       const detailed = await getTeacherClassDetail(cls.id);
-      setActiveClass(detailed.class || detailed.data || detailed || cls);
+      const classData = detailed.class || detailed.data || detailed || cls;
+      setActiveClass(classData);
+      
+      // Load streams if class is stream based (like Class 11/12)
+      const classNameStr = (classData.name || "").toLowerCase();
+      const isStreamClass = classData.is_stream_based || classData.isStreamBased || classNameStr.includes("11") || classNameStr.includes("12");
+      
+      if (isStreamClass) {
+        try {
+          const streamsData = await getAdminClassStreams(cls.id);
+          setActiveClassStreams(streamsData.streams || streamsData.data || (Array.isArray(streamsData) ? streamsData : []));
+        } catch (streamErr) {
+          console.error("Failed to load streams for this class", streamErr);
+          setActiveClassStreams([]);
+        }
+      } else {
+        setActiveClassStreams([]);
+      }
+
       setIsDetailModalOpen(true);
     } catch (err) {
       toast.error("Failed to load class details: " + (err.message || err));
@@ -307,7 +338,92 @@ export default function AdminClassesPage() {
     }
   };
 
+  // Streams Management
+  const handleOpenAddStream = () => {
+    setEditingStreamId(null);
+    setStreamName("");
+    setStreamCode("");
+    setStreamSortOrder("1");
+    setStreamActive(true);
+    setFormError("");
+    setIsStreamModalOpen(true);
+  };
+
+  const handleOpenEditStream = (stm) => {
+    setEditingStreamId(stm.id);
+    setStreamName(stm.name || "");
+    setStreamCode(stm.code || "");
+    setStreamSortOrder(String(stm.sort_order || 1));
+    setStreamActive(stm.is_active ?? true);
+    setFormError("");
+    setIsStreamModalOpen(true);
+  };
+
+  const handleSaveStream = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    if (!streamName.trim() || !streamCode.trim()) {
+      setFormError("Stream Name and Code are required.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const payload = {
+        name: streamName.trim(),
+        code: streamCode.trim(),
+        sort_order: parseInt(streamSortOrder) || 1,
+        is_active: streamActive
+      };
+
+      if (editingStreamId) {
+        await updateAdminStream(editingStreamId, payload);
+        toast.success("Stream updated successfully!");
+      } else {
+        await addAdminStream(activeClass.id, payload);
+        toast.success("Stream added successfully!");
+      }
+
+      setIsStreamModalOpen(false);
+      // Reload streams
+      try {
+        const streamsData = await getAdminClassStreams(activeClass.id);
+        setActiveClassStreams(streamsData.streams || streamsData.data || (Array.isArray(streamsData) ? streamsData : []));
+      } catch (err) {
+        console.error("Failed to refresh streams", err);
+      }
+    } catch (err) {
+      setFormError(err.response?.data?.message || err.message || "Failed to save stream.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteStream = async (streamId) => {
+    const isConfirmed = await dialog.confirm({
+      title: "Delete Stream",
+      message: "Are you sure you want to delete this stream? Note: Cannot delete if students are assigned to it.",
+      type: "delete",
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
+    if (!isConfirmed) return;
+    try {
+      await deleteAdminStream(streamId);
+      toast.success("Stream deleted!");
+      try {
+        const streamsData = await getAdminClassStreams(activeClass.id);
+        setActiveClassStreams(streamsData.streams || streamsData.data || (Array.isArray(streamsData) ? streamsData : []));
+      } catch (err) {
+        console.error("Failed to refresh streams", err);
+      }
+    } catch (err) {
+      toast.error("Failed to delete stream: " + (err.response?.data?.message || err.message || err));
+    }
+  };
+
   // Subject Assignment Management
+
   const handleOpenAddSubject = () => {
     setEditingClassSubjectId(null);
     setSubjectId("");
@@ -647,6 +763,92 @@ export default function AdminClassesPage() {
         </div>
       )}
 
+      {/* Create / Edit Stream Modal */}
+      {isStreamModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+                <FaLayerGroup className="text-emerald-500" />
+                {editingStreamId ? "Update Stream" : "Add Stream"}
+              </h3>
+              <button onClick={() => setIsStreamModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                <FaTimes className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStream} className="p-6 space-y-4">
+              {formError && (
+                <div className="p-3 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-xl font-bold text-center">
+                  {formError}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Stream Name *</label>
+                <input 
+                  type="text"
+                  value={streamName}
+                  onChange={(e) => setStreamName(e.target.value)}
+                  placeholder="e.g. Science"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold text-black text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Stream Code *</label>
+                <input 
+                  type="text"
+                  value={streamCode}
+                  onChange={(e) => setStreamCode(e.target.value)}
+                  placeholder="e.g. SCI"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold text-black text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Sort Order</label>
+                <input 
+                  type="number"
+                  value={streamSortOrder}
+                  onChange={(e) => setStreamSortOrder(e.target.value)}
+                  placeholder="e.g. 1"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold text-black text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input 
+                  type="checkbox"
+                  id="streamActiveCheck"
+                  checked={streamActive}
+                  onChange={(e) => setStreamActive(e.target.checked)}
+                  className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-zinc-300"
+                />
+                <label htmlFor="streamActiveCheck" className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider cursor-pointer">Stream Active</label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsStreamModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-xl font-bold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold text-xs"
+                >
+                  {submitting ? "Saving..." : "Save Stream"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Class Detail Inspector Modal (Sections & Subjects setup) */}
       {isDetailModalOpen && activeClass && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
@@ -662,6 +864,64 @@ export default function AdminClassesPage() {
             </div>
 
             <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              {/* Streams list block (Only for Class 11/12 or stream-based classes) */}
+              {(() => {
+                const classNameStr = (activeClass.name || "").toLowerCase();
+                const isStreamClass = activeClass.is_stream_based || activeClass.isStreamBased || classNameStr.includes("11") || classNameStr.includes("12");
+                if (!isStreamClass) return null;
+
+                return (
+                  <div className="space-y-3 pb-2 border-b border-zinc-100">
+                    <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                      <h4 className="font-extrabold text-zinc-800 text-xs flex items-center gap-1.5">
+                        <FaLayerGroup className="text-emerald-500" />
+                        Streams ({activeClassStreams?.length || 0})
+                      </h4>
+                      <button
+                        onClick={handleOpenAddStream}
+                        className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[10px] uppercase tracking-wider flex items-center gap-1"
+                      >
+                        <FaPlus className="w-3 h-3" /> Add Stream
+                      </button>
+                    </div>
+
+                    {(!activeClassStreams || activeClassStreams.length === 0) ? (
+                      <p className="text-[10px] text-zinc-400 italic">No streams configured for this class.</p>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {activeClassStreams.map(stm => (
+                          <div key={stm.id} className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 flex items-center justify-between">
+                            <div>
+                              <span className="font-extrabold text-zinc-800 text-xs flex items-center gap-2">
+                                {stm.name}
+                                {stm.is_active === false && <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded text-[8px] uppercase tracking-widest">Inactive</span>}
+                              </span>
+                              <span className="text-[9px] text-zinc-400 font-bold block">Code: {stm.code || "N/A"} • Order: {stm.sort_order || 1}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenEditStream(stm)}
+                                className="p-1 text-zinc-400 hover:text-violet-600 rounded"
+                                title="Edit Stream"
+                              >
+                                <FaEdit className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteStream(stm.id)}
+                                className="p-1 text-zinc-400 hover:text-rose-600 rounded"
+                                title="Delete Stream"
+                              >
+                                <FaTrash className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Sections list block */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-2">

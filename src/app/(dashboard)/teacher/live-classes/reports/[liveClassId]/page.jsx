@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTeacherProfile } from "@/features/teachers/redux/teacherThunk";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import { 
   FaArrowLeft, FaVideo, FaUsers, FaCheckCircle, 
-  FaTimesCircle, FaClock, FaExclamationTriangle, FaUser 
+  FaTimesCircle, FaClock, FaExclamationTriangle, FaUser, FaTimes 
 } from "react-icons/fa";
 import { getTeacherLiveClassReportDetail } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
@@ -14,6 +16,9 @@ import { toast } from "sonner";
 export default function TeacherLiveClassReportDetailPage() {
   const router = useRouter();
   const { liveClassId } = useParams();
+  const dispatch = useDispatch();
+
+  const { profile } = useSelector((state) => state.teachers);
 
   const [detailData, setDetailData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +26,9 @@ export default function TeacherLiveClassReportDetailPage() {
   const fetchDetail = async () => {
     try {
       setLoading(true);
+      if (!profile) {
+        await dispatch(fetchTeacherProfile()).unwrap();
+      }
       const data = await getTeacherLiveClassReportDetail(liveClassId);
       setDetailData(data);
     } catch (err) {
