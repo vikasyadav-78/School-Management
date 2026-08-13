@@ -46,7 +46,7 @@ export default function TeacherSalaryPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
           <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total Days</label>
-          <h3 className="text-xl font-extrabold text-zinc-800 mt-1">{stats.total_days || 0}</h3>
+          <h3 className="text-xl font-extrabold text-zinc-800 mt-1">{stats.total || 0}</h3>
         </div>
         <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-center">
           <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Present</label>

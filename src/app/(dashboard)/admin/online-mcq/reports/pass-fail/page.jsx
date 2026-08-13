@@ -108,7 +108,7 @@ export default function AdminOnlineMcqPassFailReportPage() {
 
       <div className="space-y-6">
         {/* Filters Panel */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-end gap-4">
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-end gap-4 text-black">
           <div className="w-full md:max-w-xs text-xs font-semibold">
             <Select
               label="Filter Class"
@@ -124,7 +124,7 @@ export default function AdminOnlineMcqPassFailReportPage() {
             />
           </div>
           <div className="relative flex items-end w-full md:max-w-xs">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pb-3 pointer-events-none text-zinc-400">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-zinc-400">
               <FaSearch className="w-3.5 h-3.5" />
             </span>
             <input

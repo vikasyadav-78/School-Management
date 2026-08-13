@@ -5,12 +5,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
-  FaSearch, FaFileInvoiceDollar, FaCalendarAlt, FaHistory, FaCheckCircle, FaHourglassHalf, 
+import {
+  FaSearch, FaFileInvoiceDollar, FaCalendarAlt, FaHistory, FaCheckCircle, FaHourglassHalf,
   FaTimesCircle, FaDownload, FaChevronLeft, FaExpand, FaBoxes
 } from "react-icons/fa";
-import { 
-  getInventoryMeta, 
+import {
+  getInventoryMeta,
   getPurchaseOrders,
   receivePurchaseOrder
 } from "@/features/admin/services/admin.service";
@@ -24,7 +24,7 @@ export default function AdminPurchaseOrdersPage() {
   const [listLoading, setListLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [totals, setTotals] = useState(null);
-  
+
   // Roster options
   const [statuses, setStatuses] = useState([]);
 
@@ -155,9 +155,9 @@ export default function AdminPurchaseOrdersPage() {
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in text-xs text-left">
         <div className="flex items-center gap-3">
-          <Link 
-            href="/admin/inventory" 
-            className="p-2 border border-zinc-200 hover:border-zinc-300 rounded-xl bg-white text-zinc-500 hover:text-zinc-805 transition-all cursor-pointer"
+          <Link
+            href="/admin/inventory"
+            className="p-2 border border-zinc-200 hover:border-zinc-300 rounded-xl bg-white text-zinc-500 hover:text-zinc-800 transition-all cursor-pointer"
           >
             <FaChevronLeft className="w-3.5 h-3.5" />
           </Link>
@@ -183,7 +183,7 @@ export default function AdminPurchaseOrdersPage() {
               <span className="text-sm font-black text-violet-700 block mt-1">₹{totals.amount?.toLocaleString() || 0}</span>
             </div>
             <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-2xl shadow-sm">
-              <span className="text-[10px] text-amber-555 font-bold block uppercase tracking-wider">GST Accumulation</span>
+              <span className="text-[10px] text-amber-500 font-bold block uppercase tracking-wider">GST Accumulation</span>
               <span className="text-sm font-black text-amber-700 block mt-1">₹{totals.gst?.toLocaleString() || 0}</span>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function AdminPurchaseOrdersPage() {
               placeholder="Search orders by PO no or product name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-805"
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-800"
             />
           </div>
 
@@ -274,15 +274,14 @@ export default function AdminPurchaseOrdersPage() {
                     const isExpanded = expandedOrderId === po.id;
                     const itemsList = po.items || [];
                     const canReceive = po.can_receive || po.status === "confirmed";
-
                     return (
                       <Fragment key={po.id}>
-                        <tr className="hover:bg-zinc-55/50 transition-colors">
-                          <td className="px-6 py-4 font-mono font-black text-zinc-805 uppercase">
+                        <tr className="hover:bg-zinc-50/50 transition-colors">
+                          <td className="px-6 py-4 font-mono font-black text-zinc-800 uppercase">
                             {po.order_no}
                           </td>
                           <td className="px-6 py-4 text-center">₹{po.subtotal?.toLocaleString()}</td>
-                          <td className="px-6 py-4 text-center text-amber-605">₹{po.gst_amount?.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-center text-amber-600">₹{po.gst_amount?.toLocaleString()}</td>
                           <td className="px-6 py-4 text-center font-extrabold text-violet-600">₹{po.total_amount?.toLocaleString()}</td>
                           <td className="px-6 py-4 text-center text-zinc-500 text-[10px]">{po.created_at_label || po.created_at}</td>
                           <td className="px-6 py-4 text-center">
@@ -309,7 +308,7 @@ export default function AdminPurchaseOrdersPage() {
                               </button>
                               <button
                                 onClick={() => setExpandedOrderId(isExpanded ? null : po.id)}
-                                className="px-2.5 py-1.5 border border-zinc-200 hover:border-zinc-300 rounded-lg text-zinc-500 hover:text-zinc-805 inline-flex items-center gap-1 transition-all cursor-pointer text-[10px]"
+                                className="px-2.5 py-1.5 border border-zinc-200 hover:border-zinc-300 rounded-lg text-zinc-500 hover:text-zinc-800 inline-flex items-center gap-1 transition-all cursor-pointer text-[10px]"
                               >
                                 <FaExpand className="w-2.5 h-2.5" /> Items
                               </button>
@@ -344,7 +343,7 @@ export default function AdminPurchaseOrdersPage() {
                                       {itemsList.map((item, idx) => (
                                         <tr key={item.id || idx} className="hover:bg-zinc-50/50">
                                           <td className="px-4 py-2 font-bold text-zinc-800 capitalize">{item.product}</td>
-                                          <td className="px-4 py-2 text-center text-zinc-805">{item.quantity}</td>
+                                          <td className="px-4 py-2 text-center text-zinc-800">{item.quantity}</td>
                                           <td className="px-4 py-2 text-center">₹{item.unit_price}</td>
                                           <td className="px-4 py-2 text-center text-zinc-400">{item.gst_percent}%</td>
                                           <td className="px-4 py-2 text-center text-amber-600">₹{item.gst_amount}</td>

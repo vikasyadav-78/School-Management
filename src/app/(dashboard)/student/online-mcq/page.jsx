@@ -549,36 +549,36 @@ export default function StudentOnlineMcqPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab("available")}
-            className={`px-4 py-2 font-bold uppercase text-[10px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "available" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
             Available Exams
-            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${activeTab === "available" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === "available" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
               {counts.available}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("upcoming")}
-            className={`px-4 py-2 font-bold uppercase text-[10px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "upcoming" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
             Upcoming Exams
-            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${activeTab === "upcoming" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === "upcoming" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
               {counts.upcoming}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("completed")}
-            className={`px-4 py-2 font-bold uppercase text-[10px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "completed" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
             Completed Exams
-            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${activeTab === "completed" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === "completed" ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"}`}>
               {counts.completed}
             </span>
           </button>
@@ -776,49 +776,59 @@ export default function StudentOnlineMcqPage() {
 
       {/* Result Modal */}
       {isResultModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
-              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-                <FaTrophy className="text-violet-500" /> Exam Result & Leaderboard
-              </h3>
-              <button onClick={() => setIsResultModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+    <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+        <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+          <FaTrophy className="text-violet-500" /> Exam Result & Leaderboard
+        </h3>
+        <button onClick={() => setIsResultModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+          <FaTimes className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        {loadingResult ? (
+          <div className="flex items-center justify-center py-10"><PageLoader /></div>
+        ) : resultData ? (
+          <>
+            <div className="p-4 bg-violet-50 border border-violet-100 rounded-2xl text-center space-y-1">
+              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Your Final Score</span>
+              
+              {/* Har tarah ki API key mapping handle ki gayi hai */}
+              <span className="text-2xl font-black text-violet-900">
+                {resultData.score ?? resultData.marks_obtained ?? resultData.data?.score ?? 0} / {resultData.total_marks ?? resultData.totalMarks ?? resultData.data?.total_marks ?? 0}
+              </span>
+
+              <span className="text-xs font-extrabold text-violet-700 block">
+                Grade: {resultData.grade ?? resultData.data?.grade ?? "N/A"} ({resultData.percentage ?? resultData.data?.percentage ?? 0}%)
+              </span>
             </div>
 
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              {loadingResult ? (
-                <div className="flex items-center justify-center py-10"><PageLoader /></div>
-              ) : resultData ? (
-                <>
-                  <div className="p-4 bg-violet-50 border border-violet-100 rounded-2xl text-center space-y-1">
-                    <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Your Final Score</span>
-                    <span className="text-2xl font-black text-violet-900">{resultData.score ?? resultData.marks_obtained ?? 0} / {resultData.total_marks || 100}</span>
-                    <span className="text-xs font-extrabold text-violet-700 block">Grade: {resultData.grade || "A"} ({resultData.percentage || 0}%)</span>
-                  </div>
-
-                  {resultData.leaderboard && resultData.leaderboard.length > 0 && (
-                    <div className="space-y-2 pt-2">
-                      <h4 className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">Leaderboard Top Performers</h4>
-                      <div className="divide-y divide-zinc-100 text-xs">
-                        {resultData.leaderboard.map((lb, i) => (
-                          <div key={lb.id || i} className="py-2 flex justify-between items-center">
-                            <span className="font-bold text-zinc-800">#{i + 1} {lb.student_name || lb.name}</span>
-                            <span className="font-black text-violet-600">{lb.score || lb.marks} Marks</span>
-                          </div>
-                        ))}
-                      </div>
+            {/* Leaderboard Section */}
+            {(resultData.leaderboard || resultData.data?.leaderboard) && (
+              <div className="space-y-2 pt-2">
+                <h4 className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">Leaderboard Top Performers</h4>
+                <div className="divide-y divide-zinc-100 text-xs">
+                  {(resultData.leaderboard || resultData.data?.leaderboard || []).map((lb, i) => (
+                    <div key={lb.id || i} className="py-2 flex justify-between items-center">
+                      <span className="font-bold text-zinc-800">#{i + 1} {lb.student_name || lb.name}</span>
+                      <span className="font-black text-violet-600">{lb.score ?? lb.marks ?? 0} Marks</span>
                     </div>
-                  )}
-                </>
-              ) : null}
-            </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : null}
+      </div>
 
-            <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-end">
-              <button onClick={() => setIsResultModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs">Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-end">
+        <button onClick={() => setIsResultModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs">Close</button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

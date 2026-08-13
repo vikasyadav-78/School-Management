@@ -65,7 +65,7 @@ export const getSalaryHistory = async () => {
 
 export const getFinanceReportSummary = async (params = {}) => {
   // Configured api instance ka use ho raha hai jisse base URL and tokens automatically attach ho sakein
-  const response = await api.get("/admin/fees/", { params });
+  const response = await api.get("/admin/fees", { params });
   return response.data;
 };
 

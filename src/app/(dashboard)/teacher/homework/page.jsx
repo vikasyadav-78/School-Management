@@ -238,8 +238,7 @@ export default function TeacherHomeworkPage() {
 
                 <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-4 mt-4 border-t border-zinc-100">
                   <span className="flex items-center gap-1.5">
-                    <FaUser className="text-zinc-400 w-3 h-3" />
-                    {hw.teacher?.full_name || hw.teacher || "N/A"}
+                    marks : {hw.max_marks || "N/A"}
                   </span>
                   <span className={`inline-flex px-2 py-0.5 text-[9px] font-extrabold rounded-md uppercase tracking-wider border ${
                     hw.status?.toLowerCase() === "active" || hw.status?.toLowerCase() === "published"

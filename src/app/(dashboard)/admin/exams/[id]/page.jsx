@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { FaArrowLeft } from "react-icons/fa";
@@ -27,7 +27,8 @@ import {
   removeExam
 } from "@/features/exams/redux/examThunk";
 
-export default function ExamDetailPage({ params }) {
+export default function ExamDetailPage() {
+  const params = useParams();
   const { id } = params;
   const dispatch = useDispatch();
   const router = useRouter();

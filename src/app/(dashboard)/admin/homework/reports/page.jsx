@@ -272,7 +272,7 @@ export default function AdminHomeworkReportsPage() {
                           <td className="px-6 py-4 text-center font-extrabold">{row.homework_count}</td>
                           <td className="px-6 py-4 text-center font-extrabold text-emerald-600">{row.submission_count}</td>
                           <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black bg-violet-50 text-violet-600 border border-violet-100 uppercase">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-violet-50 text-violet-600 border border-violet-100 uppercase">
                               {row.graded_count} Graded
                             </span>
                           </td>

@@ -213,7 +213,7 @@ export default function TeacherCertificatesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider ${
                         cert.type === "tc" ? "bg-amber-50 border-amber-100 text-amber-600" :
                         cert.type === "character" ? "bg-blue-50 border-blue-100 text-blue-600" :
                         "bg-emerald-50 border-emerald-100 text-emerald-600"
@@ -227,7 +227,7 @@ export default function TeacherCertificatesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <button
                         onClick={() => handleDownload(cert)}
-                        className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 mx-auto text-[10px] cursor-pointer"
+                        className="px-3 py-2.5 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 mx-auto text-[11px] cursor-pointer"
                       >
                         <FaDownload className="w-3 h-3" /> Download PDF
                       </button>

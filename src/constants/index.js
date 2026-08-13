@@ -138,8 +138,8 @@ export const TEACHER_NAVIGATION_ITEMS = [
   { title: "Marks Entry", path: "/teacher/marks", icon: "FaGraduationCap" },
   { title: "My Salary", path: "/teacher/salary", icon: "FaMoneyBillWave" },
   { title: "Timetable", path: "/teacher/timetable", icon: "FaCalendarAlt" },
-  { title: "My Profile", path: "/teacher/profile", icon: "FaUser" },
   { title: "My Live Classes", path: "/teacher/live-classes", icon: "FaVideo" },
+  { title: "My Profile", path: "/teacher/profile", icon: "FaUser" },
   
   // Administrative Operations expandable submenu
   {

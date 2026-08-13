@@ -83,7 +83,7 @@ export default function ExamReportToppersPage({ params }) {
 
       <div className="space-y-6">
         {/* Filters Bar */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm text-black">
           <h3 className="font-extrabold text-zinc-800 text-sm mb-4">Filters</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
@@ -126,8 +126,8 @@ export default function ExamReportToppersPage({ params }) {
                 { value: "50", label: "Top 50" }
               ]}
             />
-            <div className="relative flex items-end">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pb-3 pointer-events-none text-zinc-400">
+            <div className="relative flex items-center">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-zinc-400">
                 <FaSearch className="w-3.5 h-3.5" />
               </span>
               <input

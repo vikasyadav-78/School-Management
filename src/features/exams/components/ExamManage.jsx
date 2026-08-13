@@ -46,8 +46,8 @@ export default function ExamManage({ exam = {}, classes = [], schedules = [], on
   const [singleForm, setSingleForm] = useState({
     subject_id: "",
     exam_date: "",
-    start_time: "",
-    end_time: "",
+    start_time: "09:00",
+    end_time: "12:00",
     theory_max: 70,
     practical_max: 20,
     internal_max: 10,
@@ -135,44 +135,54 @@ export default function ExamManage({ exam = {}, classes = [], schedules = [], on
     }
   };
 
-  const handleBulkSubmit = async (e) => {
-    e.preventDefault();
-    const filledSchedules = bulkSchedules.filter((s) => s.exam_date && s.start_time && s.end_time);
-    if (filledSchedules.length === 0) {
-      toast.error("Please fill schedule details (Date, Start/End times) for at least one subject.");
-      return;
-    }
+ const handleBulkSubmit = async (e) => {
+  e.preventDefault();
+  const filledSchedules = bulkSchedules.filter(
+    (s) => s.exam_date && s.exam_date.trim() !== "" && s.start_time && s.end_time
+  );
 
-    try {
-      setSubmitting(true);
-      const payload = {
-        schedules: filledSchedules.map((s) => ({
-          school_class_id: selectedClassId,
-          section_id: selectedSectionId,
-          subject_id: s.subject_id,
-          exam_date: s.exam_date,
-          start_time: s.start_time,
-          end_time: s.end_time,
-          theory_max: Number(s.theory_max),
-          practical_max: Number(s.practical_max),
-          internal_max: Number(s.internal_max),
-          pass_marks: Number(s.pass_marks),
-          room: s.room,
-          exam_center: s.exam_center,
-          max_marks: Number(s.theory_max) + Number(s.practical_max) + Number(s.internal_max)
-        }))
-      };
+  if (filledSchedules.length === 0) {
+    toast.error("Please fill Exam Date, Start Time & End Time for at least one subject.");
+    return;
+  }
 
-      await dispatch(addSchedulesBulk({ examId: exam.id, data: payload })).unwrap();
-      toast.success(`Successfully created ${filledSchedules.length} schedules!`);
+  try {
+    setSubmitting(true);
+    
+    const payload = {
+      school_class_id: selectedClassId,
+      section_id: selectedSectionId,
+      schedules: filledSchedules.map((s) => ({
+        subject_id: s.subject_id,
+        exam_date: s.exam_date,
+        start_time: s.start_time.length === 5 ? `${s.start_time}:00` : s.start_time,
+        end_time: s.end_time.length === 5 ? `${s.end_time}:00` : s.end_time,
+        theory_max: Number(s.theory_max || 0),
+        practical_max: Number(s.practical_max || 0),
+        internal_max: Number(s.internal_max || 0),
+        pass_marks: Number(s.pass_marks || 0),
+        room: s.room || "",
+        exam_center: s.exam_center || "",
+        max_marks: Number(s.theory_max || 0) + Number(s.practical_max || 0) + Number(s.internal_max || 0)
+      }))
+    };
+
+    const res = await dispatch(addSchedulesBulk({ examId: exam.id, data: payload })).unwrap();
+     
+    if (res && res.success === false) {
+      toast.warning(res.message || "No new schedules were created. Subjects might already exist.");
+    } else {
+      toast.success(`Schedules processed successfully!`);
       setIsBulkModalOpen(false);
       if (onRefresh) onRefresh();
-    } catch (err) {
-      toast.error(err || "Failed to create bulk schedules");
-    } finally {
-      setSubmitting(false);
     }
-  };
+  } catch (err) { 
+    const errorMessage = typeof err === "object" ? err.message : err;
+    toast.error(errorMessage || "Failed to create bulk schedules");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleDeleteSingle = async (row) => {
     const confirmed = await dialog.confirm({
@@ -297,7 +307,7 @@ export default function ExamManage({ exam = {}, classes = [], schedules = [], on
       {/* Selection Header */}
       <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
         <h3 className="font-extrabold text-zinc-800 text-sm mb-4">Select Class and Section</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-black">
           <Select
             label="Class"
             value={selectedClassId}
@@ -412,7 +422,7 @@ export default function ExamManage({ exam = {}, classes = [], schedules = [], on
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Start Time"
-                type="time"
+                type="time" 
                 value={singleForm.start_time}
                 onChange={(e) => setSingleForm({ ...singleForm, start_time: e.target.value })}
               />

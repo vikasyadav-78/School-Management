@@ -24,10 +24,14 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 
 export default function AdminManageLeavesPage() {
   const dialog = useAppDialog();
+
+  // 1. All Hooks at Top Level
   const [leaves, setLeaves] = useState([]);
+  const [countsData, setCountsData] = useState({ pending: 0, approved: 0, rejected: 0, cancelled: 0 });
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [forbidden, setForbidden] = useState(false);
+  
   const [typeOptions, setTypeOptions] = useState([
     { value: "all", label: "All Applicants" },
     { value: "student", label: "Students" },
@@ -42,6 +46,7 @@ export default function AdminManageLeavesPage() {
   ]);
 
   const [typeFilter, setTypeFilter] = useState("all");
+  // Default filter set to "pending"
   const [statusFilter, setStatusFilter] = useState("pending");
 
   const [activeLeave, setActiveLeave] = useState(null);
@@ -49,6 +54,7 @@ export default function AdminManageLeavesPage() {
   const [actionType, setActionType] = useState("approve");
   const [remarks, setRemarks] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchMeta = async () => {
     try {
@@ -69,13 +75,21 @@ export default function AdminManageLeavesPage() {
       if (isInitial) setLoading(true);
       else setListLoading(true);
 
-      const params = {};
-      if (typeFilter) params.type = typeFilter;
-      if (statusFilter) params.status = statusFilter;
+      const params = {
+        type: typeFilter || "all",
+        status: statusFilter || "all"
+      };
+
+      console.log("Fetching leaves with params:", params);
 
       const listData = await getAdminManageLeaves(params);
       const nextLeaves = listData.leaves || listData.data || (Array.isArray(listData) ? listData : []);
+      
       setLeaves(nextLeaves);
+      
+      if (listData.counts || listData.stats) {
+        setCountsData(listData.counts || listData.stats);
+      }
     } catch (err) {
       if (isInitial && (err.status === 403 || err.statusCode === 403 || (err.message && err.message.includes("403")))) {
         setForbidden(true);
@@ -140,6 +154,7 @@ export default function AdminManageLeavesPage() {
     }
   };
 
+  // Early Returns
   if (forbidden) {
     return (
       <DashboardLayout>
@@ -166,9 +181,7 @@ export default function AdminManageLeavesPage() {
     );
   }
 
-  // Local Search & Stats Calculations
-  const [searchTerm, setSearchTerm] = useState("");
-
+  // Local Search Filtering
   const filteredLeaves = leaves.filter((leave) => {
     const term = searchTerm.toLowerCase().trim();
     const applicantName = (leave.applicant_name || leave.student_name || leave.teacher_name || leave.name || "").toLowerCase();
@@ -177,10 +190,10 @@ export default function AdminManageLeavesPage() {
     return !term || applicantName.includes(term) || reason.includes(term) || type.includes(term);
   });
 
-  const totalCount = leaves.length;
-  const pendingCount = leaves.filter(l => String(l.status || l.status_label || "").toLowerCase() === "pending").length;
-  const approvedCount = leaves.filter(l => String(l.status || l.status_label || "").toLowerCase() === "approved").length;
-  const rejectedCount = leaves.filter(l => String(l.status || l.status_label || "").toLowerCase() === "rejected").length;
+  const pendingCount = countsData.pending ?? 0;
+  const approvedCount = countsData.approved ?? 0;
+  const rejectedCount = countsData.rejected ?? 0;
+  const totalCount = pendingCount + approvedCount + rejectedCount;
 
   return (
     <DashboardLayout>
@@ -341,7 +354,7 @@ export default function AdminManageLeavesPage() {
                           {leave.days || leave.days_count || leave.total_days || 1} Days
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex px-2 py-0.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider ${
+                          <span className={`inline-flex px-2 py-0.5 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider ${
                             statusKey === "approved" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                             statusKey === "rejected" ? "bg-rose-50 text-rose-600 border-rose-100" :
                             statusKey === "pending" ? "bg-amber-50 text-amber-600 border-amber-100 animate-pulse" :
