@@ -5,18 +5,20 @@ import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
-  FaSearch, FaPlus, FaTimes, FaBook, FaEdit, FaToggleOn, FaToggleOff
+  FaSearch, FaPlus, FaTimes, FaBook, FaEdit, FaToggleOn, FaToggleOff, FaCheck
 } from "react-icons/fa";
 import { 
   getTeacherSubjects,
   addTeacherSubject,
   updateTeacherSubject,
-  toggleTeacherSubjectStatus
+  toggleTeacherSubjectStatus,
+  getTeacherClasses
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
 
 export default function TeacherSubjectsPage() {
   const [subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [forbidden, setForbidden] = useState(false);
@@ -37,13 +39,18 @@ export default function TeacherSubjectsPage() {
   const [code, setCode] = useState("");
   const [type, setType] = useState("theory"); // "theory" | "practical"
   const [isActive, setIsActive] = useState(true);
+  const [selectedClassIds, setSelectedClassIds] = useState([]);
 
   // 1. Initial Load
   const loadSubjects = async () => {
     try {
       setLoading(true);
-      const listData = await getTeacherSubjects();
-      setSubjects(listData.subjects || listData.data || (Array.isArray(listData) ? listData : []));
+      const [subjectsData, classesData] = await Promise.all([
+        getTeacherSubjects(),
+        getTeacherClasses()
+      ]);
+      setSubjects(subjectsData.subjects || subjectsData.data || (Array.isArray(subjectsData) ? subjectsData : []));
+      setClasses(classesData.classes || classesData.data || (Array.isArray(classesData) ? classesData : []));
     } catch (err) {
       if (err.status === 403 || err.statusCode === 403 || (err.message && err.message.includes("403"))) {
         setForbidden(true);
@@ -94,6 +101,7 @@ export default function TeacherSubjectsPage() {
     setIsActive(true);
     setFormError("");
     setEditingSubjectId(null);
+    setSelectedClassIds([]);
   };
 
   const handleOpenAdd = () => {
@@ -108,7 +116,14 @@ export default function TeacherSubjectsPage() {
     setCode(subject.code || "");
     setType(subject.type || "theory");
     setIsActive(!!subject.is_active);
+    setSelectedClassIds(subject.school_class_ids || subject.classes?.map(c => c.id) || []);
     setIsFormModalOpen(true);
+  };
+
+  const handleToggleClass = (classId) => {
+    setSelectedClassIds(prev => 
+      prev.includes(classId) ? prev.filter(id => id !== classId) : [...prev, classId]
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -120,13 +135,19 @@ export default function TeacherSubjectsPage() {
       return;
     }
 
+    if (!editingSubjectId && selectedClassIds.length === 0) {
+      setFormError("Please select at least one class.");
+      return;
+    }
+
     try {
       setSubmitting(true);
       const payload = {
         name: name.trim(),
         code: code.trim(),
         type,
-        is_active: isActive
+        is_active: isActive,
+        school_class_ids: selectedClassIds
       };
 
       if (editingSubjectId) {
@@ -385,6 +406,34 @@ export default function TeacherSubjectsPage() {
                     className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-zinc-300 cursor-pointer"
                   />
                 </div>
+              </div>
+
+              {/* Class Assign Checkboxes */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+                  Assign to Classroom Classes {editingSubjectId ? "(Optional)" : "(Required)"}
+                </label>
+                {classes.length === 0 ? (
+                  <p className="text-[10px] text-zinc-400 italic">No classes configured. Please create classes first.</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 bg-zinc-55 border border-zinc-155 p-3 rounded-xl max-h-[140px] overflow-y-auto text-black">
+                    {classes.map((cls) => {
+                      const isChecked = selectedClassIds.includes(cls.id);
+                      return (
+                        <div 
+                          key={cls.id} 
+                          onClick={() => handleToggleClass(cls.id)}
+                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer select-none transition-all ${isChecked ? "bg-violet-50 border-violet-200 text-violet-750" : "bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-650"}`}
+                        >
+                          <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition-all ${isChecked ? "bg-violet-600 border-violet-600 text-white" : "border-zinc-300 bg-white"}`}>
+                            {isChecked && <FaCheck className="w-2 h-2" />}
+                          </div>
+                          <span className="font-extrabold text-[10px]">{cls.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">

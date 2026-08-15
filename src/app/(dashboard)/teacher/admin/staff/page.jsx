@@ -19,6 +19,7 @@ import {
   printTeacherStaffIdCard
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
+import { api } from "@/services/api";
 
 export default function TeacherStaffPage() {
   const [staffList, setStaffList] = useState([]);
@@ -184,19 +185,17 @@ export default function TeacherStaffPage() {
     }
   };
 
-  const handleOpenIdCard = async (staff, themeKey = "classic") => {
+  const handleOpenIdCard = async (staff) => {
     try {
-      setTargetStaffIdCard(staff);
-      setSelectedTheme(themeKey);
-      setIsIdCardModalOpen(true);
-      setLoadingIdCard(true);
-
-      const data = await getTeacherStaffIdCard(staff.id, { theme: themeKey, format: "json" });
-      setIdCardData(data);
+      const url = staff.id_card_url || `/api/teacher/staff/${staff.id}/id-card?format=print`;
+      const response = await api.get(url);
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(response.data);
+        printWindow.document.close();
+      }
     } catch (err) {
-      toast.error("Failed to load staff ID card: " + (err.message || err));
-    } finally {
-      setLoadingIdCard(false);
+      toast.error("Failed to load authenticated ID card: " + (err.message || err));
     }
   };
 

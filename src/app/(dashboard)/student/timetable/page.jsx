@@ -25,7 +25,7 @@ export default function StudentTimetablePage() {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-center text-red-500 text-sm font-semibold max-w-lg mx-auto mt-10">
+      <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl text-center text-rose-700 text-sm font-semibold max-w-lg mx-auto mt-10">
         Failed to load timetable: {error}
       </div>
     );
@@ -47,7 +47,7 @@ export default function StudentTimetablePage() {
   const sectionName = timetable.section_name || timetable.section || "N/A";
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <PageHeader
         title={`Class Timetable (${weekLabel})`}
         subtitle={`Schedule details for Class ${className}-${sectionName} • Weekly lectures, room allocations, and faculty list.`}
@@ -91,7 +91,7 @@ export default function StudentTimetablePage() {
                           {p.time_label || "N/A"}
                         </span>
                         {(p.start_time || p.end_time) && (
-                          <span className="text-[9px] text-zinc-400 font-extrabold">
+                          <span className="text-[9px] text-zinc-400 font-extrabold font-mono">
                             {p.start_time || "N/A"} - {p.end_time || "N/A"}
                           </span>
                         )}

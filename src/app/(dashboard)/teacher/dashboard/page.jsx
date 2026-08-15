@@ -5,27 +5,27 @@ import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
-import { 
-  FaUserGraduate, FaCalendarCheck, FaChalkboardTeacher, 
+import {
+  FaUserGraduate, FaCalendarCheck, FaChalkboardTeacher,
   FaMoneyBillWave, FaArrowRight, FaCalendarAlt, FaAward,
-  FaBook, FaClock, FaBookOpen, FaChartLine, FaTasks, FaMapMarkerAlt
+  FaBook, FaClock, FaChartLine, FaTasks, FaMapMarkerAlt
 } from "react-icons/fa";
 import { MdOutlineClass, MdNotificationsActive } from "react-icons/md";
-import { 
-  fetchTeacherProfile, 
-  fetchTeacherAttendanceClasses, 
-  fetchTeacherMyAttendance 
+import {
+  fetchTeacherProfile,
+  fetchTeacherAttendanceClasses,
+  fetchTeacherMyAttendance
 } from "@/features/teachers/redux/teacherThunk";
-import { 
-  getHomeworkList, 
-  getTeacherTimetable, 
-  getTeacherManageLiveClasses, 
-  getTeacherManageNotices 
+import {
+  getHomeworkList,
+  getTeacherTimetable,
+  getTeacherManageLiveClasses,
+  getTeacherManageNotices
 } from "@/features/teachers/services/teacher.service";
 
 export default function TeacherDashboardPage() {
   const dispatch = useDispatch();
-  
+
   const { profile, classes, myAttendance, loading: teachersLoading } = useSelector((state) => state.teachers);
 
   const [dashboardData, setDashboardData] = useState({
@@ -48,7 +48,7 @@ export default function TeacherDashboardPage() {
     const fetchDashboardData = async () => {
       try {
         setDashboardData(prev => ({ ...prev, loading: true }));
-        
+
         const [homeworkRes, timetableRes, liveClassesRes, noticesRes] = await Promise.allSettled([
           getHomeworkList(),
           getTeacherTimetable(),
@@ -72,14 +72,14 @@ export default function TeacherDashboardPage() {
           const daysData = ttData?.days || [];
           const byDay = ttData?.by_day || [];
           const slotsData = ttData?.slots || [];
-          
+
           const scheduleData = byDay.length > 0 ? byDay : daysData.map(d => ({
             key: d.key,
             slots: slotsData.filter(s => s.day === d.key)
           }));
-          
+
           wkClasses = scheduleData.reduce((acc, curr) => acc + (curr.slots?.length || 0), 0);
-          
+
           // Get today's schedule
           const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           const todayKey = daysOfWeek[new Date().getDay()];
@@ -120,7 +120,7 @@ export default function TeacherDashboardPage() {
         setDashboardData(prev => ({ ...prev, loading: false, error: "Failed to load dashboard data." }));
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 
@@ -137,12 +137,9 @@ export default function TeacherDashboardPage() {
   const activeClass = classes?.[0] || {};
   const activeSection = activeClass?.sections?.[0]?.name || activeClass?.sections?.[0] || "A";
 
-  // Common styles
-  const cardBgClass = "bg-white border border-zinc-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group";
-
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
-      <PageHeader 
+    <div className="space-y-8 animate-fade-in text-left pb-10 w-full">
+      <PageHeader
         title={`Welcome back, ${teacher.full_name || profile.name || 'Teacher'}!`}
         subtitle={`Faculty Member • Department of ${teacher.specialization || "General"} • Assigned to Class ${activeClass.name || activeClass.class_name || "N/A"}-${activeSection}`}
       />
@@ -150,88 +147,88 @@ export default function TeacherDashboardPage() {
       {/* Stats Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Metric Card 1 - Homework Assigned */}
-        <div className={cardBgClass}>
+        <div className="bg-white border border-zinc-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-full translate-x-6 -translate-y-6 group-hover:scale-110 transition-transform" />
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-violet-100 text-violet-600 rounded-xl">
+            <div className="p-3 bg-violet-50 border border-violet-100 text-violet-600 rounded-xl shrink-0">
               <FaBook className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider whitespace-nowrap">Homework Assigned</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Homework Assigned</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.homeworkCount}
               </h3>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-            <span className="whitespace-nowrap">Active Assignments</span>
-            <Link href="/teacher/homework" className="text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
+          <div className="mt-4 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+            <span className="whitespace-nowrap font-medium">Active Assignments</span>
+            <Link href="/teacher/homework" className="text-violet-600 hover:text-violet-700 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
               Manage <FaArrowRight className="w-2.5 h-2.5" />
             </Link>
           </div>
         </div>
 
         {/* Metric Card 2 - Weekly Classes */}
-        <div className={cardBgClass}>
+        <div className="bg-white border border-zinc-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full translate-x-6 -translate-y-6 group-hover:scale-110 transition-transform" />
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl shrink-0">
               <MdOutlineClass className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider whitespace-nowrap">Weekly Classes</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Weekly Classes</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.weeklyClassesCount}
               </h3>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-            <span className="whitespace-nowrap">Periods Scheduled</span>
-            <Link href="/teacher/timetable" className="text-emerald-600 hover:text-emerald-500 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
+          <div className="mt-4 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+            <span className="whitespace-nowrap font-medium">Periods Scheduled</span>
+            <Link href="/teacher/timetable" className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
               Schedule <FaArrowRight className="w-2.5 h-2.5" />
             </Link>
           </div>
         </div>
 
-        {/* Metric Card 3 - Active Classes (Live Classes) */}
-        <div className={cardBgClass}>
+        {/* Metric Card 3 - Active Classes */}
+        <div className="bg-white border border-zinc-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full translate-x-6 -translate-y-6 group-hover:scale-110 transition-transform" />
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-rose-100 text-rose-600 rounded-xl">
+            <div className="p-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl shrink-0">
               <FaChalkboardTeacher className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider whitespace-nowrap">Active Classes</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Active Classes</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.activeClassesCount}
               </h3>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-            <span className="whitespace-nowrap">Live/Upcoming Sessions</span>
-            <Link href="/teacher/live-classes" className="text-rose-600 hover:text-rose-500 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
+          <div className="mt-4 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+            <span className="whitespace-nowrap font-medium">Live/Upcoming Sessions</span>
+            <Link href="/teacher/live-classes" className="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
               View <FaArrowRight className="w-2.5 h-2.5" />
             </Link>
           </div>
         </div>
 
         {/* Metric Card 4 - Basic Salary */}
-        <div className={cardBgClass}>
+        <div className="bg-white border border-zinc-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full translate-x-6 -translate-y-6 group-hover:scale-110 transition-transform" />
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-100 text-amber-600 rounded-xl">
+            <div className="p-3 bg-amber-50 border border-amber-100 text-amber-600 rounded-xl shrink-0">
               <FaMoneyBillWave className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider whitespace-nowrap">Basic Salary</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Basic Salary</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 ₹{(salaryPreview.monthly_salary || teacher.salary || 0).toLocaleString()}
               </h3>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-            <span className="whitespace-nowrap">Gross Est: ₹{(salaryPreview.gross_salary || teacher.salary || 0).toLocaleString()}</span>
-            <Link href="/teacher/salary" className="text-amber-600 hover:text-amber-500 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
+          <div className="mt-4 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+            <span className="whitespace-nowrap font-medium">Gross Est: ₹{(salaryPreview.gross_salary || teacher.salary || 0).toLocaleString()}</span>
+            <Link href="/teacher/salary" className="text-amber-600 hover:text-amber-700 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform whitespace-nowrap">
               Ledger <FaArrowRight className="w-2.5 h-2.5" />
             </Link>
           </div>
@@ -239,20 +236,20 @@ export default function TeacherDashboardPage() {
       </div>
 
       {/* Main Panel Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left column: Class schedule and Progress */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-2">
                 <FaCalendarAlt className="text-violet-500" /> Today's Period Schedule
               </h3>
-              <Link href="/teacher/timetable" className="text-xs text-violet-600 hover:text-violet-500 font-bold">
+              <Link href="/teacher/timetable" className="text-xs text-violet-600 hover:text-violet-700 font-bold">
                 View Timetable
               </Link>
             </div>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-3.5">
               {dashboardData.todaySchedule.length === 0 ? (
                 <div className="p-8 text-center text-zinc-500 text-sm font-semibold bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
                   No periods scheduled for today.
@@ -261,7 +258,7 @@ export default function TeacherDashboardPage() {
                 dashboardData.todaySchedule.map((p, idx) => (
                   <div key={p.id || idx} className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-100 rounded-xl hover:border-violet-500/30 transition-all">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-2 h-10 bg-violet-500 rounded-full" />
+                      <div className="w-2 h-10 bg-violet-500 rounded-full shrink-0" />
                       <div>
                         <h4 className="text-sm font-bold text-zinc-800 capitalize">
                           {p.title || p.subject || p.slot_type_label || (p.slot_type === "lunch" ? "Lunch Break" : "Period")}
@@ -278,7 +275,7 @@ export default function TeacherDashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <span className="inline-flex px-2.5 py-1 bg-violet-50 text-violet-600 border border-violet-100 text-[10px] font-bold rounded-lg uppercase tracking-wider whitespace-nowrap">
                         {p.time_label || `${p.start_time} – ${p.end_time}`}
                       </span>
@@ -288,46 +285,46 @@ export default function TeacherDashboardPage() {
               )}
             </div>
           </div>
-          
-          {/* NEW SECTION: My Progress */}
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-             <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-2">
-                    <FaChartLine className="text-emerald-500" /> My Progress
-                  </h3>
-                  <p className="text-xs text-zinc-500 mt-1">Your weekly teaching schedule & homework overview.</p>
+
+          {/* Progress Overview Section */}
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-2">
+                  <FaChartLine className="text-emerald-500" /> My Progress
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1">Your weekly teaching schedule & homework overview.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center gap-4">
+                <div className="p-3 bg-white shadow-sm border border-zinc-100 rounded-xl text-emerald-500 shrink-0">
+                  <FaClock className="w-5 h-5" />
                 </div>
-             </div>
-             
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               <div className="p-4 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center gap-4">
-                  <div className="p-3 bg-white shadow-sm border border-zinc-100 rounded-xl text-emerald-500">
-                    <FaClock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-2xl font-extrabold text-zinc-800">{dashboardData.weeklyClassesCount}</h4>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Total Periods This Week</span>
-                  </div>
-               </div>
-               
-               <div className="p-4 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center gap-4">
-                  <div className="p-3 bg-white shadow-sm border border-zinc-100 rounded-xl text-violet-500">
-                    <FaTasks className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-2xl font-extrabold text-zinc-800">{dashboardData.homeworkCount}</h4>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Total Homework Tasks</span>
-                  </div>
-               </div>
-             </div>
+                <div>
+                  <h4 className="text-2xl font-extrabold text-zinc-800">{dashboardData.weeklyClassesCount}</h4>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Total Periods This Week</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center gap-4">
+                <div className="p-3 bg-white shadow-sm border border-zinc-100 rounded-xl text-violet-500 shrink-0">
+                  <FaTasks className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-2xl font-extrabold text-zinc-800">{dashboardData.homeworkCount}</h4>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Total Homework Tasks</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right column: Announcements / Alerts / Quick Actions */}
+        {/* Right column: Announcements & Faculty Tasks */}
         <div className="space-y-6">
           {/* Quick Actions Card */}
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
             <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider mb-4 flex items-center gap-2">
               <FaAward className="text-violet-500" /> Faculty Quick Tasks
             </h3>
@@ -352,24 +349,24 @@ export default function TeacherDashboardPage() {
           </div>
 
           {/* Announcements Card */}
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-2">
                 <MdNotificationsActive className="text-violet-500 w-5 h-5" /> Announcements
               </h3>
-              <Link href="/teacher/admin/notices" className="text-xs text-violet-600 hover:text-violet-500 font-bold">
+              <Link href="/teacher/admin/notices" className="text-xs text-violet-600 hover:text-violet-700 font-bold">
                 View All
               </Link>
             </div>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-3.5">
               {dashboardData.announcements.length === 0 ? (
                 <div className="p-6 text-center text-zinc-500 text-xs font-semibold bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
                   No announcements available.
                 </div>
               ) : (
                 dashboardData.announcements.map((notice, index) => (
-                  <div key={notice.id || index} className="p-3 bg-zinc-50 border border-zinc-150 rounded-xl space-y-1">
+                  <div key={notice.id || index} className="p-3.5 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider">{notice.audience || notice.type || "Notice"}</span>
                       <span className="text-[9px] text-zinc-400 font-semibold">{notice.date || notice.created_at || "Recent"}</span>

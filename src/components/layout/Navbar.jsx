@@ -105,11 +105,7 @@ export default function Navbar() {
     }
   };
 
-  const dummyNotifications = [
-    { id: 1, title: "New Student Enrolled", time: "5 mins ago", desc: "Alice Johnson registered in Class 10." },
-    { id: 2, title: "Fee Collection Success", time: "2 hrs ago", desc: "Bob Smith paid tuition fees." },
-    { id: 3, title: "Class Schedule Updated", time: "1 day ago", desc: "Class 10-A moved to Room 4." }
-  ];
+
 
   const unreadNotices = notices.filter((n) => !n.is_read && !n.read_at);
   const readNotices = notices.filter((n) => n.is_read || n.read_at);
@@ -120,7 +116,7 @@ export default function Navbar() {
     ? "/teacher/profile" 
     : user?.role === "student" 
       ? "/student/profile" 
-      : "/admin/profile";
+      : "#";
 
   // Resolve dynamic metadata across roles
   const activeProfile = user?.role === "student" ? (studentProfile || user) : user;
@@ -201,38 +197,34 @@ export default function Navbar() {
         )}
 
         {/* Notifications */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowNotifications(!showNotifications);
-              setShowUserDropdown(false);
-              if (user?.role === "student" || user?.role === "teacher") {
+        {(user?.role === "student" || user?.role === "teacher") && (
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowUserDropdown(false);
                 fetchNotices();
-              }
-            }}
-            className="p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 relative transition-all"
-          >
-            <FaBell className="w-5 h-5" />
-            {(user?.role === "student" || user?.role === "teacher") && unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 bg-blue-600 text-white text-[8px] font-extrabold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </button>
+              }}
+              className="p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 relative transition-all"
+            >
+              <FaBell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 bg-blue-600 text-white text-[8px] font-extrabold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </button>
 
-          {/* Notifications Dropdown */}
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-zinc-200 shadow-xl rounded-xl z-50 p-4 space-y-3 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                <span className="font-bold text-sm text-zinc-800">Notifications</span>
-                {(user?.role === "student" || user?.role === "teacher") && (
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-zinc-200 shadow-xl rounded-xl z-50 p-4 space-y-3 animate-fade-in">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                  <span className="font-bold text-sm text-zinc-800">Notifications</span>
                   <span className="text-[10px] text-blue-600 font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full">
                     {unreadCount} Unread
                   </span>
-                )}
-              </div>
+                </div>
 
-              {(user?.role === "student" || user?.role === "teacher") && (
                 <div className="flex border-b border-zinc-100 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                   <button 
                     onClick={() => setActiveTab("unread")}
@@ -255,100 +247,87 @@ export default function Navbar() {
                     Read ({readCount})
                   </button>
                 </div>
-              )}
 
-              <div className="divide-y divide-zinc-100 max-h-80 overflow-y-auto overflow-x-hidden space-y-2 pt-1">
-                {!(user?.role === "student" || user?.role === "teacher") ? (
-                  // Fallback for Admin/Teacher view
-                  <div className="divide-y divide-zinc-50">
-                    {dummyNotifications.map((n) => (
-                      <div key={n.id} className="py-2.5 hover:bg-zinc-50 px-1 rounded-md transition-colors">
-                        <div className="flex justify-between items-start">
-                          <h4 className="text-xs font-semibold text-zinc-800">{n.title}</h4>
-                          <span className="text-[9px] text-zinc-400">{n.time}</span>
+                <div className="divide-y divide-zinc-100 max-h-80 overflow-y-auto overflow-x-hidden space-y-2 pt-1">
+                  {loadingNotices ? (
+                    <div className="space-y-3 py-2">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="animate-pulse flex flex-col gap-1.5 p-2 bg-zinc-50 rounded-lg">
+                          <div className="h-3.5 bg-zinc-200 rounded-md w-3/4" />
+                          <div className="h-3 bg-zinc-100 rounded-md w-1/2" />
+                          <div className="h-8 bg-zinc-100 rounded-md w-full" />
                         </div>
-                        <p className="text-[10px] text-zinc-500 mt-0.5">{n.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : loadingNotices ? (
-                  <div className="space-y-3 py-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="animate-pulse flex flex-col gap-1.5 p-2 bg-zinc-50 rounded-lg">
-                        <div className="h-3.5 bg-zinc-200 rounded-md w-3/4" />
-                        <div className="h-3 bg-zinc-100 rounded-md w-1/2" />
-                        <div className="h-8 bg-zinc-100 rounded-md w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (activeTab === "unread" ? unreadNotices : readNotices).length === 0 ? (
-                  <div className="text-center py-8 text-zinc-400 font-semibold uppercase tracking-wider text-[10px]">
-                    No Notifications Available
-                  </div>
-                ) : (
-                  [...(activeTab === "unread" ? unreadNotices : readNotices)]
-                    .sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0))
-                    .map((n) => {
-                      const isUnread = !n.is_read && !n.read_at;
-                      return (
-                        <div 
-                          key={n.id} 
-                          onClick={() => {
-                            handleNoticeClick(n.id);
-                            setShowNotifications(false);
-                          }}
-                          className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm text-left relative flex flex-col ${
-                            isUnread 
-                              ? "bg-blue-50/30 border-l-4 border-l-blue-500 border-zinc-200" 
-                              : "bg-white border-zinc-100 text-zinc-400"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className={`text-[11px] font-bold truncate ${isUnread ? "text-blue-900" : "text-zinc-700"}`}>
-                              {n.title}
-                            </h4>
-                            {isUnread && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
+                      ))}
+                    </div>
+                  ) : (activeTab === "unread" ? unreadNotices : readNotices).length === 0 ? (
+                    <div className="text-center py-8 text-zinc-400 font-semibold uppercase tracking-wider text-[10px]">
+                      No Notifications Available
+                    </div>
+                  ) : (
+                    [...(activeTab === "unread" ? unreadNotices : readNotices)]
+                      .sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0))
+                      .map((n) => {
+                        const isUnread = !n.is_read && !n.read_at;
+                        return (
+                          <div 
+                            key={n.id} 
+                            onClick={() => {
+                              handleNoticeClick(n.id);
+                              setShowNotifications(false);
+                            }}
+                            className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm text-left relative flex flex-col ${
+                              isUnread 
+                                ? "bg-blue-50/30 border-l-4 border-l-blue-500 border-zinc-200" 
+                                : "bg-white border-zinc-100 text-zinc-400"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <h4 className={`text-[11px] font-bold truncate ${isUnread ? "text-blue-900" : "text-zinc-700"}`}>
+                                {n.title}
+                              </h4>
+                              {isUnread && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5 mt-1 text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                              <span>{n.published_at_label}</span>
+                              {n.target_type && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-violet-600 bg-violet-50 px-1 py-0.5 rounded text-[8px]">{n.target_type}</span>
+                                </>
+                              )}
+                            </div>
+
+                            <p className={`text-[10px] mt-2 line-clamp-3 leading-normal ${isUnread ? "text-zinc-600" : "text-zinc-400"}`}>
+                              {n.body}
+                            </p>
+
+                            {isUnread ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsRead(n.id);
+                                }}
+                                className="mt-2.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[9px] transition-all self-start shadow-sm"
+                              >
+                                Mark as Read
+                              </button>
+                            ) : (
+                              <span className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wider self-start">
+                                Read
+                              </span>
                             )}
                           </div>
-                          
-                          <div className="flex items-center gap-1.5 mt-1 text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
-                            <span>{n.published_at_label}</span>
-                            {n.target_type && (
-                              <>
-                                <span>•</span>
-                                <span className="text-violet-600 bg-violet-50 px-1 py-0.5 rounded text-[8px]">{n.target_type}</span>
-                              </>
-                            )}
-                          </div>
-
-                          <p className={`text-[10px] mt-2 line-clamp-3 leading-normal ${isUnread ? "text-zinc-600" : "text-zinc-400"}`}>
-                            {n.body}
-                          </p>
-
-                          {isUnread ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markAsRead(n.id);
-                              }}
-                              className="mt-2.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[9px] transition-all self-start shadow-sm"
-                            >
-                              Mark as Read
-                            </button>
-                          ) : (
-                            <span className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wider self-start">
-                              Read
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })
-                )}
+                        );
+                      })
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* User Profile */}
         <div className="relative">
@@ -387,16 +366,18 @@ export default function Navbar() {
                   <p className="text-[9px] text-zinc-400 font-semibold mt-1">ID: {userIdentifier}</p>
                 )}
               </div>
-              <div className="py-1">
-                <Link
-                  href={profileHref}
-                  onClick={() => setShowUserDropdown(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-xs text-zinc-700 hover:bg-zinc-50 transition-colors"
-                >
-                  <FaUserCircle className="text-zinc-400" />
-                  <span>My Profile</span>
-                </Link>
-              </div>
+              {user?.role !== "admin" && user?.role !== "super_admin" && (
+                <div className="py-1">
+                  <Link
+                    href={profileHref}
+                    onClick={() => setShowUserDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    <FaUserCircle className="text-zinc-400" />
+                    <span>My Profile</span>
+                  </Link>
+                </div>
+              )}
               <div className="py-1">
                 <button
                   onClick={handleLogout}

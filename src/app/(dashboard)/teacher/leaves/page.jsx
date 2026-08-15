@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export default function TeacherLeavesPage() {
   const dispatch = useDispatch();
   const { leaves, loading, error } = useSelector((state) => state.teachers);
-  
+
   // Modal & Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fromDate, setFromDate] = useState("");
@@ -72,7 +72,7 @@ export default function TeacherLeavesPage() {
 
     try {
       setSubmitting(true);
-      
+
       const payload = {
         from_date: fromDate,
         to_date: toDate,
@@ -80,15 +80,15 @@ export default function TeacherLeavesPage() {
       };
 
       await dispatch(applyTeacherLeave(payload)).unwrap();
-      
+
       toast.success("Leave application submitted successfully!");
       setIsModalOpen(false);
-      
+
       // Reset form
       setFromDate("");
       setToDate("");
       setReason("");
-      
+
       // Refresh list
       const params = {};
       if (statusFilter) params.status = statusFilter;
@@ -112,7 +112,7 @@ export default function TeacherLeavesPage() {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-center text-red-500 text-sm font-semibold max-w-lg mx-auto mt-10">
+      <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl text-center text-rose-700 text-sm font-semibold max-w-lg mx-auto mt-10">
         Failed to load leave requests: {error}
       </div>
     );
@@ -122,38 +122,38 @@ export default function TeacherLeavesPage() {
   const records = leaves?.leaves || leaves?.records || [];
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Leave Requests"
           subtitle="Submit and track your formal leave applications and approval logs."
         />
-        <Button 
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm"
+          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer"
         >
-          <FaCalendarPlus className="w-4 h-4" />
+          <FaCalendarPlus className="w-3.5 h-3.5" />
           Apply Leave
         </Button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - Centered & Colored Format */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
-          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total Requests</span>
-          <h3 className="text-xl font-extrabold text-zinc-800 mt-1">{stats.total}</h3>
+        <div className="bg-white p-4.5 rounded-2xl border border-zinc-200 shadow-sm text-center">
+          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">Total Requests</span>
+          <h3 className="text-2xl font-black text-zinc-800 mt-1">{stats.total}</h3>
         </div>
-        <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider block">Pending</span>
-          <h3 className="text-xl font-extrabold text-amber-700 mt-1">{stats.pending}</h3>
+        <div className="bg-amber-50 border border-amber-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">Pending</span>
+          <h3 className="text-2xl font-black text-amber-700 mt-1">{stats.pending}</h3>
         </div>
-        <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Approved</span>
-          <h3 className="text-xl font-extrabold text-emerald-700 mt-1">{stats.approved}</h3>
+        <div className="bg-emerald-50 border border-emerald-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Approved</span>
+          <h3 className="text-2xl font-black text-emerald-700 mt-1">{stats.approved}</h3>
         </div>
-        <div className="bg-rose-50/50 border border-rose-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-rose-600 uppercase tracking-wider block">Rejected</span>
-          <h3 className="text-xl font-extrabold text-rose-700 mt-1">{stats.rejected}</h3>
+        <div className="bg-rose-50 border border-rose-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">Rejected</span>
+          <h3 className="text-2xl font-black text-rose-700 mt-1">{stats.rejected}</h3>
         </div>
       </div>
 
@@ -166,7 +166,7 @@ export default function TeacherLeavesPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-bold text-zinc-700 transition-all"
+                className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 font-bold text-zinc-700 transition-all cursor-pointer"
               >
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -179,62 +179,62 @@ export default function TeacherLeavesPage() {
                 type="month"
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
-                className="w-40 px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-bold text-zinc-700 transition-all [color-scheme:light]"
+                className="w-40 px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 font-bold text-zinc-700 transition-all [color-scheme:dark] cursor-pointer font-mono"
               />
             </div>
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                <th className="px-6 py-4 whitespace-nowrap">Applied Date</th>
-                <th className="px-6 py-4 whitespace-nowrap">Leave From</th>
-                <th className="px-6 py-4 whitespace-nowrap">Leave To</th>
-                <th className="px-6 py-4 whitespace-nowrap">Total Days</th>
-                <th className="px-6 py-4 whitespace-nowrap">Reason</th>
-                <th className="px-6 py-4 whitespace-nowrap">Admin Remarks</th>
-                <th className="px-6 py-4 whitespace-nowrap">Status</th>
+                <th className="py-3.5 pl-6 pr-4 whitespace-nowrap">Applied Date</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Leave From</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Leave To</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Total Days</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Reason</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Admin Remarks</th>
+                <th className="py-3.5 pl-4 pr-6 whitespace-nowrap">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 text-xs">
+            <tbody className="divide-y divide-zinc-100 text-xs font-medium text-zinc-700">
               {records.map((r, idx) => {
                 const statusStr = r.status_label || r.status || "Pending";
                 let badgeClass = "bg-zinc-50 text-zinc-500 border-zinc-200";
                 let StatusIcon = FaHourglassHalf;
-                
+
                 if (statusStr.toLowerCase() === "approved") {
-                  badgeClass = "bg-emerald-50 text-emerald-600 border-emerald-100";
+                  badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
                   StatusIcon = FaCheckCircle;
                 } else if (statusStr.toLowerCase() === "rejected" || statusStr.toLowerCase() === "cancelled") {
-                  badgeClass = "bg-rose-50 text-rose-600 border-rose-100";
+                  badgeClass = "bg-rose-50 text-rose-700 border-rose-100";
                   StatusIcon = FaTimesCircle;
                 } else {
-                  badgeClass = "bg-amber-50 text-amber-600 border-amber-100";
+                  badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
                   StatusIcon = FaHourglassHalf;
                 }
 
                 return (
                   <tr key={r.id || r._id || idx} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
+                    <td className="py-3.5 pl-6 pr-4 font-bold text-zinc-800 whitespace-nowrap">
                       {r.created_at_label || r.applied_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-medium text-zinc-600 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-zinc-600 font-mono whitespace-nowrap">
                       {r.from_date_label || r.from_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-medium text-zinc-600 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-zinc-600 font-mono whitespace-nowrap">
                       {r.to_date_label || r.to_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-bold text-zinc-700 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-zinc-800 whitespace-nowrap">
                       {r.days || r.total_days || r.totalDays || 0} Days
                     </td>
-                    <td className="px-6 py-4 text-zinc-600 max-w-xs truncate whitespace-nowrap" title={r.reason}>
+                    <td className="py-3.5 px-4 text-zinc-600 max-w-xs truncate whitespace-nowrap" title={r.reason}>
                       {r.reason || r.details || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-zinc-500 font-normal whitespace-nowrap">
                       {r.admin_remarks || "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="py-3.5 pl-4 pr-6 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${badgeClass}`}>
                         <StatusIcon className="w-3 h-3 shrink-0" />
                         {statusStr}
@@ -264,9 +264,9 @@ export default function TeacherLeavesPage() {
                 <FaCalendarPlus className="text-violet-500" />
                 Apply for Leave
               </h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1"
+                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1 cursor-pointer"
               >
                 <FaTimes className="w-4 h-4" />
               </button>
@@ -274,15 +274,15 @@ export default function TeacherLeavesPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formError && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-semibold border border-red-100">
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl text-xs font-semibold border border-rose-200">
                   {formError}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Leave From Date</label>
-                  <input 
+                  <input
                     type="date"
                     required
                     value={fromDate}
@@ -290,12 +290,12 @@ export default function TeacherLeavesPage() {
                       setFromDate(e.target.value);
                       setFormError("");
                     }}
-                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-black"
+                    className="w-full p-2.5 border border-zinc-200 rounded-xl outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-zinc-800 cursor-pointer font-mono"
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Leave To Date</label>
-                  <input 
+                  <input
                     type="date"
                     required
                     value={toDate}
@@ -303,24 +303,24 @@ export default function TeacherLeavesPage() {
                       setToDate(e.target.value);
                       setFormError("");
                     }}
-                    className="w-full p-2 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-black"
+                    className="w-full p-2.5 border border-zinc-200 rounded-xl outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold text-zinc-800 cursor-pointer font-mono"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Total Days Calculated</label>
-                <div className="w-full p-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-700 font-extrabold text-sm flex items-center justify-between">
+                <div className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-800 font-extrabold text-sm flex items-center justify-between">
                   <span>{totalDays} Days</span>
                   {totalDays > 0 && (
-                    <span className="text-[9px] bg-violet-50 text-violet-600 border border-violet-100 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
+                    <span className="text-[10px] bg-violet-50 text-violet-700 border border-violet-100 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                       Valid Range
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Reason for Leave</label>
                 <textarea
                   required
@@ -331,7 +331,7 @@ export default function TeacherLeavesPage() {
                     setFormError("");
                   }}
                   placeholder="Provide details about the leave requirement..."
-                  className="w-full p-2.5 border border-zinc-200 rounded-lg outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold leading-relaxed text-black"
+                  className="w-full p-3 border border-zinc-200 rounded-xl outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all font-semibold leading-relaxed text-zinc-800 resize-none"
                 />
               </div>
 
@@ -339,14 +339,14 @@ export default function TeacherLeavesPage() {
                 <Button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="w-1/2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-2.5 rounded-lg border border-zinc-200"
+                  className="w-1/2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-2.5 rounded-xl border border-zinc-200 cursor-pointer"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2"
+                  className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
                   {submitting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -357,7 +357,6 @@ export default function TeacherLeavesPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

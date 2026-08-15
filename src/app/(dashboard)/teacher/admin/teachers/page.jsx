@@ -5,7 +5,8 @@ import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
-  FaPlus, FaTimes, FaChalkboardTeacher, FaEdit, FaToggleOn, FaToggleOff, FaUser, FaPhone, FaGraduationCap
+  FaPlus, FaTimes, FaChalkboardTeacher, FaEdit, FaToggleOn, FaToggleOff, FaIdCard,
+  FaEye, FaCheckCircle, FaSignInAlt
 } from "react-icons/fa";
 import { 
   getTeacherTeachersMeta,
@@ -16,6 +17,7 @@ import {
   toggleTeacherTeacherStatus
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
+import { api } from "@/services/api";
 
 export default function TeacherTeachersManagementPage() {
   const [teachersList, setTeachersList] = useState([]);
@@ -27,6 +29,7 @@ export default function TeacherTeachersManagementPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTeacherId, setEditingTeacherId] = useState(null);
+  const [viewingTeacher, setViewingTeacher] = useState(null);
 
   // Form Fields
   const [firstName, setFirstName] = useState("");
@@ -40,6 +43,19 @@ export default function TeacherTeachersManagementPage() {
   const [joiningDate, setJoiningDate] = useState("");
   const [salary, setSalary] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
+
+  // New Fields matching detailed response
+  const [gender, setGender] = useState("");
+  const [dob, setDob] = useState("");
+  const [address, setAddress] = useState("");
+  const [totalExperience, setTotalExperience] = useState("");
+  const [previousSchools, setPreviousSchools] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [ifscCode, setIfscCode] = useState("");
+  const [accountType, setAccountType] = useState("");
+  const [panNumber, setPanNumber] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -92,6 +108,17 @@ export default function TeacherTeachersManagementPage() {
     setJoiningDate("");
     setSalary("");
     setPhotoFile(null);
+    setGender("");
+    setDob("");
+    setAddress("");
+    setTotalExperience("");
+    setPreviousSchools("");
+    setBankName("");
+    setAccountHolderName("");
+    setAccountNumber("");
+    setIfscCode("");
+    setAccountType("");
+    setPanNumber("");
     setFormError("");
   };
 
@@ -117,6 +144,17 @@ export default function TeacherTeachersManagementPage() {
       setSpecialization(teacherObj.specialization || "");
       setJoiningDate(teacherObj.joining_date || "");
       setSalary(teacherObj.salary || "");
+      setGender(teacherObj.gender || "");
+      setDob(teacherObj.date_of_birth || "");
+      setAddress(teacherObj.address || "");
+      setTotalExperience(teacherObj.total_experience || "");
+      setPreviousSchools(teacherObj.previous_schools || "");
+      setBankName(teacherObj.bank_name || "");
+      setAccountHolderName(teacherObj.account_holder_name || "");
+      setAccountNumber(teacherObj.account_number || "");
+      setIfscCode(teacherObj.ifsc_code || "");
+      setAccountType(teacherObj.account_type || "");
+      setPanNumber(teacherObj.pan_number || "");
       setIsModalOpen(true);
     } catch (err) {
       toast.error("Failed to load teacher details: " + (err.message || err));
@@ -147,6 +185,17 @@ export default function TeacherTeachersManagementPage() {
       if (joiningDate) formData.append("joining_date", joiningDate);
       if (salary) formData.append("salary", salary);
       if (photoFile) formData.append("photo", photoFile);
+      if (gender) formData.append("gender", gender);
+      if (dob) formData.append("date_of_birth", dob);
+      if (address) formData.append("address", address.trim());
+      if (totalExperience) formData.append("total_experience", totalExperience);
+      if (previousSchools) formData.append("previous_schools", previousSchools.trim());
+      if (bankName) formData.append("bank_name", bankName.trim());
+      if (accountHolderName) formData.append("account_holder_name", accountHolderName.trim());
+      if (accountNumber) formData.append("account_number", accountNumber.trim());
+      if (ifscCode) formData.append("ifsc_code", ifscCode.trim());
+      if (accountType) formData.append("account_type", accountType);
+      if (panNumber) formData.append("pan_number", panNumber.trim());
 
       if (editingTeacherId) {
         await updateTeacherTeacher(editingTeacherId, formData);
@@ -165,6 +214,20 @@ export default function TeacherTeachersManagementPage() {
     }
   };
 
+  const handleOpenIdCard = async (t) => {
+    try {
+      const url = t.id_card_url || `/api/teacher/teachers/${t.id}/id-card?format=print`;
+      const response = await api.get(url);
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(response.data);
+        printWindow.document.close();
+      }
+    } catch (err) {
+      toast.error("Failed to load authenticated ID card: " + (err.message || err));
+    }
+  };
+
   const handleToggleStatus = async (t) => {
     try {
       await toggleTeacherTeacherStatus(t.id);
@@ -173,6 +236,23 @@ export default function TeacherTeachersManagementPage() {
     } catch (err) {
       toast.error("Failed to toggle status: " + (err.message || err));
     }
+  };
+
+  const handleViewProfile = async (t) => {
+    try {
+      const detailed = await getTeacherTeacherDetail(t.id);
+      setViewingTeacher(detailed.teacher || detailed.data || detailed || t);
+    } catch (err) {
+      toast.error("Failed to load teacher details: " + (err.message || err));
+    }
+  };
+
+  const handleMarkInactive = async (t) => {
+    toast.info(`Marking ${t.full_name || t.name} as inactive`);
+  };
+
+  const handleLoginAsTeacher = (t) => {
+    toast.info(`Login as ${t.full_name || t.name}`);
   };
 
   if (forbidden) {
@@ -212,7 +292,6 @@ export default function TeacherTeachersManagementPage() {
         </button>
       </div>
 
-      {/* Roster Listing Grid */}
       {listLoading ? (
         <div className="flex items-center justify-center py-20"><PageLoader /></div>
       ) : teachersList.length === 0 ? (
@@ -220,61 +299,154 @@ export default function TeacherTeachersManagementPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teachersList.map((t) => (
-            <div key={t.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm relative flex flex-col justify-between hover:shadow-md transition-all">
-              <div>
-                <div className="flex justify-between items-start gap-2 mb-2">
-                  <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
-                    t.is_active ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-rose-50 border-rose-100 text-rose-600"
-                  }`}>
-                    {t.is_active ? "Active" : "Inactive"}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleToggleStatus(t)}
-                      className={`p-1 rounded transition-colors ${t.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"}`}
-                      title={t.is_active ? "Deactivate" : "Activate"}
-                    >
-                      {t.is_active ? <FaToggleOn className="w-5 h-5" /> : <FaToggleOff className="w-5 h-5" />}
-                    </button>
-                    <button
-                      onClick={() => handleOpenEdit(t)}
-                      className="p-1 text-zinc-400 hover:text-violet-600 rounded transition-colors"
-                      title="Edit Profile"
-                    >
-                      <FaEdit className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
+            <div key={t.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider ${
+                  t.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}>
+                  {t.is_active ? "Active" : "Inactive"}
+                </span>
 
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-600 font-extrabold text-sm overflow-hidden shrink-0 aspect-square min-w-[40px] min-h-[40px]">
-                    {t.photo ? (
-                      <img src={t.photo} alt={t.full_name} className="w-full h-full object-cover shrink-0 aspect-square" />
-                    ) : (
-                      (t.full_name || t.name || "T").charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-zinc-800 text-sm">{t.full_name || t.name}</h4>
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">ID: {t.employee_id || "—"}</span>
-                  </div>
-                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleStatus(t)}
+                    className={`p-1.5 rounded-md transition-colors ${
+                      t.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
+                    }`}
+                    title={t.is_active ? "Deactivate" : "Activate"}
+                  >
+                    {t.is_active ? <FaToggleOn className="w-5 h-5" /> : <FaToggleOff className="w-5 h-5" />}
+                  </button>
 
-                <div className="space-y-1.5 text-[10px] font-semibold text-zinc-500 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
-                  <div className="flex justify-between"><span>Email:</span><span className="font-bold text-zinc-700">{t.email}</span></div>
-                  <div className="flex justify-between"><span>Phone:</span><span className="font-bold text-zinc-700">{t.phone || "—"}</span></div>
-                  <div className="flex justify-between"><span>Qualification:</span><span className="font-bold text-zinc-700">{t.qualification || "—"}</span></div>
+                  <button
+                    onClick={() => handleOpenEdit(t)}
+                    className="p-1.5 text-zinc-400 hover:text-violet-600 rounded-md hover:bg-violet-50 transition-colors"
+                    title="Edit Profile"
+                  >
+                    <FaEdit className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
+
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 font-bold text-base overflow-hidden shrink-0">
+                  {t.photo ? (
+                    <img src={t.photo} alt={t.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    (t.full_name || t.name || "T").charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <h4 className="font-extrabold text-zinc-800 text-base leading-tight">{t.full_name || t.name}</h4>
+                  <span className="text-[10px] text-zinc-400 font-medium">ID: {t.employee_id || "—"}</span>
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 rounded-xl p-3.5 border border-zinc-100 flex flex-col gap-1.5">
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="font-bold text-zinc-400">Email:</span>
+                  <span className="font-semibold text-zinc-800">{t.email}</span>
+                </div>
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="font-bold text-zinc-400">Phone:</span>
+                  <span className="font-semibold text-zinc-800">{t.phone || "—"}</span>
+                </div>
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="font-bold text-zinc-400">Qualification:</span>
+                  <span className="font-semibold text-zinc-800">{t.qualification || "—"}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-1 border-t border-zinc-100 pt-3">
+                <button
+                  onClick={() => handleViewProfile(t)}
+                  className="py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <FaEye className="w-3 h-3" /> VIEW
+                </button>
+                <button
+                  onClick={() => handleOpenEdit(t)}
+                  className="py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <FaEdit className="w-3 h-3" /> EDIT
+                </button>
+                <button
+                  onClick={() => handleToggleStatus(t)}
+                  className={`py-1.5 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors ${
+                    t.is_active ? "bg-amber-50 text-amber-700 hover:bg-amber-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  }`}
+                >
+                  <FaCheckCircle className="w-3 h-3" /> {t.is_active ? "DEACTIVATE" : "ACTIVATE"}
+                </button>
+                <button
+                  onClick={() => handleOpenIdCard(t)}
+                  className="py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <FaIdCard className="w-3 h-3" /> ID CARD
+                </button>
+              </div>
+
             </div>
           ))}
         </div>
       )}
 
-      {/* Add / Edit Teacher Modal */}
+      {/* View Teacher Details Modal */}
+      {viewingTeacher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+                <FaChalkboardTeacher className="text-violet-500" />
+                Teacher Profile Details
+              </h3>
+              <button onClick={() => setViewingTeacher(null)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar text-xs font-semibold text-zinc-600 space-y-6">
+              <div className="flex items-center gap-4 border-b border-zinc-100 pb-4">
+                <div className="w-16 h-16 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 font-bold text-xl overflow-hidden shrink-0">
+                  {viewingTeacher.photo ? (
+                    <img src={viewingTeacher.photo} alt={viewingTeacher.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    (viewingTeacher.full_name || viewingTeacher.name || "T").charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-zinc-800 text-base leading-tight">{viewingTeacher.full_name || `${viewingTeacher.first_name} ${viewingTeacher.last_name || ""}`}</h4>
+                  <span className="text-xs text-zinc-400 block mt-1">Employee ID: {viewingTeacher.employee_id || "—"}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[10px] mb-3">Personal Details</h5>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><span>Gender:</span><span className="text-zinc-800 capitalize font-bold">{viewingTeacher.gender || "—"}</span></div>
+                    <div className="flex justify-between"><span>Date of Birth:</span><span className="text-zinc-800 font-bold">{viewingTeacher.date_of_birth_label || viewingTeacher.date_of_birth || "—"}</span></div>
+                    <div className="flex justify-between"><span>Phone:</span><span className="text-zinc-800 font-bold">{viewingTeacher.phone || "—"}</span></div>
+                    <div className="flex justify-between"><span>Email:</span><span className="text-zinc-800 font-bold">{viewingTeacher.email || "—"}</span></div>
+                    <div className="flex justify-between"><span>Address:</span><span className="text-zinc-800 font-bold">{viewingTeacher.address || "—"}</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[10px] mb-3">Academic & Bank Details</h5>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><span>Qualification:</span><span className="text-zinc-800 font-bold">{viewingTeacher.qualification || "—"}</span></div>
+                    <div className="flex justify-between"><span>Specialization:</span><span className="text-zinc-800 font-bold">{viewingTeacher.specialization || "—"}</span></div>
+                    <div className="flex justify-between"><span>Salary:</span><span className="text-zinc-800 font-bold">₹{(viewingTeacher.salary || 0).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>Experience:</span><span className="text-zinc-800 font-bold">{viewingTeacher.total_experience || 0} Years</span></div>
+                    <div className="flex justify-between"><span>Bank Account:</span><span className="text-zinc-800 font-bold">{viewingTeacher.bank_name || "—"} ({viewingTeacher.account_number || "—"})</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up text-left flex flex-col">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up text-left flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaChalkboardTeacher className="text-violet-500" />
@@ -285,6 +457,11 @@ export default function TeacherTeachersManagementPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
               {formError && <div className="p-2 bg-rose-50 text-rose-600 text-xs rounded font-bold">{formError}</div>}
+
+              {/* SECTION: Personal Information */}
+              <div className="border-b border-zinc-100 pb-2">
+                <h4 className="font-bold text-zinc-800 text-[10px] uppercase tracking-wider text-violet-600">Personal Details</h4>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -308,14 +485,50 @@ export default function TeacherTeachersManagementPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Gender</label>
+                  <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold bg-white cursor-pointer">
+                    <option value="">Select Gender</option>
+                    {meta?.genders?.map((g) => (
+                      <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>
+                    )) || (
+                      <>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Date of Birth</label>
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Phone Number</label>
+                  <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase block">Address</label>
+                <textarea rows="2" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold resize-none" placeholder="Residential Address..." />
+              </div>
+
+              {/* SECTION: Professional Details */}
+              <div className="border-b border-zinc-100 pb-2 pt-2">
+                <h4 className="font-bold text-zinc-800 text-[10px] uppercase tracking-wider text-violet-600">Professional Profile</h4>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase block">Employee ID</label>
                   <input type="text" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Phone Number</label>
-                  <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Joining Date</label>
+                  <input type="date" value={joiningDate} onChange={(e) => setJoiningDate(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
                 </div>
               </div>
 
@@ -330,12 +543,81 @@ export default function TeacherTeachersManagementPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Salary (Monthly)</label>
+                  <input type="number" value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="30000" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Total Experience (Years)</label>
+                  <input type="number" value={totalExperience} onChange={(e) => setTotalExperience(e.target.value)} placeholder="5" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase block">Previous Schools & Experience</label>
+                <textarea rows="2" value={previousSchools} onChange={(e) => setPreviousSchools(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold resize-none" placeholder="List former institutions and years of service..." />
+              </div>
+
+              {/* SECTION: Bank Account & Payment Details */}
+              <div className="border-b border-zinc-100 pb-2 pt-2">
+                <h4 className="font-bold text-zinc-800 text-[10px] uppercase tracking-wider text-violet-600">Bank Account Details</h4>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Bank Name</label>
+                  <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. HDFC Bank" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Account Holder Name</label>
+                  <input type="text" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} placeholder="Account holder's full name" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Account Number</label>
+                  <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Bank Account Number" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">IFSC Code</label>
+                  <input type="text" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="IFSC Code" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Account Type</label>
+                  <select value={accountType} onChange={(e) => setAccountType(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold bg-white cursor-pointer">
+                    <option value="">Select Account Type</option>
+                    {meta?.account_types?.map((t) => (
+                      <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                    )) || (
+                      <>
+                        <option value="savings">Savings</option>
+                        <option value="current">Current</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">PAN Card Number</label>
+                  <input type="text" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} placeholder="Permanent Account Number" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                </div>
+              </div>
+
+              {/* SECTION: Photo Attachments */}
+              <div className="border-b border-zinc-100 pb-2 pt-2">
+                <h4 className="font-bold text-zinc-800 text-[10px] uppercase tracking-wider text-violet-600">Profile Attachments</h4>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase block">Profile Photo</label>
                 <input type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files[0])} className="w-full text-xs text-zinc-500" />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100 shrink-0">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-zinc-100 text-zinc-600 font-bold rounded-xl text-xs">Cancel</button>
                 <button type="submit" disabled={submitting} className="px-5 py-2 bg-violet-600 text-white font-bold rounded-xl text-xs">{submitting ? "Saving..." : "Save Record"}</button>
               </div>

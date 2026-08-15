@@ -162,7 +162,6 @@ export default function StudentOnlineMcqPage() {
       // Fetch Full Attempt Data & Questions from Backend
       const attemptRes = await getStudentOnlineMcqAttempt(attemptId);
       
-      // Store entire response object so attemptRes.questions is accessible!
       setAttemptData(attemptRes);
 
       const remSec = attemptRes.remaining_seconds ?? attemptRes.attempt?.remaining_seconds ?? (attemptRes.exam?.duration_minutes ? attemptRes.exam.duration_minutes * 60 : 3600);
@@ -284,7 +283,6 @@ export default function StudentOnlineMcqPage() {
     try {
       if (isDetailModalOpen) setIsDetailModalOpen(false);
       setIsResultModalOpen(true);
-      // Removed broken API call; we already have result data in the exam object itself
       setResultData(exam);
     } catch (err) {
       toast.error("Failed to load exam result: " + (err.message || err));
@@ -333,7 +331,7 @@ export default function StudentOnlineMcqPage() {
           <p className="text-zinc-500 font-semibold">{attemptError}</p>
           <button 
             onClick={() => { setActiveAttemptId(null); loadExams(); }}
-            className="px-4 py-2 bg-violet-600 text-white font-bold rounded-xl"
+            className="px-4 py-2 bg-violet-600 text-white font-bold rounded-xl cursor-pointer"
           >
             Back to Exams Portal
           </button>
@@ -354,18 +352,18 @@ export default function StudentOnlineMcqPage() {
         <div className="bg-zinc-900 text-white rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-zinc-800">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[9px] font-black text-violet-400 uppercase tracking-widest block">ONLINE MCQ ATTEMPT PORTAL</span>
-              <span className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-[9px] font-bold rounded">
+              <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest block">ONLINE MCQ ATTEMPT PORTAL</span>
+              <span className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-bold rounded">
                 {examMeta.subject || "Subject"} • Class {examMeta.class || "—"} ({examMeta.section || "—"})
               </span>
             </div>
-            <h3 className="text-base font-extrabold text-white mt-0.5">{examMeta.title || "Examination"}</h3>
+            <h3 className="text-base font-extrabold text-white mt-1">{examMeta.title || "Examination"}</h3>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-800 rounded-xl border border-zinc-700 text-amber-400 font-black text-sm">
-              <FaClock className="w-4 h-4 animate-spin" />
-              <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-zinc-800 rounded-xl border border-zinc-700 text-amber-400 font-black text-sm">
+              <FaClock className="w-3.5 h-3.5 animate-spin" />
+              <span className="font-mono">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
             </div>
 
             <button
@@ -381,7 +379,7 @@ export default function StudentOnlineMcqPage() {
         {/* Progress Bar Section */}
         {questions.length > 0 && (
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm space-y-2">
-            <div className="flex justify-between items-center text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">
+            <div className="flex justify-between items-center text-xs font-bold text-zinc-500 uppercase tracking-wider">
               <span>Question Progress ({currentQuestionIdx + 1} of {questions.length})</span>
               <span>{progressPct}% Completed</span>
             </div>
@@ -400,7 +398,7 @@ export default function StudentOnlineMcqPage() {
             <p className="text-zinc-500 font-extrabold text-sm">No questions found for this exam.</p>
             <button 
               onClick={() => { setActiveAttemptId(null); loadExams(); }}
-              className="px-4 py-2 bg-violet-600 text-white font-bold rounded-xl text-xs"
+              className="px-4 py-2 bg-violet-600 text-white font-bold rounded-xl text-xs cursor-pointer"
             >
               Return to Exams List
             </button>
@@ -420,13 +418,13 @@ export default function StudentOnlineMcqPage() {
                   <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                     Type: {currentQ.question_type === "fill_blank" ? "Fill in the Blank" : "MCQ (Single Choice)"}
                   </span>
-                  <span className="text-[10px] font-black text-violet-600 bg-violet-50 px-2.5 py-1 rounded-lg border border-violet-100 uppercase">
+                  <span className="text-[10px] font-black text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg border border-violet-100 uppercase">
                     {currentQ.marks || 1} Marks
                   </span>
                 </div>
               </div>
 
-              <p className="text-sm font-extrabold text-zinc-800 leading-relaxed">
+              <p className="text-sm font-bold text-zinc-900 leading-relaxed">
                 {currentQ.question}
               </p>
 
@@ -445,7 +443,7 @@ export default function StudentOnlineMcqPage() {
                         onClick={() => handleSelectOption(currentQ.id, optKey)}
                         className={`w-full p-4 rounded-xl border text-left font-semibold transition-all flex items-center justify-between cursor-pointer ${
                           isSelected
-                            ? "bg-violet-50 border-violet-500 text-violet-900 shadow-sm"
+                            ? "bg-violet-50/50 border-violet-500 text-violet-950 shadow-sm"
                             : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                         }`}
                       >
@@ -474,7 +472,7 @@ export default function StudentOnlineMcqPage() {
                     onChange={(e) => handleTextAnswerChange(currentQ.id, e.target.value)}
                     onBlur={(e) => handleSaveTextAnswer(currentQ.id, e.target.value)}
                     placeholder="Type your answer text here..."
-                    className="w-full px-4 py-3 border border-zinc-200 rounded-xl outline-none text-black font-semibold text-xs focus:border-violet-500"
+                    className="w-full px-4 py-3 border border-zinc-200 rounded-xl outline-none text-zinc-900 font-semibold text-xs focus:border-violet-500"
                   />
                 </div>
               )}
@@ -545,18 +543,18 @@ export default function StudentOnlineMcqPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs text-left">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <PageHeader 
         title="Online MCQ Examinations Portal"
-        subtitle="Take online unit tests, track exam schedules, and view performance results."
+        description="Take online unit tests, track exam schedules, and view performance results."
       />
 
       {/* Summary Counters & Tabs */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="bg-white border border-zinc-200 rounded-2xl p-4.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab("available")}
-            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-xs tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "available" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -568,7 +566,7 @@ export default function StudentOnlineMcqPage() {
 
           <button
             onClick={() => setActiveTab("upcoming")}
-            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-xs tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "upcoming" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -580,7 +578,7 @@ export default function StudentOnlineMcqPage() {
 
           <button
             onClick={() => setActiveTab("completed")}
-            className={`px-4 py-2 font-bold uppercase text-[12px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 font-bold uppercase text-xs tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "completed" ? "bg-violet-600 text-white shadow-sm" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -591,13 +589,13 @@ export default function StudentOnlineMcqPage() {
           </button>
         </div>
         <div className="relative w-full sm:w-64">
-          <FaSearch className="absolute left-3 top-2.5 text-zinc-400 w-3.5 h-3.5" />
+          <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-3.5 h-3.5" />
           <input
             type="text"
             placeholder="Search exams..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-800"
+            className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-semibold focus:bg-white focus:border-violet-500 transition-all text-zinc-800"
           />
         </div>
       </div>
@@ -611,7 +609,7 @@ export default function StudentOnlineMcqPage() {
           desc={searchTerm.trim() ? "No examinations match your search criteria." : activeTab === "upcoming" ? "No examinations currently scheduled for upcoming dates." : activeTab === "completed" ? "No completed examinations in your history." : "No active examinations currently available for attempt."} 
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {currentExamsList.map(e => {
             const canStart = e.can_start ?? (e.status === "active" && (!e.attempt_status || e.attempt_status === "not_started"));
             const canContinue = e.can_continue ?? (e.attempt_status && e.attempt_status !== "completed" && !e.is_submitted);
@@ -621,7 +619,7 @@ export default function StudentOnlineMcqPage() {
               <div key={e.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm relative flex flex-col justify-between hover:shadow-md transition-all">
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase ${
+                    <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[10px] font-extrabold uppercase ${
                       e.status === "active" ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
                       e.status === "expired" ? "bg-rose-50 border-rose-100 text-rose-600" :
                       "bg-violet-50 border-violet-100 text-violet-600"
@@ -630,18 +628,18 @@ export default function StudentOnlineMcqPage() {
                     </span>
 
                     {e.attempt_status && (
-                      <span className="inline-flex px-2 py-0.5 bg-zinc-100 border border-zinc-200 text-zinc-600 rounded-lg text-[8px] font-black uppercase">
+                      <span className="inline-flex px-2 py-0.5 bg-zinc-100 border border-zinc-200 text-zinc-600 rounded-lg text-[10px] font-extrabold uppercase">
                         {e.attempt_status}
                       </span>
                     )}
                   </div>
 
-                  <h4 className="font-extrabold text-zinc-800 text-sm mb-1">{e.title}</h4>
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-3">
-                    Subject: <span className="text-zinc-800 capitalize">{e.subject || e.subject_name || "N/A"}</span> • Class {e.class || "—"} ({e.section || "—"})
+                  <h4 className="font-bold text-zinc-900 text-sm mb-1">{e.title}</h4>
+                  <div className="text-xs text-zinc-500 font-semibold uppercase tracking-wider block mb-3">
+                    Subject: <span className="text-zinc-800 capitalize font-bold">{e.subject || e.subject_name || "N/A"}</span> • Class {e.class || "—"} ({e.section || "—"})
                   </div>
 
-                  <div className="space-y-1.5 text-[10px] font-semibold text-zinc-500 mb-4 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
+                  <div className="space-y-1.5 text-xs font-semibold text-zinc-500 mb-4 bg-zinc-50 p-3.5 rounded-xl border border-zinc-100">
                     <div className="flex justify-between"><span>Duration:</span><span className="font-bold text-zinc-800">{e.duration_minutes || 60} Mins</span></div>
                     <div className="flex justify-between"><span>Total Questions:</span><span className="font-bold text-zinc-800">{e.total_questions || e.questions_count || 0}</span></div>
                     <div className="flex justify-between"><span>Total Marks:</span><span className="font-bold text-zinc-800">{e.total_marks || 0}</span></div>
@@ -650,7 +648,7 @@ export default function StudentOnlineMcqPage() {
                     <div className="flex justify-between"><span>Negative Marking:</span><span className="font-bold text-zinc-800">{e.negative_marking ? `Yes (${e.negative_marks || 0} marks)` : "No"}</span></div>
                     
                     {e.score !== null && e.score !== undefined && (
-                      <div className="flex justify-between border-t border-zinc-200/60 pt-1 text-violet-700">
+                      <div className="flex justify-between border-t border-zinc-200/60 pt-1 text-violet-700 font-bold">
                         <span>Score:</span>
                         <span className="font-black">{e.score} / {e.total_marks} ({e.percentage}%) {e.grade ? `• Grade: ${e.grade}` : ''}</span>
                       </div>
@@ -716,29 +714,29 @@ export default function StudentOnlineMcqPage() {
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaFileAlt className="text-violet-500" /> Exam Details & Rules
               </h3>
-              <button onClick={() => setIsDetailModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+              <button onClick={() => setIsDetailModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer"><FaTimes className="w-4 h-4" /></button>
             </div>
 
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar text-xs">
               {loadingDetail ? (
                 <div className="flex items-center justify-center py-10"><PageLoader /></div>
               ) : selectedExamDetail ? (
                 <>
                   <div>
-                    <h4 className="font-extrabold text-zinc-800 text-base mb-0.5">{selectedExamDetail.title}</h4>
-                    <span className="text-xs font-bold text-violet-600 uppercase tracking-wider block">
+                    <h4 className="font-extrabold text-zinc-900 text-base mb-0.5">{selectedExamDetail.title}</h4>
+                    <span className="text-xs font-bold text-violet-700 uppercase tracking-wider block">
                       {selectedExamDetail.subject} • Class {selectedExamDetail.class} ({selectedExamDetail.section})
                     </span>
                   </div>
 
                   {selectedExamDetail.instructions && (
-                    <div className="p-3 bg-violet-50/60 border border-violet-100 rounded-xl text-xs text-violet-900 font-medium">
+                    <div className="p-3.5 bg-violet-50/60 border border-violet-100 rounded-xl text-xs text-violet-900 font-medium">
                       <strong className="block font-bold text-violet-950 mb-0.5">Instructions:</strong>
                       {selectedExamDetail.instructions}
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 p-4 rounded-2xl border border-zinc-100 font-semibold text-zinc-600">
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-50 p-4 rounded-xl border border-zinc-100 font-semibold text-zinc-600">
                     <div>Duration: <strong className="text-zinc-800">{selectedExamDetail.duration_minutes} Mins</strong></div>
                     <div>Questions: <strong className="text-zinc-800">{selectedExamDetail.total_questions || selectedExamDetail.questions_count}</strong></div>
                     <div>Total Marks: <strong className="text-zinc-800">{selectedExamDetail.total_marks}</strong></div>
@@ -758,7 +756,7 @@ export default function StudentOnlineMcqPage() {
             </div>
 
             <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between shrink-0">
-              <button onClick={() => setIsDetailModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs">Close</button>
+              <button onClick={() => setIsDetailModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs cursor-pointer">Close</button>
               
               {selectedExamDetail && (
                 <div>
@@ -793,48 +791,48 @@ export default function StudentOnlineMcqPage() {
 
       {/* Result Modal */}
       {isResultModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-    <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
-        <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-          <FaTrophy className="text-violet-500" /> Exam Result
-        </h3>
-        <button onClick={() => setIsResultModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
-          <FaTimes className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-        {loadingResult ? (
-          <div className="flex items-center justify-center py-10"><PageLoader /></div>
-        ) : resultData ? (
-          <>
-            <div className="p-4 bg-violet-50 border border-violet-100 rounded-2xl text-center space-y-1">
-              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Your Final Score</span>
-              
-              <span className="text-2xl font-black text-violet-900">
-                {resultData.score ?? 0} / {resultData.total_marks ?? 0}
-              </span>
-
-              <span className="text-xs font-extrabold text-violet-700 block">
-                Grade: {resultData.grade ?? "N/A"} ({resultData.percentage ?? 0}%)
-              </span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
+              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
+                <FaTrophy className="text-violet-500" /> Exam Result
+              </h3>
+              <button onClick={() => setIsResultModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+                <FaTimes className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-4 text-xs bg-zinc-50 p-4 rounded-2xl border border-zinc-100 font-semibold text-zinc-600">
-              <div>Total Questions: <strong className="text-zinc-800">{resultData.total_questions ?? "—"}</strong></div>
-              <div>Attempt: <strong className="text-zinc-800 capitalize">{resultData.attempt_status ?? (resultData.is_submitted ? "Submitted" : "—")}</strong></div>
-            </div>
-          </>
-        ) : null}
-      </div>
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar text-xs">
+              {loadingResult ? (
+                <div className="flex items-center justify-center py-10"><PageLoader /></div>
+              ) : resultData ? (
+                <>
+                  <div className="p-4.5 bg-violet-50 border border-violet-100 rounded-2xl text-center space-y-1">
+                    <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Your Final Score</span>
+                    
+                    <span className="text-2xl font-black text-violet-900 block mt-1">
+                      {resultData.score ?? 0} / {resultData.total_marks ?? 0}
+                    </span>
 
-      <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-end">
-        <button onClick={() => setIsResultModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs">Close</button>
-      </div>
-    </div>
-  </div>
-)}
+                    <span className="text-xs font-extrabold text-violet-700 block">
+                      Grade: {resultData.grade ?? "N/A"} ({resultData.percentage ?? 0}%)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mt-4 text-xs bg-zinc-50 p-4 rounded-xl border border-zinc-100 font-semibold text-zinc-600">
+                    <div>Total Questions: <strong className="text-zinc-800">{resultData.total_questions ?? "—"}</strong></div>
+                    <div>Attempt: <strong className="text-zinc-800 capitalize">{resultData.attempt_status ?? (resultData.is_submitted ? "Submitted" : "—")}</strong></div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-end">
+              <button onClick={() => setIsResultModalOpen(false)} className="px-4 py-2 bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs cursor-pointer">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

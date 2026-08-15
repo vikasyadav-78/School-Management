@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/redux/moduleThunk";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -12,6 +12,7 @@ import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 function DashboardLayoutContent({ children }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const { isOpen, isMobileOpen, closeSidebar } = useSidebar();
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
   const [mounted, setMounted] = useState(false);
@@ -35,12 +36,29 @@ function DashboardLayoutContent({ children }) {
     }
     
     if (!token) {
-      if (role === "admin") {
+      if (role === "admin" || role === "super_admin") {
         router.push("/admin-login");
       } else {
         router.push("/login");
       }
       return;
+    }
+
+    if (token && role) {
+      if (currentPath.startsWith("/super-admin") && role !== "super_admin") {
+        router.push(role === "admin" ? "/admin/dashboard" : role === "teacher" ? "/teacher/dashboard" : "/student/dashboard");
+        return;
+      }
+      if (currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
+        if (role === "super_admin") {
+          router.push("/super-admin/dashboard");
+        } else if (role === "teacher") {
+          router.push("/teacher/dashboard");
+        } else if (role === "student") {
+          router.push("/student/dashboard");
+        }
+        return;
+      }
     }
 
     if (!user) {
@@ -96,7 +114,7 @@ function DashboardLayoutContent({ children }) {
               &larr; Back to Admin Dashboard
             </button>
           )}
-          <Breadcrumb />
+          {!["/super-admin/dashboard", "/admin/dashboard", "/teacher/dashboard", "/student/dashboard"].includes(pathname) && <Breadcrumb />}
           {children}
         </main>
       </div>

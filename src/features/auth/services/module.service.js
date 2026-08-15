@@ -23,8 +23,24 @@ export const login = async (credentials) => {
     body.email = credentials.email || credentials.username;
     body.password = credentials.password;
     body.device_name = credentials.device_name || "admin-android";
-    const response = await api.post("/admin/login", body);
-    return response.data;
+    try {
+      const response = await api.post("/admin/login", body);
+      return response.data;
+    } catch (adminError) {
+      // Fallback: try Super Admin login
+      try {
+        const superAdminBody = {
+          email: body.email,
+          password: body.password,
+          device_name: "super-admin-android"
+        };
+        const response = await api.post("/super-admin/login", superAdminBody);
+        return response.data;
+      } catch (superAdminError) {
+        // If both failed, reject with the super admin error message
+        throw superAdminError;
+      }
+    }
   } else {
     body.email = credentials.email || credentials.username;
     body.password = credentials.password;

@@ -133,11 +133,11 @@ export default function TeacherStudentsEditPage() {
         router.push("/teacher/admin/students");
       } else {
         toast.error(response.message || "Failed to update student");
-        throw new Error(response.message);
       }
     } catch (error) {
-      toast.error(error.message || "Failed to update student");
-      throw error;
+      console.error(error);
+      const errMessage = error?.response?.data?.message || error?.message || "Failed to update student";
+      toast.error(errMessage);
     }
   };
 

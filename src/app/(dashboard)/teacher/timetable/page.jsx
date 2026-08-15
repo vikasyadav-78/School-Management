@@ -81,28 +81,28 @@ export default function TeacherTimetablePage() {
                     {periods.map((p, idx) => (
                       <div key={p.id || idx} className="p-3.5 bg-zinc-50 border border-zinc-100 rounded-xl space-y-2 hover:border-violet-300/30 transition-all text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-100 text-[9px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
+                          <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-100 text-[10px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
                             {p.time_label || `${p.start_time} – ${p.end_time}`}
                           </span>
                           {p.slot_type_label && (
-                            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
                               {p.slot_type_label}
                             </span>
                           )}
                         </div>
-                        
-                        <h4 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5 capitalize">
-                          <FaBookOpen className="text-zinc-400 shrink-0" />
+
+                        <h4 className="text-sm font-bold text-zinc-800 flex items-center gap-1.5 capitalize">
+                          <FaBookOpen className="text-zinc-400 shrink-0 w-3.5 h-3.5" />
                           {p.title || p.subject || p.slot_type_label || (p.slot_type === "lunch" ? "Lunch Break" : "Period")}
                         </h4>
-                        
-                        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-2 border-t border-zinc-150/40">
+
+                        <div className="flex items-center justify-between text-[11px] text-zinc-500 font-semibold pt-2 border-t border-zinc-150/40">
                           <span className="flex items-center gap-1 capitalize">
                             <span className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
                             {p.class} - {p.section}
                           </span>
                           <span className="flex items-center gap-1 capitalize">
-                            <FaMapMarkerAlt className="text-zinc-400 shrink-0" />
+                            <FaMapMarkerAlt className="text-zinc-400 shrink-0 w-3 h-3" />
                             {p.room || "Room N/A"}
                           </span>
                         </div>

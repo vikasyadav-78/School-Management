@@ -43,10 +43,6 @@ export const deleteItem = async (id) => {
   return response.data;
 };
 
-export const getProfile = async () => {
-  const response = await api.get("/admin/profile");
-  return response.data;
-};
 
 export const getAttendanceClasses = async () => {
   const response = await api.get("/admin/attendance/classes");

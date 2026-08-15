@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
+import {
   FaPlus, FaTimes, FaCheck, FaTrash, FaQuestionCircle, FaFileAlt, FaGlobe, FaClock, FaCheckCircle, FaInfoCircle, FaShieldAlt, FaListOl, FaExclamationTriangle
 } from "react-icons/fa";
-import { 
+import {
   getTeacherOnlineMcqMeta,
   getTeacherOnlineMcq,
   addTeacherOnlineMcqExam,
@@ -17,11 +17,11 @@ import {
   publishTeacherOnlineMcqExam,
   deleteTeacherOnlineMcqExam
 } from "@/features/teachers/services/teacher.service";
-import { 
-  toDateTimeLocalString, 
-  getFutureDateTimeLocalString, 
+import {
+  toDateTimeLocalString,
+  getFutureDateTimeLocalString,
   computeScheduleStatus,
-  formatDateTime 
+  formatDateTime
 } from "@/utils/timeUtils";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
@@ -374,7 +374,7 @@ export default function TeacherOnlineMcqPage() {
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader 
+        <PageHeader
           title="Online MCQ Exam Creator"
           subtitle="Configure online multiple-choice examinations, construct question banks, and publish scheduled unit tests."
         />
@@ -430,9 +430,8 @@ export default function TeacherOnlineMcqPage() {
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <div className="flex items-center gap-1.5">
-                      <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
-                        isPublished ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-amber-50 border-amber-100 text-amber-600"
-                      }`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${isPublished ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-amber-50 border-amber-100 text-amber-600"
+                        }`}>
                         {isPublished ? "Published" : "Draft"}
                       </span>
 
@@ -517,10 +516,10 @@ export default function TeacherOnlineMcqPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Exam Title *</label>
-                <input 
-                  type="text" 
-                  value={examTitle} 
-                  onChange={(e) => setExamTitle(e.target.value)} 
+                <input
+                  type="text"
+                  value={examTitle}
+                  onChange={(e) => setExamTitle(e.target.value)}
                   placeholder="e.g. Mid-Term Physics Unit Test"
                   className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold"
                 />
@@ -559,10 +558,10 @@ export default function TeacherOnlineMcqPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Duration (Minutes) *</label>
-                  <input 
-                    type="number" 
-                    value={durationMinutes} 
-                    onChange={(e) => setDurationMinutes(e.target.value)} 
+                  <input
+                    type="number"
+                    value={durationMinutes}
+                    onChange={(e) => setDurationMinutes(e.target.value)}
                     placeholder="e.g. 60"
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold"
                   />
@@ -586,19 +585,19 @@ export default function TeacherOnlineMcqPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Start Date & Time *</label>
-                  <input 
-                    type="datetime-local" 
-                    value={startsAt} 
-                    onChange={(e) => setStartsAt(e.target.value)} 
+                  <input
+                    type="datetime-local"
+                    value={startsAt}
+                    onChange={(e) => setStartsAt(e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold text-[11px]"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">End Date & Time *</label>
-                  <input 
-                    type="datetime-local" 
-                    value={endsAt} 
-                    onChange={(e) => setEndsAt(e.target.value)} 
+                  <input
+                    type="datetime-local"
+                    value={endsAt}
+                    onChange={(e) => setEndsAt(e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold text-[11px]"
                   />
                 </div>
@@ -606,10 +605,10 @@ export default function TeacherOnlineMcqPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Exam Instructions (Optional)</label>
-                <textarea 
-                  rows={2} 
-                  value={instructions} 
-                  onChange={(e) => setInstructions(e.target.value)} 
+                <textarea
+                  rows={2}
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
                   placeholder="Enter custom instructions for students..."
                   className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold resize-none"
                 />
@@ -623,44 +622,44 @@ export default function TeacherOnlineMcqPage() {
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="shuffleQ" 
-                      checked={shuffleQuestions} 
-                      onChange={(e) => setShuffleQuestions(e.target.checked)} 
+                    <input
+                      type="checkbox"
+                      id="shuffleQ"
+                      checked={shuffleQuestions}
+                      onChange={(e) => setShuffleQuestions(e.target.checked)}
                       className="w-4 h-4 text-violet-600 rounded cursor-pointer"
                     />
                     <label htmlFor="shuffleQ" className="text-[10px] font-bold text-zinc-600 uppercase cursor-pointer">Shuffle Question Order</label>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="shuffleOpt" 
-                      checked={shuffleOptions} 
-                      onChange={(e) => setShuffleOptions(e.target.checked)} 
+                    <input
+                      type="checkbox"
+                      id="shuffleOpt"
+                      checked={shuffleOptions}
+                      onChange={(e) => setShuffleOptions(e.target.checked)}
                       className="w-4 h-4 text-violet-600 rounded cursor-pointer"
                     />
                     <label htmlFor="shuffleOpt" className="text-[10px] font-bold text-zinc-600 uppercase cursor-pointer">Shuffle Options Order</label>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="fullScreen" 
-                      checked={fullscreenRequired} 
-                      onChange={(e) => setFullscreenRequired(e.target.checked)} 
+                    <input
+                      type="checkbox"
+                      id="fullScreen"
+                      checked={fullscreenRequired}
+                      onChange={(e) => setFullscreenRequired(e.target.checked)}
                       className="w-4 h-4 text-violet-600 rounded cursor-pointer"
                     />
                     <label htmlFor="fullScreen" className="text-[10px] font-bold text-zinc-600 uppercase cursor-pointer">Full Screen Mode</label>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="autoSub" 
-                      checked={autoSubmit} 
-                      onChange={(e) => setAutoSubmit(e.target.checked)} 
+                    <input
+                      type="checkbox"
+                      id="autoSub"
+                      checked={autoSubmit}
+                      onChange={(e) => setAutoSubmit(e.target.checked)}
                       className="w-4 h-4 text-violet-600 rounded cursor-pointer"
                     />
                     <label htmlFor="autoSub" className="text-[10px] font-bold text-zinc-600 uppercase cursor-pointer">Auto Submit When Time Ends</label>
@@ -669,11 +668,11 @@ export default function TeacherOnlineMcqPage() {
 
                 <div className="pt-2 border-t border-zinc-200/60 space-y-2">
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="negMarking" 
-                      checked={negativeMarking} 
-                      onChange={(e) => setNegativeMarking(e.target.checked)} 
+                    <input
+                      type="checkbox"
+                      id="negMarking"
+                      checked={negativeMarking}
+                      onChange={(e) => setNegativeMarking(e.target.checked)}
                       className="w-4 h-4 text-violet-600 rounded cursor-pointer"
                     />
                     <label htmlFor="negMarking" className="text-[10px] font-bold text-zinc-600 uppercase cursor-pointer">Enable Negative Marking</label>
@@ -682,11 +681,11 @@ export default function TeacherOnlineMcqPage() {
                   {negativeMarking && (
                     <div className="space-y-1 pl-6 animate-fade-in">
                       <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Negative Marks Per Wrong Answer</label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         step="0.01"
-                        value={negativeMarks} 
-                        onChange={(e) => setNegativeMarks(e.target.value)} 
+                        value={negativeMarks}
+                        onChange={(e) => setNegativeMarks(e.target.value)}
                         placeholder="e.g. 0.25, 0.50, 1"
                         className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl outline-none text-black font-semibold text-xs"
                       />
@@ -769,7 +768,7 @@ export default function TeacherOnlineMcqPage() {
                   <h4 className="font-extrabold text-zinc-800 text-xs">
                     Questions List ({questionsList.length})
                   </h4>
-                  
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleOpenAddQuestion}
@@ -841,10 +840,10 @@ export default function TeacherOnlineMcqPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Question Prompt *</label>
-                <textarea 
-                  rows={2} 
-                  value={questionText} 
-                  onChange={(e) => setQuestionText(e.target.value)} 
+                <textarea
+                  rows={2}
+                  value={questionText}
+                  onChange={(e) => setQuestionText(e.target.value)}
                   placeholder="Enter problem question prompt..."
                   className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold resize-none"
                 />
@@ -887,10 +886,10 @@ export default function TeacherOnlineMcqPage() {
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100">
                 <button type="button" onClick={() => setIsQuestionModalOpen(false)} className="px-3 py-2 bg-zinc-100 text-zinc-600 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
-                <button 
-                  type="button" 
-                  disabled={submitting} 
-                  onClick={(e) => handleSaveQuestion(e, true)} 
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={(e) => handleSaveQuestion(e, true)}
                   className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-xl text-xs transition-all flex items-center gap-1 cursor-pointer"
                 >
                   <FaPlus className="w-3 h-3" /> Save & Add Next Question

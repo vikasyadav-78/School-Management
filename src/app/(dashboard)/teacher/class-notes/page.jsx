@@ -5,13 +5,13 @@ import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import Button from "@/components/ui/Button";
-import { 
-  FaFileAlt, FaPlus, FaTimes, FaUpload, FaSearch, FaFolderOpen, 
+import {
+  FaFileAlt, FaPlus, FaTimes, FaUpload, FaSearch, FaFolderOpen,
   FaCalendarAlt, FaUser, FaPlayCircle, FaTrash, FaEye, FaFilter
 } from "react-icons/fa";
-import { 
-  getClassNotesClasses, 
-  getClassNotesList, 
+import {
+  getClassNotesClasses,
+  getClassNotesList,
   createClassNotes,
   deleteClassNotes
 } from "@/features/teachers/services/teacher.service";
@@ -20,7 +20,7 @@ import { toast } from "sonner";
 export default function TeacherClassNotesPage() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Dropdown options
   const [dropdowns, setDropdowns] = useState({
     classes: [],
@@ -62,7 +62,7 @@ export default function TeacherClassNotesPage() {
         console.log("=== Class Notes API Response ===");
         console.log(data);
         console.log("Subjects list found in response:", data?.subjects);
-        
+
         // The API returns options, let's map them
         setDropdowns(prev => ({
           ...prev,
@@ -208,15 +208,15 @@ export default function TeacherClassNotesPage() {
   console.log("Form Subjects List:", formSubjects);
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs text-left">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Class Notes & Study Material"
           subtitle="Publish lecture documents, reference materials, syllabus slides, and study notes."
         />
-        <Button 
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer"
+          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer text-xs"
         >
           <FaPlus className="w-3.5 h-3.5" />
           Upload Study Material
@@ -226,13 +226,13 @@ export default function TeacherClassNotesPage() {
       {/* Filter Options Panel */}
       <div className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-4 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
-          <FaFilter className="text-violet-500 w-3.5 h-3.5" /> Filters:
+          <FaFilter className="text-violet-600 w-3.5 h-3.5" /> Filters:
         </div>
 
         <select
           value={filterClass}
           onChange={(e) => handleFilterClassChange(e.target.value)}
-          className="px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold bg-zinc-50 text-black"
+          className="px-3.5 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold bg-zinc-50 focus:bg-white text-zinc-800 transition-all cursor-pointer text-xs"
         >
           <option value="">All Classes</option>
           {dropdowns.classes.map((c) => (
@@ -244,7 +244,7 @@ export default function TeacherClassNotesPage() {
           value={filterSection}
           onChange={(e) => setFilterSection(e.target.value)}
           disabled={!filterClass}
-          className="px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold bg-zinc-50 disabled:opacity-50 text-black"
+          className="px-3.5 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold bg-zinc-50 focus:bg-white text-zinc-800 transition-all disabled:opacity-50 cursor-pointer text-xs"
         >
           <option value="">All Sections</option>
           {filterSections.map((sec, idx) => {
@@ -258,7 +258,7 @@ export default function TeacherClassNotesPage() {
           value={filterSubject}
           onChange={(e) => setFilterSubject(e.target.value)}
           disabled={!filterClass}
-          className="px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold bg-zinc-50 disabled:opacity-50 text-black"
+          className="px-3.5 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold bg-zinc-50 focus:bg-white text-zinc-800 transition-all disabled:opacity-50 cursor-pointer text-xs"
         >
           <option value="">All Subjects</option>
           {filterSubjects.map((sub, idx) => (
@@ -277,7 +277,7 @@ export default function TeacherClassNotesPage() {
           No Class Notes Found
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {notes.map((note) => {
             const isVideo = note.file_type?.toLowerCase() === "video";
             const classNameVal = note.class?.name || note.class;
@@ -286,40 +286,40 @@ export default function TeacherClassNotesPage() {
             const createdDateVal = note.created_at_label || note.created_at;
 
             return (
-              <div 
-                key={note.id} 
-                className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-6 hover:shadow-md transition-all flex flex-col justify-between h-[320px]"
+              <div
+                key={note.id}
+                className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[320px] text-left group"
               >
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {/* Header badges row */}
                   <div className="flex items-center justify-between gap-2 h-7">
-                    <span className="inline-flex items-center px-2.5 py-1 bg-violet-50 text-violet-600 border border-violet-100 text-[10px] font-bold rounded-lg tracking-wide uppercase whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 bg-violet-50 text-violet-700 border border-violet-100 text-[10px] font-extrabold rounded uppercase tracking-wider whitespace-nowrap">
                       {note.subject?.name || note.subject || "Subject"}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-50 border border-zinc-200 text-zinc-500 text-[10px] font-bold rounded-lg uppercase tracking-wider whitespace-nowrap">
-                      {isVideo ? <FaPlayCircle className="text-violet-500 shrink-0" /> : <FaFolderOpen className="shrink-0" />}
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-zinc-50 border border-zinc-200 text-zinc-600 text-[10px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
+                      {isVideo ? <FaPlayCircle className="text-violet-600 shrink-0" /> : <FaFolderOpen className="shrink-0 text-zinc-400" />}
                       {note.file_type || "pdf"}
                     </span>
                   </div>
 
                   {/* Title */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-extrabold text-zinc-800 line-clamp-2 leading-snug min-h-[40px] uppercase tracking-wide" title={note.title}>
+                    <h3 className="text-sm font-bold text-zinc-900 line-clamp-2 leading-snug min-h-[40px] uppercase tracking-wide group-hover:text-violet-600 transition-colors" title={note.title}>
                       {note.title}
                     </h3>
-                    
+
                     {/* Information rows */}
-                    <div className="space-y-2 text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+                    <div className="space-y-1.5 text-xs text-zinc-600 font-medium">
                       {note.chapter && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs shrink-0 select-none">📖</span>
-                          <span className="truncate">Chapter {note.chapter}</span>
+                          <span className="truncate font-semibold text-zinc-700">Chapter {note.chapter}</span>
                         </div>
                       )}
                       {(classNameVal || sectionNameVal) && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs shrink-0 select-none">🏫</span>
-                          <span className="truncate">
+                          <span className="truncate font-semibold text-zinc-700">
                             {classNameVal ? `${classNameVal}` : ""}
                             {classNameVal && sectionNameVal ? " • " : ""}
                             {sectionNameVal ? `Section ${sectionNameVal}` : ""}
@@ -328,14 +328,14 @@ export default function TeacherClassNotesPage() {
                       )}
                       {teacherNameVal && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs shrink-0 select-none">👨</span>
-                          <span className="truncate">{teacherNameVal}</span>
+                          <span className="text-xs shrink-0 select-none">👨‍🏫</span>
+                          <span className="truncate text-zinc-600">{teacherNameVal}</span>
                         </div>
                       )}
                       {createdDateVal && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs shrink-0 select-none">📅</span>
-                          <span className="truncate">{createdDateVal}</span>
+                          <span className="truncate font-mono text-zinc-500">{createdDateVal}</span>
                         </div>
                       )}
                     </div>
@@ -344,18 +344,18 @@ export default function TeacherClassNotesPage() {
 
                 {/* Subtle Divider & Actions */}
                 <div>
-                  <div className="border-t border-zinc-150/60 my-4" />
-                  <div className="flex items-center gap-3">
+                  <div className="border-t border-zinc-100 my-3.5" />
+                  <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => setDeleteId(note.id)}
-                      className="p-2.5 bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white hover:border-rose-500 text-rose-600 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0"
+                      className="p-2.5 bg-rose-50 border border-rose-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 text-rose-700 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0"
                       title="Delete Study Material"
                     >
                       <FaTrash className="w-3.5 h-3.5" />
                     </button>
                     <Link
                       href={`/teacher/class-notes/${note.id}`}
-                      className="flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-650/15 transition-all text-[11px] uppercase tracking-wider"
+                      className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all text-xs uppercase tracking-wider"
                     >
                       <FaEye className="w-3.5 h-3.5" />
                       View Note
@@ -370,73 +370,73 @@ export default function TeacherClassNotesPage() {
 
       {/* Upload Notes Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaFileAlt className="text-violet-500" />
                 Upload Study Material / Lecture Note
               </h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1"
+                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1 cursor-pointer"
               >
                 <FaTimes className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar text-xs">
               {formError && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-semibold border border-red-100">
+                <div className="p-3.5 bg-rose-50 text-rose-700 rounded-xl text-xs font-semibold border border-rose-200">
                   {formError}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Notes Title *</label>
-                  <input 
+                  <input
                     type="text"
                     required
                     placeholder="e.g. Chapter 1 Basics"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all"
                   />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Chapter Number / Name *</label>
-                  <input 
+                  <input
                     type="text"
                     required
                     placeholder="e.g. Chapter 01"
                     value={chapter}
                     onChange={(e) => setChapter(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Material Description (Optional)</label>
-                <textarea 
+                <textarea
                   rows={2}
                   placeholder="Enter topic outline or chapter index..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black resize-none"
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Class *</label>
                   <select
                     value={selectedClassId}
                     onChange={(e) => handleFormClassChange(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all cursor-pointer"
                   >
                     <option value="">Choose Class</option>
                     {dropdowns.classes.map((c) => (
@@ -445,13 +445,13 @@ export default function TeacherClassNotesPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Section *</label>
                   <select
                     value={selectedSectionId}
                     onChange={(e) => setSelectedSectionId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all cursor-pointer"
                   >
                     <option value="">Choose Section</option>
                     {formSections.map((sec, idx) => {
@@ -464,14 +464,14 @@ export default function TeacherClassNotesPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Subject *</label>
                   <select
                     value={selectedSubjectId}
                     onChange={(e) => setSelectedSubjectId(e.target.value)}
                     required
                     disabled={formSubjects.length === 0}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black disabled:opacity-60"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all disabled:opacity-60 cursor-pointer"
                   >
                     {formSubjects.length === 0 ? (
                       <option value="">No Subjects Available</option>
@@ -486,13 +486,13 @@ export default function TeacherClassNotesPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">File Type *</label>
                   <select
                     value={fileType}
                     onChange={(e) => setFileType(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all cursor-pointer"
                   >
                     {dropdowns.file_types.map((type, idx) => {
                       const val = typeof type === "string" ? type : (type.value || type.key || type.name || type.label || "");
@@ -506,51 +506,51 @@ export default function TeacherClassNotesPage() {
               </div>
 
               {fileType !== "video" ? (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Upload Study Document *</label>
                   <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-50 hover:border-violet-300 transition-all select-none">
+                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-200 rounded-2xl cursor-pointer hover:bg-zinc-50 hover:border-violet-300 transition-all select-none">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <FaUpload className="w-5 h-5 text-zinc-400 mb-2" />
-                        <p className="text-[10px] text-zinc-500 font-semibold">
+                        <p className="text-[10px] text-zinc-600 font-bold">
                           {file ? file.name : `Select document file (${fileType.toUpperCase()})`}
                         </p>
                       </div>
-                      <input 
-                        type="file" 
+                      <input
+                        type="file"
                         required
-                        className="hidden" 
+                        className="hidden"
                         onChange={(e) => setFile(e.target.files[0])}
                       />
                     </label>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Video Stream URL *</label>
-                  <input 
+                  <input
                     type="url"
                     required
                     placeholder="e.g. https://youtube.com/watch..."
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all"
                   />
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-zinc-500 hover:text-zinc-800 text-xs font-bold transition-all"
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl font-bold transition-all cursor-pointer text-xs"
                 >
                   Cancel
                 </button>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-2 px-6 font-bold flex items-center gap-1.5 shadow-lg shadow-violet-600/10 cursor-pointer"
+                  className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2 px-6 font-bold flex items-center gap-1.5 shadow-sm cursor-pointer text-xs"
                 >
                   {submitting ? "Uploading..." : "Upload Material"}
                 </Button>
@@ -562,28 +562,28 @@ export default function TeacherClassNotesPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up text-left">
             <div className="p-6 space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mx-auto shadow-inner text-xl">
-                <FaTrash />
+              <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mx-auto shadow-inner text-xl">
+                <FaTrash className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-extrabold text-zinc-800 text-sm">Delete Study Note?</h4>
-                <p className="text-zinc-500 font-medium">Are you sure you want to permanently delete this class note assignment? This action is irreversible.</p>
+                <h4 className="font-bold text-zinc-900 text-sm">Delete Study Note?</h4>
+                <p className="text-zinc-500 font-medium text-xs leading-relaxed">Are you sure you want to permanently delete this class note assignment? This action is irreversible.</p>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-3 px-6 py-4 bg-zinc-50/50 border-t border-zinc-100">
+            <div className="flex items-center justify-center gap-2.5 px-6 py-4 bg-zinc-50/50 border-t border-zinc-100">
               <button
                 onClick={() => setDeleteId(null)}
-                className="px-4 py-2 text-zinc-500 hover:text-zinc-800 text-xs font-bold transition-all"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl font-bold transition-all cursor-pointer text-xs"
               >
                 Cancel
               </button>
               <Button
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
-                className="bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-2 px-6 font-bold flex items-center gap-1 shadow-lg shadow-rose-600/10 cursor-pointer"
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl py-2 px-5 font-bold flex items-center gap-1 shadow-sm cursor-pointer text-xs"
               >
                 {deleting ? "Deleting..." : "Confirm Delete"}
               </Button>

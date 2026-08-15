@@ -20,9 +20,9 @@ export default function AdminLoginPage() {
   
   const formMethods = useForm({
     defaultValues: {
-      email: "tanishqtour@gmail.com",
-      password: "12345678",
-      device_name: "admin-android"
+      email: "",
+      password: "",
+      device_name: "web"
     }
   });
 
@@ -41,7 +41,12 @@ export default function AdminLoginPage() {
   const onSubmit = (data) => {
     dispatch(loginUser({ ...data, role: "admin" })).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
-        window.location.href = "/admin/dashboard";
+        const role = res.payload?.role;
+        if (role === "super_admin") {
+          window.location.href = "/super-admin/dashboard";
+        } else {
+          window.location.href = "/admin/dashboard";
+        }
       }
     });
   };

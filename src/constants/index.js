@@ -47,7 +47,7 @@ export const ADMIN_NAVIGATION_ITEMS = [
       },
       { title: "Class Notes", path: "/admin/class-notes" },
       {
-        title: "Exams",
+        title: "Examinations",
         path: "/admin/exams",
         submenu: [
           { title: "Exams", path: "/admin/exams" },
@@ -111,13 +111,27 @@ export const ADMIN_NAVIGATION_ITEMS = [
         ]
       },
       { title: "Leave Applications", path: "/admin/leaves" },
-      { title: "Holidays", path: "/admin/holidays" }
+      { title: "Holidays", path: "/admin/holidays" },
+      { title: "Email & Notices", path: "/admin/email", icon: "FaPaperPlane" }
     ]
-  },
-  { title: "Profile", path: "/admin/profile", icon: "FaUser" }
+  }
 ];
 
 export const NAVIGATION_ITEMS = ADMIN_NAVIGATION_ITEMS; // for backward compatibility
+
+export const SUPER_ADMIN_NAVIGATION_ITEMS = [
+  { title: "Dashboard", path: "/super-admin/dashboard", icon: "MdDashboard" },
+  { title: "Colleges/Schools", path: "/super-admin/schools", icon: "FaBuilding" },
+  { title: "Notes & Question Papers", path: "/super-admin/content", icon: "FaCloudUploadAlt" },
+  { title: "Subscription Plans", path: "/super-admin/plans", icon: "FaFileContract" },
+  { title: "Global Reports", path: "/super-admin/reports", icon: "FaChartBar" },
+  { title: "Online Payments", path: "/super-admin/payments", icon: "FaCoins" },
+  { title: "Inventory Management", path: "/super-admin/inventory", icon: "FaShoppingCart" },
+  { title: "Roles & Permissions", path: "/super-admin/roles", icon: "FaLock" },
+  { title: "Settings & Integrations", path: "/super-admin/settings", icon: "FaCog" },
+  { title: "Login Reports", path: "/super-admin/login-logs", icon: "FaClipboardList" }
+];
+
 
 export const TEACHER_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/teacher/dashboard", icon: "MdDashboard" },
@@ -174,11 +188,20 @@ export const TEACHER_NAVIGATION_ITEMS = [
         ]
       },
       {
+        title: "Students",
+        path: "/teacher/admin/students",
+        icon: "FaUserGraduate",
+        submenu: [
+          { title: "All Students", path: "/teacher/admin/students" },
+          { title: "Add Student", path: "/teacher/admin/students/add" },
+          { title: "Allocation & Transfer", path: "/teacher/admin/classes/allocation" },
+          { title: "Subjects", path: "/teacher/admin/subjects" }
+        ]
+      },
+      {
         title: "Academics",
         submenu: [
-          { title: "Students", path: "/teacher/admin/students" },
           { title: "Classes & Sections", path: "/teacher/admin/classes" },
-          { title: "Subject Management", path: "/teacher/admin/subjects" },
           { title: "Academic Years", path: "/teacher/admin/academic-years" },
           { title: "Manage Timetable", path: "/teacher/admin/manage-timetable" },
           { title: "Online MCQ Exams", path: "/teacher/admin/online-mcq" },

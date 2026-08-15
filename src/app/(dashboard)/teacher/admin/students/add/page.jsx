@@ -96,11 +96,11 @@ export default function TeacherStudentsAddPage() {
         router.push("/teacher/admin/students");
       } else {
         toast.error(response.message || "Failed to add student");
-        throw new Error(response.message);
       }
     } catch (error) {
-      toast.error(error.message || "Failed to add student");
-      throw error; // Throw so the form component knows it failed (if it awaits)
+      console.error(error);
+      const errMessage = error?.response?.data?.message || error?.message || "Failed to add student";
+      toast.error(errMessage);
     }
   };
 

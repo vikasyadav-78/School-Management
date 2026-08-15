@@ -7,12 +7,13 @@ import {
   FaChalkboardTeacher, FaUserGraduate, FaBook, FaBuilding,
   FaUsers, FaCalendarTimes, FaMoneyBillWave, FaCalendarAlt,
   FaShoppingCart, FaFileAlt, FaUser, FaChevronDown, FaChevronRight,
-  FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo, FaArrowLeft
+  FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo, FaArrowLeft, FaCoins, FaClipboardList,
+  FaFileContract, FaCloudUploadAlt, FaCog
 } from "react-icons/fa";
 import { MdDashboard, MdEmail } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { APP_CONFIG } from "@/constants/appConfig";
-import { ADMIN_NAVIGATION_ITEMS, TEACHER_NAVIGATION_ITEMS, STUDENT_NAVIGATION_ITEMS } from "@/constants";
+import { ADMIN_NAVIGATION_ITEMS, TEACHER_NAVIGATION_ITEMS, STUDENT_NAVIGATION_ITEMS, SUPER_ADMIN_NAVIGATION_ITEMS } from "@/constants";
 
 const iconMap = {
   MdDashboard,
@@ -32,7 +33,12 @@ const iconMap = {
   FaUmbrellaBeach,
   FaCalendarCheck,
   FaVideo,
-  FaGraduationCap
+  FaGraduationCap,
+  FaCoins,
+  FaClipboardList,
+  FaFileContract,
+  FaCloudUploadAlt,
+  FaCog
 };
 
 import { useSidebar } from "@/context/SidebarContext";
@@ -177,6 +183,9 @@ export default function Sidebar() {
   } else if (userRole === "student") {
     navItems = STUDENT_NAVIGATION_ITEMS;
     panelLabel = "Student Panel";
+  } else if (userRole === "super_admin") {
+    navItems = SUPER_ADMIN_NAVIGATION_ITEMS;
+    panelLabel = "Super Admin";
   }
 
   const toggleSubmenu = (title) => {

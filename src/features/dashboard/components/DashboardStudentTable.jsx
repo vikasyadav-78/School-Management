@@ -16,9 +16,6 @@ export default function DashboardStudentTable({ students = [], toppers = [] }) {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-base font-bold text-zinc-800">Exam Toppers</h3>
-            <Link href="/admin/marks" className="text-xs font-bold text-violet-600 hover:text-violet-700">
-              View all
-            </Link>
           </div>
 
           <div className="overflow-x-auto">
@@ -29,13 +26,12 @@ export default function DashboardStudentTable({ students = [], toppers = [] }) {
                   <th className="pb-3 font-semibold">Name</th>
                   <th className="pb-3 font-semibold">Class</th>
                   <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold text-right">Edit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50">
                 {toppers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-4 text-center text-zinc-400">
+                    <td colSpan={4} className="py-4 text-center text-zinc-400">
                       No toppers calculated yet. Complete marks entry to update.
                     </td>
                   </tr>
@@ -63,11 +59,6 @@ export default function DashboardStudentTable({ students = [], toppers = [] }) {
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
                           {topper.status}
                         </span>
-                      </td>
-                      <td className="py-3 text-right">
-                        <Link href={`/admin/marks`} className="text-violet-500 hover:text-violet-700 inline-flex items-center">
-                          <FaEdit className="w-3.5 h-3.5" />
-                        </Link>
                       </td>
                     </tr>
                   ))

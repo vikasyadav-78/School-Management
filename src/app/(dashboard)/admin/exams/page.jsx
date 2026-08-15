@@ -112,11 +112,6 @@ export default function AdminExamsListPage() {
         subtitle="Manage exams, map schedules, generate results & admit cards."
         action={
           <div className="flex gap-2">
-            <Link href="/admin/marks">
-              <Button variant="outline" size="sm">
-                Marks Entry
-              </Button>
-            </Link>
             <Link href="/admin/exams/create">
               <Button variant="primary" size="sm">
                 <FaPlus className="mr-1.5" /> Create Exam

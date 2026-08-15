@@ -802,12 +802,12 @@ export const assignTeacherStudentsToSection = async (payload) => {
 };
 
 export const getTeacherSalaryReport = async (params) => {
-  const response = await api.get("/teacher/my-salary", { params });
+  const response = await api.get("/teacher/salary-report", { params });
   return response.data;
 };
 
 export const getTeacherSalaryDetail = async (id) => {
-  const response = await api.get(`/teacher/my-salary/${id}`);
+  const response = await api.get(`/teacher/salary-report/${id}`);
   return response.data;
 };
 
@@ -836,6 +836,23 @@ export const bulkAssignTeacherStudents = async (payload) => {
 
 export const bulkTransferTeacherStudents = async (payload) => {
   const response = await api.post("/teacher/allocation/bulk-transfer", payload);
+  return response.data;
+};
+
+export const getTeacherFeePaymentDetail = async (paymentId) => {
+  const response = await api.get(`/teacher/fees/payments/${paymentId}`);
+  return response.data;
+};
+
+export const getTeacherFeePaymentReceipt = async (paymentId, format = "") => {
+  const url = `/teacher/fees/payments/${paymentId}/receipt` + (format ? `?format=${format}` : "");
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const getTeacherFeeTransactionReceipt = async (transactionId, format = "") => {
+  const url = `/teacher/fees/transactions/${transactionId}/receipt` + (format ? `?format=${format}` : "");
+  const response = await api.get(url);
   return response.data;
 };
 

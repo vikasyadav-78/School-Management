@@ -84,7 +84,7 @@ export default function StudentTransportPage() {
 
   if (!transportData || !transportData.assigned) {
     return (
-      <div className="space-y-6 animate-fade-in text-xs text-left">
+      <div className="space-y-6 animate-fade-in text-xs text-left w-full">
         <PageHeader 
           title="My Bus Location"
           subtitle="View your assigned transport details and track live bus location."
@@ -109,60 +109,60 @@ export default function StudentTransportPage() {
   const lng = liveData ? liveData.bus?.longitude : bus.longitude;
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs text-left">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <PageHeader 
         title="My Bus Location"
         subtitle="View your assigned transport details and track live bus location."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
         {/* Bus Summary Card */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 border border-violet-100/60 flex items-center justify-center shrink-0">
                 <FaBus className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-extrabold text-zinc-800 text-sm">{bus.name || "Assigned Route"}</h3>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Vehicle: {bus.vehicle_number || "N/A"}</span>
+              <div className="min-w-0">
+                <h3 className="font-extrabold text-zinc-800 text-sm truncate">{bus.name || "Assigned Route"}</h3>
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Vehicle: {bus.vehicle_number || "N/A"}</span>
               </div>
             </div>
 
-            <div className="space-y-3 pt-4 border-t border-zinc-100">
+            <div className="space-y-3.5 pt-4 border-t border-zinc-100">
               <div className="flex items-center gap-3 text-zinc-600">
-                <FaUser className="w-4 h-4 text-zinc-400" />
-                <div>
+                <FaUser className="w-4 h-4 text-zinc-400 shrink-0" />
+                <div className="min-w-0">
                   <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Driver Name</span>
-                  <span className="font-bold text-zinc-800">{bus.driver_name || "N/A"}</span>
+                  <span className="font-bold text-zinc-800 text-xs truncate block">{bus.driver_name || "N/A"}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-zinc-600">
-                <FaPhoneAlt className="w-4 h-4 text-zinc-400" />
-                <div>
+                <FaPhoneAlt className="w-4 h-4 text-zinc-400 shrink-0" />
+                <div className="min-w-0">
                   <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Driver Phone</span>
-                  <span className="font-bold text-zinc-800">{bus.driver_phone || "N/A"}</span>
+                  <span className="font-bold text-zinc-800 text-xs truncate block">{bus.driver_phone || "N/A"}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-zinc-600">
-                <FaRoad className="w-4 h-4 text-zinc-400" />
-                <div>
+                <FaRoad className="w-4 h-4 text-zinc-400 shrink-0" />
+                <div className="min-w-0">
                   <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Pickup Point</span>
-                  <span className="font-bold text-zinc-800">{bus.pickup_point || "N/A"}</span>
+                  <span className="font-bold text-zinc-800 text-xs truncate block">{bus.pickup_point || "N/A"}</span>
                 </div>
               </div>
             </div>
             
             <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center justify-between text-[10px] font-bold text-zinc-500">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-lg">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
                 Live Sync Active
               </div>
-              <span>
+              <span className="text-zinc-500">
                 {liveData?.updated_at ? `Last Updated: ${new Date(liveData.updated_at).toLocaleTimeString()}` : "Polling..."}
               </span>
             </div>
@@ -171,13 +171,13 @@ export default function StudentTransportPage() {
 
         {/* Live Location Map */}
         <div className="lg:col-span-2">
-          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full min-h-[400px]">
-            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
+          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full min-h-[420px]">
+            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/60">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaMapMarkerAlt className="text-violet-500" /> Live Location
               </h3>
               {!hasLocation ? (
-                 <span className="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                 <span className="px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
                    <FaExclamationTriangle /> Location Unavailable
                  </span>
               ) : (

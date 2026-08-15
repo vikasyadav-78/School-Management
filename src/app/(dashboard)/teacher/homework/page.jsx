@@ -5,14 +5,14 @@ import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import Button from "@/components/ui/Button";
-import { 
-  FaBook, FaCalendarAlt, FaPlus, FaTimes, FaFileAlt, FaCheckCircle, 
+import {
+  FaBook, FaCalendarAlt, FaPlus, FaTimes, FaFileAlt, FaCheckCircle,
   FaHourglassHalf, FaUpload, FaTasks, FaUser, FaClipboardList, FaFileDownload
 } from "react-icons/fa";
-import { 
-  getHomeworkClasses, 
-  getHomeworkList, 
-  createHomework 
+import {
+  getHomeworkClasses,
+  getHomeworkList,
+  createHomework
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
 
@@ -20,13 +20,13 @@ export default function TeacherHomeworkPage() {
   const [homework, setHomework] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all"); // "all", "pending", "completed", "graded"
-  
+
   // Classes, sections and subjects selection state
   const [classes, setClasses] = useState([]);
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [classesLoading, setClassesLoading] = useState(false);
-  
+
   // Create homework modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -126,7 +126,7 @@ export default function TeacherHomeworkPage() {
       await createHomework(formData);
       toast.success("Homework assignment created successfully!");
       setIsModalOpen(false);
-      
+
       // Reset form
       setTitle("");
       setDescription("");
@@ -137,7 +137,7 @@ export default function TeacherHomeworkPage() {
       setMaxMarks("");
       setAttachment(null);
       setVideoUrl("");
-      
+
       fetchHomework(); // Reload list
     } catch (err) {
       setFormError(err.response?.data?.message || err.message || "Failed to create homework.");
@@ -148,15 +148,15 @@ export default function TeacherHomeworkPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs text-left">
+    <div className="space-y-6 animate-fade-in text-xs text-left w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Homework Assignments"
           subtitle="Publish homework assignments, review student submissions, and grade tasks."
         />
-        <Button 
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer"
+          className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer text-xs"
         >
           <FaPlus className="w-3.5 h-3.5" />
           Create Homework
@@ -164,16 +164,15 @@ export default function TeacherHomeworkPage() {
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex bg-zinc-100 p-1 rounded-xl w-full max-w-lg border border-zinc-200">
+      <div className="flex bg-zinc-100 p-1 rounded-xl w-full max-w-lg border border-zinc-200/80">
         {["all", "today", "pending", "completed", "overdue"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wide ${
-              activeTab === tab
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider cursor-pointer ${activeTab === tab
                 ? "bg-white text-violet-600 shadow-sm"
                 : "text-zinc-500 hover:text-zinc-800"
-            }`}
+              }`}
           >
             {tab}
           </button>
@@ -190,61 +189,60 @@ export default function TeacherHomeworkPage() {
           No Homework Found
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {homework.map((hw) => {
             const submissionsCount = hw.stats?.submitted !== undefined ? hw.stats.submitted : (hw.submissions_count || hw.total_submissions || 0);
             const pendingCount = hw.stats?.pending !== undefined ? hw.stats.pending : (hw.pending_submissions_count || hw.pending_submissions || 0);
             const gradedCount = hw.stats?.graded !== undefined ? hw.stats.graded : (hw.graded_submissions_count || hw.graded_submissions || 0);
-            
+
             return (
-              <Link 
+              <Link
                 href={`/teacher/homework/${hw.id}`}
-                key={hw.id} 
-                className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all flex flex-col justify-between hover:border-violet-200"
+                key={hw.id}
+                className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all duration-300 flex flex-col justify-between hover:border-violet-200 text-left group"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100">
-                    <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-100 text-[9px] font-bold rounded-lg tracking-wide uppercase">
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                    <span className="inline-flex px-2 py-0.5 bg-violet-50 text-violet-700 border border-violet-100 text-[10px] font-extrabold rounded uppercase tracking-wider">
                       {hw.subject?.name || hw.subject || "Subject"}
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-semibold block uppercase tracking-wider">
+                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block font-mono">
                       Due: {hw.due_date_label || hw.due_date || "N/A"}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-sm font-extrabold text-zinc-800 line-clamp-1">{hw.title}</h3>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-zinc-900 line-clamp-1 group-hover:text-violet-600 transition-colors">{hw.title}</h3>
+                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
                       {hw.class?.name || hw.class} - {hw.section?.name || hw.section || "A"}
                     </p>
                   </div>
 
-                  {/* Submission Statistics */}
+                  {/* Submission Statistics - Centered Colored Format */}
                   <div className="grid grid-cols-3 gap-2 bg-zinc-50 border border-zinc-100 rounded-xl p-3 text-center">
-                    <div>
-                      <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Total</span>
+                    <div className="bg-white border border-zinc-200/60 rounded-lg p-1.5">
+                      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total</span>
                       <span className="text-xs font-black text-zinc-800">{submissionsCount}</span>
                     </div>
-                    <div>
-                      <span className="text-[8px] font-bold text-amber-600 uppercase tracking-wider block">Pending</span>
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-1.5">
+                      <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider block">Pending</span>
                       <span className="text-xs font-black text-amber-700">{pendingCount}</span>
                     </div>
-                    <div>
-                      <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider block">Graded</span>
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-1.5">
+                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Graded</span>
                       <span className="text-xs font-black text-emerald-700">{gradedCount}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold pt-4 mt-4 border-t border-zinc-100">
-                  <span className="flex items-center gap-1.5">
-                    marks : {hw.max_marks || "N/A"}
+                <div className="flex items-center justify-between text-xs text-zinc-500 font-semibold pt-3.5 mt-4 border-t border-zinc-100">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    marks : <strong className="text-zinc-800 font-bold">{hw.max_marks || "N/A"}</strong>
                   </span>
-                  <span className={`inline-flex px-2 py-0.5 text-[9px] font-extrabold rounded-md uppercase tracking-wider border ${
-                    hw.status?.toLowerCase() === "active" || hw.status?.toLowerCase() === "published"
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                  <span className={`inline-flex px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase tracking-wider border ${hw.status?.toLowerCase() === "active" || hw.status?.toLowerCase() === "published"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                       : "bg-zinc-50 text-zinc-400 border-zinc-100"
-                  }`}>
+                    }`}>
                     {hw.status || "Active"}
                   </span>
                 </div>
@@ -257,59 +255,59 @@ export default function TeacherHomeworkPage() {
       {/* Create Homework Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up text-left flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
                 <FaBook className="text-violet-500" />
                 Create New Homework Assignment
               </h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1"
+                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1 cursor-pointer"
               >
                 <FaTimes className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar text-xs">
               {formError && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-semibold border border-red-100">
+                <div className="p-3.5 bg-rose-50 text-rose-700 rounded-xl text-xs font-semibold border border-rose-200">
                   {formError}
                 </div>
               )}
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Homework Title *</label>
-                <input 
+                <input
                   type="text"
                   required
                   placeholder="e.g. Weekly English Essay"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Description / Instructions *</label>
-                <textarea 
+                <textarea
                   rows={3}
                   required
                   placeholder="Enter assignment details or instructions..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black resize-none"
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Class *</label>
                   <select
                     value={selectedClassId}
                     onChange={(e) => handleClassChange(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all cursor-pointer"
                   >
                     <option value="">Choose Class</option>
                     {classes.map((c) => (
@@ -318,13 +316,13 @@ export default function TeacherHomeworkPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Section *</label>
                   <select
                     value={selectedSectionId}
                     onChange={(e) => setSelectedSectionId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all cursor-pointer"
                   >
                     <option value="">Choose Section</option>
                     {formSections.map((sec, idx) => {
@@ -337,14 +335,14 @@ export default function TeacherHomeworkPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Select Subject *</label>
                   <select
                     value={selectedSubjectId}
                     onChange={(e) => setSelectedSubjectId(e.target.value)}
                     required
                     disabled={formSubjects.length === 0}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black disabled:opacity-60"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-bold text-zinc-700 bg-zinc-50 focus:bg-white transition-all disabled:opacity-60 cursor-pointer"
                   >
                     {formSubjects.length === 0 ? (
                       <option value="">No Subjects Available</option>
@@ -359,44 +357,44 @@ export default function TeacherHomeworkPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Maximum Marks *</label>
-                  <input 
+                  <input
                     type="number"
                     required
                     placeholder="e.g. 100"
                     value={maxMarks}
                     onChange={(e) => setMaxMarks(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3.5 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Due Date *</label>
-                  <input 
+                  <input
                     type="date"
                     required
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black [color-scheme:light]"
+                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all cursor-pointer font-mono"
                   />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Video Tutorial URL (Optional)</label>
-                  <input 
+                  <input
                     type="url"
                     placeholder="e.g. https://youtube.com/watch..."
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                    className="w-full px-3.5 py-2 border border-zinc-200 rounded-xl outline-none focus:border-violet-500 font-semibold text-zinc-800 bg-zinc-50 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Upload Attachment File (Optional)</label>
                 <div className="flex items-center justify-center w-full">
                   <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-50 hover:border-violet-300 transition-all select-none">
@@ -406,27 +404,27 @@ export default function TeacherHomeworkPage() {
                         {attachment ? attachment.name : "Click to upload pdf, doc, or image files"}
                       </p>
                     </div>
-                    <input 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      className="hidden"
                       onChange={(e) => setAttachment(e.target.files[0])}
                     />
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-zinc-500 hover:text-zinc-800 text-xs font-bold transition-all"
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl font-bold transition-all cursor-pointer text-xs"
                 >
                   Cancel
                 </button>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-2 px-6 font-bold flex items-center gap-1.5 shadow-lg shadow-violet-600/10 cursor-pointer"
+                  className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2 px-6 font-bold flex items-center gap-1.5 shadow-sm cursor-pointer text-xs"
                 >
                   {submitting ? "Publishing..." : "Publish Homework"}
                 </Button>

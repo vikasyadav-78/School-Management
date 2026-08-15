@@ -85,20 +85,11 @@ export default function StudentFeesPage() {
       }
 
       const gateway = paymentGateway.gateway?.toLowerCase();
-      console.log("Gateway:", gateway);
-      console.log("Calling Pay API...");
-
       const pay_initiate_url = `/student/fees/${paymentId}/pay`;
-      console.log("Pay API URL:", pay_initiate_url);
 
       const initiateResponse = await api.post(pay_initiate_url);
-      console.log("Pay API Response:", initiateResponse.data);
-
       const checkout = initiateResponse.data.checkout || initiateResponse.data;
-      console.log("Checkout Object:", checkout);
-
       const verify_url = checkout?.verify_url || initiateResponse.data?.verify_url || `/student/fees/${paymentId}/verify`;
-      console.log("Verify URL:", verify_url);
 
       if (!checkout) {
         toast.error("Failed to initialize transaction order.");
@@ -194,10 +185,7 @@ export default function StudentFeesPage() {
 
         case "easebuzz": {
           const payment_url = checkout?.client?.payment_url || checkout?.payment_url;
-          console.log("Gateway:", gateway);
-          console.log("Payment URL:", payment_url);
           if (payment_url) {
-            console.log("Redirecting to Easebuzz...");
             window.location.href = payment_url;
           } else {
             toast.error("Payment URL not received from server.");
@@ -238,7 +226,7 @@ export default function StudentFeesPage() {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-center text-red-500 text-sm font-semibold max-w-lg mx-auto mt-10">
+      <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl text-center text-rose-700 text-sm font-semibold max-w-lg mx-auto mt-10">
         Failed to load fees details: {error}
       </div>
     );
@@ -251,118 +239,144 @@ export default function StudentFeesPage() {
   const paymentGateway = fees.payment_gateway || {};
 
   return (
-    <div className="space-y-6 animate-fade-in text-xs">
+    <div className="space-y-6 text-left w-full">
       <PageHeader
         title="My Fees Statement"
-        subtitle="Review fees cycle structures, outstanding term dues, and download print receipts."
+        description="Review fees cycle structures, outstanding term dues, and download print receipts."
       />
 
       {/* Warning Banner if Gateway is Disabled */}
       {paymentGateway?.enabled === false && (
-        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-xl text-left">
-          Online payment is currently unavailable.
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-2xl">
+          Online payment is currently unavailable. Please contact the administration office.
         </div>
       )}
 
-      {/* Overview Cards */}
+      {/* Overview Cards - Centered & Colored Format */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
-          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total Assigned</span>
-          <h3 className="text-base font-extrabold text-zinc-800 mt-1">₹{(summary.total_assigned || 0).toLocaleString()}</h3>
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-200/80 shadow-sm text-center">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            Total Assigned
+          </span>
+          <h3 className="text-xl font-black text-slate-800 mt-1">
+            ₹{(summary.total_assigned || 0).toLocaleString()}
+          </h3>
         </div>
-        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Total Paid</span>
-          <h3 className="text-base font-extrabold text-emerald-700 mt-1">₹{(summary.total_paid || 0).toLocaleString()}</h3>
+
+        <div className="bg-emerald-50 border border-emerald-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+            Total Paid
+          </span>
+          <h3 className="text-xl font-black text-emerald-700 mt-1">
+            ₹{(summary.total_paid || 0).toLocaleString()}
+          </h3>
         </div>
-        <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-rose-600 uppercase tracking-wider block">Total Due</span>
-          <h3 className="text-base font-extrabold text-rose-700 mt-1">₹{(summary.total_due || 0).toLocaleString()}</h3>
+
+        <div className="bg-rose-50 border border-rose-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">
+            Total Due
+          </span>
+          <h3 className="text-xl font-black text-rose-700 mt-1">
+            ₹{(summary.total_due || 0).toLocaleString()}
+          </h3>
         </div>
-        <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl text-center">
-          <span className="text-[9px] font-bold text-amber-600 tracking-wider block">Pending Fees</span>
-          <h3 className="text-base font-extrabold text-amber-700 mt-1">{summary.pending_count || 0}</h3>
+
+        <div className="bg-amber-50 border border-amber-100 p-4.5 rounded-2xl text-center">
+          <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">
+            Pending Fees
+          </span>
+          <h3 className="text-xl font-black text-amber-700 mt-1">
+            {summary.pending_count || 0}
+          </h3>
         </div>
-        <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-center col-span-2 md:col-span-1">
-          <span className="text-[9px] font-bold text-red-600 uppercase tracking-wider block">Overdue Fees</span>
-          <h3 className="text-base font-extrabold text-red-700 mt-1">{summary.overdue_count || 0}</h3>
+
+        <div className="bg-red-50 border border-red-100 p-4.5 rounded-2xl text-center col-span-2 md:col-span-1">
+          <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider block">
+            Overdue Fees
+          </span>
+          <h3 className="text-xl font-black text-red-700 mt-1">
+            {summary.overdue_count || 0}
+          </h3>
         </div>
       </div>
 
       {/* Vouchers Table */}
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-50/50">
-          <h3 className="text-xs font-bold text-zinc-700 uppercase">Payment Vouchers</h3>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <FaMoneyBillWave className="text-violet-600" /> Payment Vouchers
+          </h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[1050px]">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
-                <th className="px-6 py-4">Fee Name</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4">Paid</th>
-                <th className="px-6 py-4">Due</th>
-                <th className="px-6 py-4">Late Fee</th>
-                <th className="px-6 py-4">Total Payable</th>
-                <th className="px-6 py-4">Due Date</th>
-                <th className="px-6 py-4">Frequency</th>
-                <th className="px-6 py-4">Receipt</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Action</th>
+              <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3.5 pl-6 pr-4 whitespace-nowrap min-w-[160px]">Fee Name</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Amount</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Paid</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Due</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Late Fee</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Total Payable</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Due Date</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Frequency</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Receipt</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Status</th>
+                <th className="py-3.5 pl-4 pr-6 text-right whitespace-nowrap min-w-[100px]">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-150 text-xs">
+            <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
               {payments.map((v, idx) => {
                 const statusStr = v.status_label || v.status || "Due";
-                let badgeClass = "bg-zinc-50 text-zinc-500 border-zinc-200";
+                let badgeClass = "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/20";
 
                 if (statusStr.toLowerCase() === "paid") {
-                  badgeClass = "bg-emerald-50 text-emerald-600 border-emerald-100";
+                  badgeClass = "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20";
                 } else if (statusStr.toLowerCase() === "due") {
-                  badgeClass = "bg-amber-50 text-amber-600 border-amber-100";
+                  badgeClass = "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20";
                 } else if (statusStr.toLowerCase() === "overdue") {
-                  badgeClass = "bg-rose-50 text-rose-600 border-rose-100";
+                  badgeClass = "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20";
                 }
 
                 return (
-                  <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
+                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 pl-6 pr-4 font-bold text-slate-900 whitespace-nowrap">
                       {v.fee_name || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-semibold text-zinc-700 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
                       ₹{(v.amount || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-emerald-600 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-emerald-600 font-semibold whitespace-nowrap">
                       ₹{(v.paid_amount || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-rose-600 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-rose-600 font-semibold whitespace-nowrap">
                       ₹{(v.due_amount || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
                       ₹{(v.late_fee_amount || v.late_fee || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 font-extrabold text-zinc-800 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                       ₹{(v.total_payable || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
                       {v.due_date_label || v.due_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-zinc-400 font-medium whitespace-nowrap capitalize">
+                    <td className="py-3.5 px-4 text-slate-500 capitalize whitespace-nowrap">
                       {v.frequency || "One-Time"}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-medium whitespace-nowrap">
-                      {v.receipt_no || v.receipt_number || "N/A"}
+                    <td className="py-3.5 px-4 text-slate-500 font-mono text-xs whitespace-nowrap">
+                      {v.receipt_no || v.receipt_number || "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${badgeClass}`}>
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <span className={`inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full uppercase tracking-wider ${badgeClass}`}>
                         {statusStr}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="py-3.5 pl-4 pr-6 text-right whitespace-nowrap">
                       {v.can_pay_online && statusStr.toLowerCase() !== "paid" ? (
-                        <button 
+                        <button
                           disabled={payingId === v.id || paymentGateway?.enabled === false}
                           onClick={() => handlePayment(v.id, v.fee_name)}
-                          className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-750 text-white rounded-lg text-[10px] font-bold shadow-sm cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1.5"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer transition-all disabled:opacity-50"
                         >
                           {payingId === v.id ? (
                             <>
@@ -370,11 +384,11 @@ export default function StudentFeesPage() {
                               <span>Processing</span>
                             </>
                           ) : (
-                            <span>Pay</span>
+                            <span>Pay Now</span>
                           )}
                         </button>
                       ) : (
-                        <span className="text-zinc-400 font-semibold">—</span>
+                        <span className="text-slate-400 font-semibold">—</span>
                       )}
                     </td>
                   </tr>
@@ -382,8 +396,8 @@ export default function StudentFeesPage() {
               })}
               {payments.length === 0 && (
                 <tr>
-                  <td colSpan="11" className="text-center py-10 text-zinc-400 font-semibold uppercase tracking-wider text-xs">
-                    No Vouchers Found
+                  <td colSpan="11" className="text-center py-12 text-slate-400 italic text-sm">
+                    No Fee Vouchers Found
                   </td>
                 </tr>
               )}
@@ -393,69 +407,69 @@ export default function StudentFeesPage() {
       </div>
 
       {/* Receipts Section */}
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-zinc-200 flex items-center gap-2 bg-zinc-50/50">
-          <FaReceipt className="text-violet-500 w-4 h-4" />
-          <h3 className="text-xs font-bold text-zinc-700 uppercase">Payment Receipts</h3>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center gap-2">
+          <FaReceipt className="text-violet-600 w-4 h-4" />
+          <h3 className="text-sm font-bold text-slate-900">Payment Receipts</h3>
         </div>
+
         {receipts.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
-                  <th className="px-6 py-4">Receipt Number</th>
-                  <th className="px-6 py-4">Fee Name</th>
-                  <th className="px-6 py-4">Transaction Date</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-8 py-4">Actions</th>
+                <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 pl-6 pr-4 whitespace-nowrap min-w-[160px]">Receipt Number</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[200px]">Fee Name</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">Transaction Date</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Amount</th>
+                  <th className="py-3.5 pl-4 pr-6 text-right whitespace-nowrap min-w-[180px]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 text-xs">
+              <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
                 {receipts.map((r, idx) => (
-                  <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
+                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 pl-6 pr-4 font-bold text-slate-900 font-mono text-xs whitespace-nowrap">
                       {r.receipt_no || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-bold text-zinc-700 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
                       {r.fee_name || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-semibold whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
                       {r.paid_at_label || r.date || "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-extrabold text-emerald-600 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-emerald-600 whitespace-nowrap">
                       ₹{(r.amount || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="py-3.5 pl-4 pr-6 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
                         {r.print_url && (
-                          <button 
+                          <button
                             disabled={printingId === r.receipt_no}
                             onClick={() => printReceipt(r.print_url, r.receipt_no)}
-                            className="p-1.5 border border-zinc-200 hover:bg-zinc-50 text-zinc-600 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[28px] min-h-[28px]"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-colors disabled:opacity-50"
                             title="Print Receipt"
                           >
                             {printingId === r.receipt_no ? (
-                              <div className="w-3.5 h-3.5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
+                              <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
                             ) : (
-                              <FaPrint className="w-3.5 h-3.5" />
+                              <FaPrint className="w-3.5 h-3.5 text-slate-400" />
                             )}
+                            <span>Print</span>
                           </button>
                         )}
                         {r.pdf_url && (
-                          <button 
+                          <button
                             disabled={downloadingId === r.receipt_no}
                             onClick={() => downloadReceipt(r.pdf_url, r.receipt_no)}
-                            className="p-1.5 bg-violet-50 hover:bg-violet-100 border border-violet-200/50 text-violet-600 rounded-lg font-bold transition-all flex items-center gap-1.5 text-[10px] disabled:opacity-50 min-h-[28px]"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100/80 border border-blue-200/80 transition-colors disabled:opacity-50"
                             title="Download PDF"
                           >
                             {downloadingId === r.receipt_no ? (
-                              <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+                              <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                             ) : (
-                              <>
-                                <FaDownload className="w-3 h-3" />
-                                <span>Download</span>
-                              </>
+                              <FaDownload className="w-3.5 h-3.5 text-blue-600" />
                             )}
+                            <span>PDF</span>
                           </button>
                         )}
                       </div>
@@ -466,7 +480,7 @@ export default function StudentFeesPage() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-10 text-zinc-400 font-semibold uppercase tracking-wider text-xs border-t border-zinc-100">
+          <div className="text-center py-12 text-slate-400 italic text-sm">
             No Receipts Available
           </div>
         )}

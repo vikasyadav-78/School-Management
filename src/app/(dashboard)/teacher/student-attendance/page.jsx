@@ -5,18 +5,18 @@ import { useDispatch, useSelector } from "react-redux";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import Button from "@/components/ui/Button";
-import { 
-  FaCalendarCheck, FaHistory, FaQrcode, FaUser, FaSearch, 
-  FaCalendarAlt, FaCamera, FaTimes, FaCheck, FaMoneyBillWave 
+import {
+  FaCalendarCheck, FaHistory, FaQrcode, FaUser, FaSearch,
+  FaCalendarAlt, FaCamera, FaTimes, FaCheck, FaMoneyBillWave
 } from "react-icons/fa";
 import { toast } from "sonner";
-import { 
-  getAttendanceClasses, 
-  getAttendanceRoster, 
-  saveAttendanceRoster, 
-  getAttendanceHistory, 
-  qrLookup, 
-  qrMark, 
+import {
+  getAttendanceClasses,
+  getAttendanceRoster,
+  saveAttendanceRoster,
+  getAttendanceHistory,
+  qrLookup,
+  qrMark,
   quickQrScan,
   getMyAttendance
 } from "@/features/teachers/services/teacher.service";
@@ -51,50 +51,47 @@ export default function TeacherStudentAttendancePage() {
   }, []);
 
   return (
-    <div className="space-y-6 animate-fade-in text-left">
+    <div className="space-y-6 animate-fade-in text-left w-full">
       <PageHeader
         title="Student Attendance"
         subtitle="Manage student classroom attendance logs, execute QR scans, and view history ledgers."
       />
 
       {globalError && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-semibold">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
           {globalError}
         </div>
       )}
 
       <div className="space-y-6">
         {/* Sub-tabs Selector for Student Attendance */}
-        <div className="flex bg-zinc-100 p-1 rounded-xl w-full max-w-lg border border-zinc-200">
+        <div className="flex bg-zinc-100 p-1 rounded-xl w-full max-w-lg border border-zinc-200/80">
           <button
             onClick={() => setStudentSubTab("manual")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
-              studentSubTab === "manual"
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${studentSubTab === "manual"
                 ? "bg-white text-violet-600 shadow-sm"
                 : "text-zinc-500 hover:text-zinc-800"
-            }`}
+              }`}
           >
             <FaCalendarCheck className="w-3.5 h-3.5" />
             <span>Mark Attendance</span>
           </button>
           <button
             onClick={() => setStudentSubTab("qr")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
-              studentSubTab === "qr"
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${studentSubTab === "qr"
                 ? "bg-white text-violet-600 shadow-sm"
                 : "text-zinc-500 hover:text-zinc-800"
-            }`}
+              }`}
           >
             <FaQrcode className="w-3.5 h-3.5" />
             <span>QR Attendance</span>
           </button>
           <button
             onClick={() => setStudentSubTab("history")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
-              studentSubTab === "history"
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${studentSubTab === "history"
                 ? "bg-white text-violet-600 shadow-sm"
                 : "text-zinc-500 hover:text-zinc-800"
-            }`}
+              }`}
           >
             <FaHistory className="w-3.5 h-3.5" />
             <span>History Log</span>
@@ -190,7 +187,7 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
         date: selectedDate
       });
       setStudents(data.students || data || []);
-      
+
       // Initialize state map with existing or default status
       const initialMap = {};
       const list = data.students || data || [];
@@ -264,14 +261,14 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
   return (
     <div className="space-y-6">
       {/* Roster Filter Selector */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
           <div>
             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Class</label>
             <select
               value={selectedClassId}
               onChange={(e) => handleClassChange(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold cursor-pointer"
             >
               <option value="">Choose Class</option>
               {classes.map((cls) => (
@@ -287,7 +284,7 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
             <select
               value={selectedSectionId}
               onChange={(e) => setSelectedSectionId(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold cursor-pointer"
               disabled={!selectedClassId}
             >
               <option value="">Choose Section</option>
@@ -313,40 +310,40 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold [color-scheme:dark]"
+                className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold cursor-pointer font-mono"
               />
             </div>
           </div>
         </div>
 
-        {/* Stats aggregate header */}
+        {/* Stats aggregate header - Centered Colored Format */}
         <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm lg:col-span-2 h-fit space-y-4 text-left">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
             <span className="text-xs font-black text-zinc-800 uppercase tracking-wider">Attendance Summary</span>
-            <span className="px-2.5 py-0.5 bg-violet-50 border border-violet-100 text-violet-600 text-[10px] font-bold rounded-lg uppercase tracking-wide">
+            <span className="px-2.5 py-0.5 bg-violet-50 border border-violet-100 text-violet-700 text-[10px] font-bold rounded-lg uppercase tracking-wide">
               {new Date(selectedDate).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </span>
           </div>
-          <div className="flex flex-wrap gap-3 justify-center pt-1">
-            <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl text-center w-full sm:w-[calc(50%-0.375rem)] md:w-[calc(33.33%-0.5rem)]">
-              <span className="text-xs font-extrabold text-zinc-700 block">{totalCount}</span>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1 block">Total</span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-1">
+            <div className="bg-white border border-zinc-200 p-3.5 rounded-xl text-center shadow-xs">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">Total</span>
+              <span className="text-xl font-black text-zinc-800 mt-1 block">{totalCount}</span>
             </div>
-            <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl text-center w-full sm:w-[calc(50%-0.375rem)] md:w-[calc(33.33%-0.5rem)]">
-              <span className="text-xs font-extrabold text-emerald-600 block">{presentCount}</span>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1 block">Present</span>
+            <div className="bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl text-center">
+              <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Present</span>
+              <span className="text-xl font-black text-emerald-700 mt-1 block">{presentCount}</span>
             </div>
-            <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl text-center w-full sm:w-[calc(50%-0.375rem)] md:w-[calc(33.33%-0.5rem)]">
-              <span className="text-xs font-extrabold text-rose-600 block">{absentCount}</span>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1 block">Absent</span>
+            <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl text-center">
+              <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">Absent</span>
+              <span className="text-xl font-black text-rose-700 mt-1 block">{absentCount}</span>
             </div>
-            <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center w-full sm:w-[calc(50%-0.375rem)] md:w-[calc(33.33%-0.5rem)]">
-              <span className="text-xs font-extrabold text-amber-600 block">{lateCount}</span>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1 block">Late</span>
+            <div className="bg-amber-50 border border-amber-100 p-3.5 rounded-xl text-center">
+              <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">Late</span>
+              <span className="text-xl font-black text-amber-700 mt-1 block">{lateCount}</span>
             </div>
-            <div className="bg-violet-50 border border-violet-100 p-3 rounded-xl text-center w-full sm:w-[calc(50%-0.375rem)] md:w-[calc(33.33%-0.5rem)]">
-              <span className="text-xs font-extrabold text-violet-600 block">{halfDayCount}</span>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1 block">Half Day</span>
+            <div className="bg-violet-50 border border-violet-100 p-3.5 rounded-xl text-center col-span-2 sm:col-span-1">
+              <span className="text-[11px] font-bold text-violet-600 uppercase tracking-wider block">Half Day</span>
+              <span className="text-xl font-black text-violet-700 mt-1 block">{halfDayCount}</span>
             </div>
           </div>
         </div>
@@ -364,19 +361,19 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search student name or roll..."
-              className="w-full pl-8 pr-4 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-white focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold shadow-sm"
+              className="w-full pl-8 pr-4 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-white focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold shadow-xs"
             />
           </div>
           <div className="flex flex-wrap gap-2.5">
             <button
               onClick={() => handleMarkAll("present")}
-              className="px-3 py-1.5 border border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
+              className="px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
             >
               Mark All Present
             </button>
             <button
               onClick={() => handleMarkAll("absent")}
-              className="px-3 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
+              className="px-3 py-1.5 border border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
             >
               Mark All Absent
             </button>
@@ -393,12 +390,12 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                  <th className="px-6 py-4">Student Details</th>
-                  <th className="px-6 py-4 text-center">Class / Section</th>
-                  <th className="px-6 py-4 text-center">Attendance Status Options</th>
+                <tr className="border-b border-zinc-100 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  <th className="py-3.5 pl-6 pr-4">Student Details</th>
+                  <th className="py-3.5 px-4 text-center">Class / Section</th>
+                  <th className="py-3.5 pl-4 pr-6 text-center">Attendance Status Options</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 text-xs">
@@ -406,30 +403,30 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
                   const status = attendanceRecords[s.id] || "present";
                   return (
                     <tr key={s.id} className="hover:bg-zinc-50/50 transition-colors">
-                      <td className="px-6 py-3 whitespace-nowrap">
+                      <td className="py-3 pl-6 pr-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <StudentPhoto photoUrl={s.photo_url || s.photo} fullName={s.full_name || s.name} />
                           <div className="flex flex-col text-left">
-                            <span className="font-bold text-zinc-800 text-[13px]">{s.full_name || s.name}</span>
+                            <span className="font-bold text-zinc-900 text-xs">{s.full_name || s.name}</span>
                             <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider mt-0.5">
                               ID: {s.student_id || "N/A"} • Roll: {s.roll_no || s.roll_number || s.rollNo || "N/A"}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-3 text-zinc-500 font-semibold text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-zinc-600 font-semibold text-center whitespace-nowrap">
                         {s.class_name || s.className || resolvedClassName} - {s.section_name || s.section || resolvedSectionName}
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap">
+                      <td className="py-3 pl-4 pr-6 whitespace-nowrap">
                         <div className="flex justify-center items-center gap-1.5">
                           {["present", "absent", "late", "half_day"].map((opt) => {
                             let label = opt.charAt(0).toUpperCase() + opt.slice(1).replace("_", " ");
                             let activeClass = "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50";
                             if (status.toLowerCase().replace(" ", "_") === opt) {
-                              if (opt === "present") activeClass = "bg-emerald-600 border-emerald-600 text-white shadow-sm";
-                              else if (opt === "absent") activeClass = "bg-rose-600 border-rose-600 text-white shadow-sm";
-                              else if (opt === "late") activeClass = "bg-amber-500 border-amber-500 text-white shadow-sm";
-                              else if (opt === "half_day") activeClass = "bg-violet-600 border-violet-600 text-white shadow-sm";
+                              if (opt === "present") activeClass = "bg-emerald-600 border-emerald-600 text-white shadow-xs";
+                              else if (opt === "absent") activeClass = "bg-rose-600 border-rose-600 text-white shadow-xs";
+                              else if (opt === "late") activeClass = "bg-amber-500 border-amber-500 text-white shadow-xs";
+                              else if (opt === "half_day") activeClass = "bg-violet-600 border-violet-600 text-white shadow-xs";
                             }
                             return (
                               <button
@@ -452,11 +449,11 @@ function ManualAttendanceSection({ classes, onSaveSuccess }) {
         )}
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-2">
         <Button
           onClick={handleSave}
           disabled={loading}
-          className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-violet-600/10 cursor-pointer"
+          className="bg-violet-600 hover:bg-violet-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-sm cursor-pointer text-xs"
         >
           {loading ? "Saving..." : "Save Daily Attendance"}
         </Button>
@@ -470,7 +467,7 @@ const ScannerStudentPhoto = ({ photoUrl, fullName }) => {
   const firstLetter = (fullName || "S").trim().charAt(0).toUpperCase();
   if (error || !photoUrl) {
     return (
-      <div className="w-20 h-20 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-650 font-black text-2xl mx-auto shadow-inner select-none">
+      <div className="w-20 h-20 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-700 font-black text-2xl mx-auto shadow-inner select-none">
         {firstLetter}
       </div>
     );
@@ -479,7 +476,7 @@ const ScannerStudentPhoto = ({ photoUrl, fullName }) => {
     <img
       src={photoUrl}
       alt={fullName}
-      className="w-20 h-20 rounded-full object-cover mx-auto border border-violet-200/50 shadow-md"
+      className="w-20 h-20 rounded-full object-cover mx-auto border border-violet-200/60 shadow-sm"
       onError={() => setError(true)}
     />
   );
@@ -493,7 +490,7 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
   const [scannerActive, setScannerActive] = useState(false);
   const [scannedStudent, setScannedStudent] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const qrReaderRef = useRef(null);
   const html5QrCodeRef = useRef(null);
 
@@ -508,8 +505,7 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
     try {
       setScannedStudent(null);
       setScannerActive(true);
-      
-      // Delay initialization slightly to ensure element is in DOM
+
       setTimeout(async () => {
         try {
           const { Html5Qrcode } = await import("html5-qrcode");
@@ -523,7 +519,7 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
             (decodedText) => {
               handleQrScan(decodedText);
             },
-            () => {} // silent scan failure callback
+            () => { }
           );
         } catch (err) {
           toast.error("Camera access failed or permission denied: " + (err.message || err));
@@ -549,9 +545,8 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
 
   const handleQrScan = async (codeText) => {
     await stopScanner();
-    
+
     if (quickScan) {
-      // Instant present mark
       try {
         setLoading(true);
         const data = await quickQrScan({ qr_code: codeText });
@@ -562,7 +557,6 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
           </div>
         );
         if (onSaveSuccess) onSaveSuccess();
-        // Automatically start scanning again for the next student
         setTimeout(() => startScanner(), 1500);
       } catch (err) {
         toast.error(err.message || "Failed to instantly scan QR code.");
@@ -571,7 +565,6 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
         setLoading(false);
       }
     } else {
-      // Lookup and confirm flow
       try {
         setLoading(true);
         const data = await qrLookup({ qr_code: codeText });
@@ -593,7 +586,6 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
       toast.success("Attendance Marked Successfully");
       if (onSaveSuccess) onSaveSuccess();
       setScannedStudent(null);
-      // Restart scanner automatically for next scan
       startScanner();
     } catch (err) {
       toast.error("Failed to confirm attendance: " + (err.message || err));
@@ -609,14 +601,14 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
         <h3 className="text-sm font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-2">
           <FaQrcode className="text-violet-500" /> Camera Scanner Control
         </h3>
-        
+
         {/* Toggle Option */}
         <label className="flex items-center gap-3 bg-zinc-50 border border-zinc-100 p-3 rounded-xl w-full select-none cursor-pointer">
-          <input 
-            type="checkbox" 
-            checked={quickScan} 
-            onChange={(e) => setQuickScan(e.target.checked)} 
-            className="w-4 h-4 text-violet-600 focus:ring-violet-500 border-zinc-300 rounded"
+          <input
+            type="checkbox"
+            checked={quickScan}
+            onChange={(e) => setQuickScan(e.target.checked)}
+            className="w-4 h-4 text-violet-600 focus:ring-violet-500 border-zinc-300 rounded cursor-pointer"
           />
           <div>
             <span className="font-extrabold text-zinc-800 block">Instant Quick Scan Mode</span>
@@ -640,14 +632,14 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
           {!scannerActive ? (
             <Button
               onClick={startScanner}
-              className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-violet-600/10 cursor-pointer"
+              className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm cursor-pointer text-xs"
             >
               <FaCamera className="w-3.5 h-3.5" /> Start Scanning
             </Button>
           ) : (
             <Button
               onClick={stopScanner}
-              className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-rose-600/10 cursor-pointer"
+              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm cursor-pointer text-xs"
             >
               <FaTimes className="w-3.5 h-3.5" /> Stop Camera
             </Button>
@@ -658,16 +650,16 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
       {/* Confirmation & Display Panel */}
       <div className="flex flex-col justify-center items-center space-y-6">
         <h3 className="text-sm font-bold text-zinc-700 uppercase tracking-wider">Scanned Student Details</h3>
-        
+
         {loading ? (
           <PageLoader />
         ) : scannedStudent ? (
           <div className="w-full max-w-md bg-zinc-50 border border-zinc-100 p-6 rounded-2xl space-y-6 animate-fade-in text-center shadow-inner">
-            <ScannerStudentPhoto 
-              photoUrl={scannedStudent.photo || scannedStudent.photo_url || scannedStudent.photoUrl} 
-              fullName={scannedStudent.full_name || scannedStudent.name} 
+            <ScannerStudentPhoto
+              photoUrl={scannedStudent.photo || scannedStudent.photo_url || scannedStudent.photoUrl}
+              fullName={scannedStudent.full_name || scannedStudent.name}
             />
-            
+
             <div className="space-y-1">
               <h4 className="text-sm font-extrabold text-zinc-800">{scannedStudent.full_name || scannedStudent.name}</h4>
               <p className="text-[10px] text-zinc-400 font-bold">Roll: {scannedStudent.roll_no || "N/A"} • ID: {scannedStudent.id}</p>
@@ -676,7 +668,7 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
             <div className="grid grid-cols-2 gap-4 text-left border-t border-zinc-200/60 pt-4">
               <div>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-bold">Class</span>
-                <span className="font-extrabold text-zinc-700">{scannedStudent.class ||  "N/A"}</span>
+                <span className="font-extrabold text-zinc-700">{scannedStudent.class || "N/A"}</span>
               </div>
               <div>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-bold">Section</span>
@@ -690,13 +682,13 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
                   setScannedStudent(null);
                   startScanner();
                 }}
-                className="flex-1 bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-bold py-2 rounded-xl cursor-pointer"
+                className="flex-1 bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-bold py-2 rounded-xl cursor-pointer text-xs"
               >
                 Scan Again
               </Button>
               <Button
                 onClick={handleConfirmAttendance}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl shadow-lg shadow-emerald-600/15 cursor-pointer"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl shadow-sm cursor-pointer text-xs"
               >
                 Confirm Attendance
               </Button>
@@ -710,7 +702,7 @@ const QrAttendanceSection = ({ onSaveSuccess }) => {
       </div>
     </div>
   );
-}
+};
 
 // ----------------------------------------------------
 // 3. ATTENDANCE HISTORY LOG COMPONENT
@@ -727,7 +719,6 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -735,7 +726,6 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Default values
   useEffect(() => {
     if (classes && classes.length > 0 && !selectedClassId) {
       setSelectedClassId(classes[0].id.toString());
@@ -763,14 +753,13 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
     try {
       setLoading(true);
       const data = await getAttendanceHistory({
-        month: selectedDate.substring(0, 7), // "YYYY-MM"
-        date: selectedDate, // flexible for future full date API
+        month: selectedDate.substring(0, 7),
+        date: selectedDate,
         school_class_id: selectedClassId,
         section_id: selectedSectionId,
         search: debouncedSearchQuery
       });
       const records = data.records || data || [];
-      // Filter locally to match the selectedDate format YYYY-MM-DD
       const filtered = records.filter(
         (r) => r.date === selectedDate || r.date?.split("T")[0] === selectedDate
       );
@@ -791,20 +780,20 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
       {/* Dynamic Filters header */}
       <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
         <div>
-          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Date</label>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Date</label>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold [color-scheme:dark]"
+            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold font-mono cursor-pointer"
           />
         </div>
         <div>
-          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Class</label>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Class</label>
           <select
             value={selectedClassId}
             onChange={(e) => handleClassChange(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold"
+            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold cursor-pointer"
           >
             <option value="">Choose Class</option>
             {classes.map((cls) => (
@@ -815,11 +804,11 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
           </select>
         </div>
         <div>
-          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Section</label>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Select Section</label>
           <select
             value={selectedSectionId}
             onChange={(e) => setSelectedSectionId(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 font-bold"
+            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 font-bold cursor-pointer"
           >
             <option value="">Choose Section</option>
             {sections.map((sec, idx) => {
@@ -834,7 +823,7 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
           </select>
         </div>
         <div>
-          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Student Search</label>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Student Search</label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
               <FaSearch className="w-3.5 h-3.5" />
@@ -844,7 +833,7 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, roll..."
-              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
+              className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white focus:border-violet-500 transition-all text-zinc-800 placeholder-zinc-400 font-semibold"
             />
           </div>
         </div>
@@ -863,14 +852,14 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
         ) : (
           <div className="overflow-x-auto">
             {historyList.length > 0 && historyList[0].student !== undefined ? (
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[750px]">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Student Details</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Method</th>
-                    <th className="px-6 py-4">Remarks</th>
+                  <tr className="border-b border-zinc-100 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    <th className="py-3.5 pl-6 pr-4">Date</th>
+                    <th className="py-3.5 px-4">Student Details</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Method</th>
+                    <th className="py-3.5 pl-4 pr-6">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-xs">
@@ -878,35 +867,34 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
                     const s = row.student || {};
                     return (
                       <tr key={row.id} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-3 whitespace-nowrap font-bold text-zinc-800">
+                        <td className="py-3.5 pl-6 pr-4 whitespace-nowrap font-bold text-zinc-800">
                           {row.date_label || row.date || "N/A"}
                         </td>
-                        <td className="px-6 py-3 whitespace-nowrap">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <StudentPhoto photoUrl={s.photo_url || s.photo} fullName={s.full_name || s.name} />
                             <div className="flex flex-col text-left">
-                              <span className="font-bold text-zinc-800 text-[13px]">{s.full_name || s.name || "N/A"}</span>
+                              <span className="font-bold text-zinc-900 text-xs">{s.full_name || s.name || "N/A"}</span>
                               <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider mt-0.5">
                                 ID: {s.student_id || "N/A"} • Roll: {s.roll_no || s.roll_number || s.rollNo || "N/A"}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-3 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-lg uppercase tracking-wide border ${
-                            row.status === "present" ? "text-emerald-600 bg-emerald-50 border-emerald-100" :
-                            row.status === "absent" ? "text-rose-600 bg-rose-50 border-rose-100" :
-                            row.status === "late" ? "text-amber-600 bg-amber-50 border-amber-100" :
-                            row.status === "half_day" ? "text-violet-600 bg-violet-50 border-violet-100" :
-                            "text-zinc-600 bg-zinc-50 border-zinc-100"
-                          }`}>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider border ${row.status === "present" ? "text-emerald-700 bg-emerald-50 border-emerald-100" :
+                              row.status === "absent" ? "text-rose-700 bg-rose-50 border-rose-100" :
+                                row.status === "late" ? "text-amber-700 bg-amber-50 border-amber-100" :
+                                  row.status === "half_day" ? "text-violet-700 bg-violet-50 border-violet-100" :
+                                    "text-zinc-600 bg-zinc-50 border-zinc-200"
+                            }`}>
                             {row.status_label || row.status || "N/A"}
                           </span>
                         </td>
-                        <td className="px-6 py-3 font-semibold text-zinc-600 capitalize whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-semibold text-zinc-700 capitalize whitespace-nowrap">
                           {row.method || "N/A"}
                         </td>
-                        <td className="px-6 py-3 text-zinc-500 font-medium whitespace-nowrap">
+                        <td className="py-3.5 pl-4 pr-6 text-zinc-500 font-normal whitespace-nowrap">
                           {row.remarks || "—"}
                         </td>
                       </tr>
@@ -915,62 +903,61 @@ function AttendanceHistorySection({ classes, refreshTrigger }) {
                 </tbody>
               </table>
             ) : (
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[750px]">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                    <th className="px-6 py-4">Student</th>
-                    <th className="px-6 py-4">Roll Number</th>
-                    <th className="px-6 py-4 text-center">Present</th>
-                    <th className="px-6 py-4 text-center">Absent</th>
-                    <th className="px-6 py-4 text-center">Late</th>
-                    <th className="px-6 py-4 text-center">Half Day</th>
-                    <th className="px-6 py-4 text-center">Percentage</th>
+                  <tr className="border-b border-zinc-100 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    <th className="py-3.5 pl-6 pr-4">Student</th>
+                    <th className="py-3.5 px-4 text-center">Roll Number</th>
+                    <th className="py-3.5 px-4 text-center">Present</th>
+                    <th className="py-3.5 px-4 text-center">Absent</th>
+                    <th className="py-3.5 px-4 text-center">Late</th>
+                    <th className="py-3.5 px-4 text-center">Half Day</th>
+                    <th className="py-3.5 pl-4 pr-6 text-center">Percentage</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-xs">
                   {historyList.map((row) => (
                     <tr key={row.student_id || row.id} className="hover:bg-zinc-50/50 transition-colors">
-                      <td className="px-6 py-3 whitespace-nowrap">
+                      <td className="py-3.5 pl-6 pr-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           {row.student_photo || row.photo ? (
-                            <img 
-                              src={row.student_photo || row.photo} 
-                              alt={row.student_name || row.name} 
-                              className="w-8 h-8 rounded-full object-cover border border-zinc-200 shadow-sm"
+                            <img
+                              src={row.student_photo || row.photo}
+                              alt={row.student_name || row.name}
+                              className="w-8 h-8 rounded-full object-cover border border-zinc-200 shadow-xs"
                               onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = "https://images.unsplash.com/photo-1597075687490-8f673c6c17f6?q=80&w=100";
                               }}
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-violet-55/10 border border-violet-100 flex items-center justify-center text-violet-600 font-extrabold text-[11px]">
+                            <div className="w-8 h-8 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-700 font-extrabold text-[11px]">
                               {(row.student_name || row.name || "S").charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <span className="font-bold text-zinc-800">{row.student_name || row.name || "N/A"}</span>
+                          <span className="font-bold text-zinc-900">{row.student_name || row.name || "N/A"}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-3 font-semibold text-zinc-600 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-semibold text-zinc-700 text-center whitespace-nowrap">
                         {row.roll_number || row.rollNo || "N/A"}
                       </td>
-                      <td className="px-6 py-3 text-emerald-600 font-bold text-center whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-emerald-700 font-bold text-center whitespace-nowrap">
                         {row.total_present || row.present || 0}
                       </td>
-                      <td className="px-6 py-3 text-rose-600 font-bold text-center whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-rose-700 font-bold text-center whitespace-nowrap">
                         {row.total_absent || row.absent || 0}
                       </td>
-                      <td className="px-6 py-3 text-amber-600 font-bold text-center whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-amber-700 font-bold text-center whitespace-nowrap">
                         {row.total_late || row.late || 0}
                       </td>
-                      <td className="px-6 py-3 text-violet-600 font-bold text-center whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-violet-700 font-bold text-center whitespace-nowrap">
                         {row.total_half_day || row.half_day || 0}
                       </td>
-                      <td className="px-6 py-3 text-center whitespace-nowrap">
-                        <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${
-                          (row.attendance_percentage || row.percentage || 0) >= 75
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                            : "bg-rose-50 text-rose-600 border-rose-100"
-                        }`}>
+                      <td className="py-3.5 pl-4 pr-6 text-center whitespace-nowrap">
+                        <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${(row.attendance_percentage || row.percentage || 0) >= 75
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            : "bg-rose-50 text-rose-700 border-rose-100"
+                          }`}>
                           {row.attendance_percentage || row.percentage || 0}%
                         </span>
                       </td>
@@ -1022,106 +1009,105 @@ function MyAttendanceSection() {
 
   return (
     <div className="space-y-6">
-      {/* Attendance Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-xs">
-        <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm text-center">
-          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Total Days</label>
-          <h3 className="text-xl font-extrabold text-zinc-800 mt-1">{stats.total_days || 0}</h3>
+      {/* Attendance Stats Cards - Centered Colored Format */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 text-xs">
+        <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm text-center">
+          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">Total Days</span>
+          <h3 className="text-2xl font-black text-zinc-800 mt-1">{stats.total_days || 0}</h3>
         </div>
-        <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-center">
-          <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">Present</label>
-          <h3 className="text-xl font-extrabold text-emerald-700 mt-1">{stats.present || 0}</h3>
+        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center">
+          <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Present</span>
+          <h3 className="text-2xl font-black text-emerald-700 mt-1">{stats.present || 0}</h3>
         </div>
-        <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100 text-center">
-          <label className="text-[9px] font-bold text-rose-600 uppercase tracking-wider block">Absent</label>
-          <h3 className="text-xl font-extrabold text-rose-700 mt-1">{stats.absent || 0}</h3>
+        <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 text-center">
+          <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">Absent</span>
+          <h3 className="text-2xl font-black text-rose-700 mt-1">{stats.absent || 0}</h3>
         </div>
-        <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100 text-center">
-          <label className="text-[9px] font-bold text-amber-600 uppercase tracking-wider block">Late</label>
-          <h3 className="text-xl font-extrabold text-amber-700 mt-1">{stats.late || 0}</h3>
+        <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 text-center">
+          <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">Late</span>
+          <h3 className="text-2xl font-black text-amber-700 mt-1">{stats.late || 0}</h3>
         </div>
-        <div className="bg-violet-50/50 p-4 rounded-xl border border-violet-100 text-center">
-          <label className="text-[9px] font-bold text-violet-600 uppercase tracking-wider block">Half Day</label>
-          <h3 className="text-xl font-extrabold text-violet-700 mt-1">{stats.half_day || 0}</h3>
+        <div className="bg-violet-50 p-4 rounded-2xl border border-violet-100 text-center">
+          <span className="text-[11px] font-bold text-violet-600 uppercase tracking-wider block">Half Day</span>
+          <h3 className="text-2xl font-black text-violet-700 mt-1">{stats.half_day || 0}</h3>
         </div>
-        <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-center">
-          <label className="text-[9px] font-bold text-blue-600 uppercase tracking-wider block">Leave</label>
-          <h3 className="text-xl font-extrabold text-blue-700 mt-1">{stats.leave || 0}</h3>
+        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
+          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">Leave</span>
+          <h3 className="text-2xl font-black text-blue-700 mt-1">{stats.leave || 0}</h3>
         </div>
-        <div className="bg-violet-600 text-white p-4 rounded-xl shadow-sm text-center">
-          <label className="text-[9px] font-bold text-violet-200 uppercase tracking-wider block">Payable Days</label>
-          <h3 className="text-xl font-extrabold mt-1">{stats.payable_days || 0}</h3>
+        <div className="bg-violet-600 text-white p-4 rounded-2xl shadow-sm text-center col-span-2 sm:col-span-1">
+          <span className="text-[11px] font-bold text-violet-200 uppercase tracking-wider block">Payable Days</span>
+          <h3 className="text-2xl font-black mt-1">{stats.payable_days || 0}</h3>
         </div>
       </div>
 
       {/* Salary Preview Block */}
       <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6 space-y-6">
         <h3 className="text-xs font-bold text-zinc-700 uppercase tracking-wider border-b border-zinc-100 pb-3 flex items-center gap-2">
-          <FaMoneyBillWave className="text-violet-500 w-4 h-4" /> Estimated Salary Preview
+          <FaMoneyBillWave className="text-violet-600 w-4 h-4" /> Estimated Salary Preview
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 text-xs">
           <div className="space-y-1">
-            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Monthly Salary</span>
-            <span className="text-base font-extrabold text-zinc-800">₹{(salaryPreview.monthly_salary || 0).toLocaleString()}</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Monthly Salary</span>
+            <span className="text-base font-extrabold text-zinc-900">₹{(salaryPreview.monthly_salary || 0).toLocaleString()}</span>
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Working Days</span>
-            <span className="text-base font-extrabold text-zinc-800">{salaryPreview.working_days || 0} Days</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Working Days</span>
+            <span className="text-base font-extrabold text-zinc-900">{salaryPreview.working_days || 0} Days</span>
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Payable Days</span>
-            <span className="text-base font-extrabold text-zinc-800">{salaryPreview.payable_days || 0} Days</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Payable Days</span>
+            <span className="text-base font-extrabold text-zinc-900">{salaryPreview.payable_days || 0} Days</span>
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Gross Salary</span>
-            <span className="text-base font-extrabold text-zinc-800">₹{(salaryPreview.gross_salary || 0).toLocaleString()}</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Gross Salary</span>
+            <span className="text-base font-extrabold text-zinc-900">₹{(salaryPreview.gross_salary || 0).toLocaleString()}</span>
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] text-violet-600 font-bold uppercase tracking-wider block">Net Est. Salary</span>
-            <span className="text-base font-extrabold text-violet-600">₹{(salaryPreview.net_salary || 0).toLocaleString()}</span>
+            <span className="text-[10px] text-violet-700 font-bold uppercase tracking-wider block">Net Est. Salary</span>
+            <span className="text-base font-extrabold text-violet-700">₹{(salaryPreview.net_salary || 0).toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Historical Payments Table */}
+      {/* Historical Records Table */}
       <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-zinc-200">
-          <h3 className="text-xs font-bold text-zinc-700 uppercase">My Attendance Records ({myAttendance.month_label || "N/A"})</h3>
+        <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
+          <h3 className="text-xs font-bold text-zinc-700 uppercase tracking-wider">My Attendance Records ({myAttendance.month_label || "N/A"})</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Remarks</th>
+              <tr className="border-b border-zinc-100 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="py-3.5 pl-6 pr-4">Date</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 pl-4 pr-6">Remarks</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 text-xs">
               {records.map((r, idx) => (
                 <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-zinc-800 whitespace-nowrap">
+                  <td className="py-3.5 pl-6 pr-4 font-bold text-zinc-900 whitespace-nowrap">
                     {r.date_label || r.date || "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-lg uppercase tracking-wide border ${
-                      r.status_label === "Present" || r.status === "Present" ? "text-emerald-600 bg-emerald-50 border-emerald-100" :
-                      r.status_label === "Absent" || r.status === "Absent" ? "text-rose-600 bg-rose-50 border-rose-100" :
-                      r.status_label === "Late" || r.status === "Late" ? "text-amber-600 bg-amber-50 border-amber-100" :
-                      r.status_label === "Half Day" || r.status === "Half Day" ? "text-violet-600 bg-violet-50 border-violet-100" :
-                      "text-zinc-600 bg-zinc-50 border-zinc-100"
-                    }`}>
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider border ${r.status_label === "Present" || r.status === "Present" ? "text-emerald-700 bg-emerald-50 border-emerald-100" :
+                        r.status_label === "Absent" || r.status === "Absent" ? "text-rose-700 bg-rose-50 border-rose-100" :
+                          r.status_label === "Late" || r.status === "Late" ? "text-amber-700 bg-amber-50 border-amber-100" :
+                            r.status_label === "Half Day" || r.status === "Half Day" ? "text-violet-700 bg-violet-50 border-violet-100" :
+                              "text-zinc-600 bg-zinc-50 border-zinc-200"
+                      }`}>
                       {r.status_label || r.status || "N/A"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-zinc-500 font-medium">
-                    {r.remarks || "N/A"}
+                  <td className="py-3.5 pl-4 pr-6 text-zinc-500 font-medium">
+                    {r.remarks || "—"}
                   </td>
                 </tr>
               ))}
               {records.length === 0 && (
                 <tr>
-                  <td colSpan="3" className="text-center py-10 text-zinc-400 font-semibold">
+                  <td colSpan="3" className="text-center py-10 text-zinc-400 font-semibold text-xs uppercase tracking-wider">
                     No Attendance Records Found
                   </td>
                 </tr>
