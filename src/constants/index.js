@@ -112,7 +112,7 @@ export const ADMIN_NAVIGATION_ITEMS = [
       },
       { title: "Leave Applications", path: "/admin/leaves" },
       { title: "Holidays", path: "/admin/holidays" },
-      { title: "Email & Notices", path: "/admin/email", icon: "FaPaperPlane" }
+      { title: "Transport", path: "/admin/transport" }
     ]
   }
 ];
@@ -179,18 +179,7 @@ export const TEACHER_NAVIGATION_ITEMS = [
     icon: "FaLock",
     submenu: [
       {
-        title: "Staff",
-        submenu: [
-          { title: "Staff Management", path: "/teacher/admin/staff" },
-          { title: "Teacher Management", path: "/teacher/admin/teachers" },
-          { title: "Teacher Attendance", path: "/teacher/admin/teacher-attendance" },
-          { title: "Payroll Management", path: "/teacher/admin/payroll" }
-        ]
-      },
-      {
         title: "Students",
-        path: "/teacher/admin/students",
-        icon: "FaUserGraduate",
         submenu: [
           { title: "All Students", path: "/teacher/admin/students" },
           { title: "Add Student", path: "/teacher/admin/students/add" },
@@ -199,40 +188,77 @@ export const TEACHER_NAVIGATION_ITEMS = [
         ]
       },
       {
+        title: "Staff",
+        submenu: [
+          { title: "Teachers", path: "/teacher/admin/teachers" },
+          { title: "Staff Management", path: "/teacher/admin/staff" },
+          { title: "Payroll", path: "/teacher/admin/payroll" }
+        ]
+      },
+      {
         title: "Academics",
         submenu: [
           { title: "Classes & Sections", path: "/teacher/admin/classes" },
-          { title: "Academic Years", path: "/teacher/admin/academic-years" },
-          { title: "Manage Timetable", path: "/teacher/admin/manage-timetable" },
-          { title: "Online MCQ Exams", path: "/teacher/admin/online-mcq" },
+          {
+            title: "Attendance",
+            submenu: [
+              { title: "Mark Attendance", path: "/teacher/admin/teacher-attendance" },
+              { title: "Attendance Reports", path: "/teacher/admin/attendance/reports" }
+            ]
+          },
+          {
+            title: "Homework",
+            submenu: [
+              { title: "Homework List", path: "/teacher/admin/homework" },
+              { title: "Reports", path: "/teacher/admin/homework/reports" }
+            ]
+          },
+          { title: "Class Notes", path: "/teacher/class-notes" },
+          {
+            title: "Examinations",
+            submenu: [
+              { title: "Exams", path: "/teacher/marks" },
+              { title: "Reports", path: "/teacher/admin/exams/reports" }
+            ]
+          },
+          {
+            title: "Online MCQ Exams",
+            submenu: [
+              { title: "MCQ Exams", path: "/teacher/admin/online-mcq" },
+              { title: "Reports", path: "/teacher/admin/reports" }
+            ]
+          },
           {
             title: "Live Classes",
-            path: "/teacher/admin/live-classes",
             submenu: [
               { title: "Live Classes", path: "/teacher/admin/live-classes" },
               { title: "Reports", path: "/teacher/admin/live-classes/reports" }
             ]
-          }
+          },
+          { title: "Timetable Management", path: "/teacher/admin/manage-timetable" },
+          { title: "Academic Sessions", path: "/teacher/admin/academic-years" }
         ]
       },
       {
         title: "Finance",
         submenu: [
-          { title: "Fee Management", path: "/teacher/admin/fees" }
+          { title: "Student Fees", path: "/teacher/admin/fees" },
+          { title: "Finance Reports", path: "/teacher/admin/finance/reports" }
         ]
       },
       {
-        title: "Communication",
+        title: "Resources",
         submenu: [
-          { title: "Manage Notices", path: "/teacher/admin/notices" },
-          { title: "Manage Holidays", path: "/teacher/admin/holidays" }
-        ]
-      },
-      {
-        title: "Administration",
-        submenu: [
-          { title: "Manage Leave Requests", path: "/teacher/admin/leaves" },
+          { title: "Notices Board", path: "/teacher/admin/notices" },
           { title: "Certificates", path: "/teacher/admin/certificates" }
+        ]
+      },
+      {
+        title: "Operations",
+        submenu: [
+          { title: "Leave Applications", path: "/teacher/admin/leaves" },
+          { title: "Holidays", path: "/teacher/admin/holidays" },
+          { title: "Transport", path: "/teacher/admin/transport" }
         ]
       }
     ]

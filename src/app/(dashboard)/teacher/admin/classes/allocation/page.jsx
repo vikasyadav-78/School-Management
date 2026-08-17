@@ -6,7 +6,7 @@ import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
 import { 
   FaUserGraduate, FaExchangeAlt, FaChevronLeft, FaSearch, 
-  FaTimes, FaUserCheck, FaArrowRight
+  FaTimes, FaUserCheck, FaArrowRight, FaHistory
 } from "react-icons/fa";
 import { 
   getTeacherClasses,
@@ -15,15 +15,42 @@ import {
   assignTeacherStudentsToSection,
   transferTeacherStudents,
   bulkAssignTeacherStudents,
-  bulkTransferTeacherStudents
+  bulkTransferTeacherStudents,
+  getTeacherClassReportsTransfers
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { sortClassesNaturally } from "@/utils/classUtils";
 
 export default function TeacherStudentAllocationPage() {
+  const { user } = useSelector((state) => state.auth);
+  const { profile: teacherProfile } = useSelector((state) => state.teachers || {});
+
+  const [activeTab, setActiveTab] = useState("workspace"); // "workspace" | "history"
   const [loading, setLoading] = useState(true);
   const [classesList, setClassesList] = useState([]);
   const [studentsList, setStudentsList] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null); // class object
+  const [forbidden, setForbidden] = useState(false);
+
+  // Transfer history state
+  const [transferHistory, setTransferHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearchQuery, setHistorySearchQuery] = useState("");
+  const [historyClassFilter, setHistoryClassFilter] = useState("all");
+
+  const checkPermission = (featureName, canManageKey) => {
+    const checkValue = (obj) => {
+      if (!obj) return false;
+      if (obj[canManageKey] === true || obj[canManageKey] === "true" || obj[canManageKey] === 1 || obj[canManageKey] === "1" || obj[canManageKey] === "yes" || obj[canManageKey] === "active") return true;
+      if (Array.isArray(obj.enabled_features) && obj.enabled_features.includes(featureName)) return true;
+      if (obj.teacher && checkValue(obj.teacher)) return true;
+      if (obj.teacher_profile && checkValue(obj.teacher_profile)) return true;
+      if (obj.profile && checkValue(obj.profile)) return true;
+      return false;
+    };
+    return checkValue(user) || checkValue(teacherProfile);
+  };
   
   // Workspace filter states
   const [selectedSectionId, setSelectedSectionId] = useState("all");
@@ -48,15 +75,61 @@ export default function TeacherStudentAllocationPage() {
       const data = await getTeacherClasses();
       setClassesList(data.classes || data.data || (Array.isArray(data) ? data : []));
     } catch (err) {
-      toast.error("Failed to load classes info: " + (err.message || err));
+      if (err.status === 403 || err.statusCode === 403 || (err.message && err.message.includes("403"))) {
+        setForbidden(true);
+      } else {
+        toast.error("Failed to load classes info: " + (err.message || err));
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const loadTransferHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const params = {};
+      if (historyClassFilter !== "all") {
+        params.class_id = historyClassFilter;
+      }
+      const data = await getTeacherClassReportsTransfers(params);
+      setTransferHistory(data.transfers || data.data || data || []);
+    } catch (err) {
+      toast.error("Failed to load transfer logs: " + (err.message || err));
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadClasses();
-  }, []);
+    const checkAccess = () => {
+      const hasPerm = checkPermission("classes", "can_manage_classes");
+      if (!hasPerm) {
+        setForbidden(true);
+        setLoading(false);
+      } else {
+        loadClasses();
+        if (activeTab === "history") {
+          loadTransferHistory();
+        }
+      }
+    };
+    checkAccess();
+  }, [user, teacherProfile, activeTab, historyClassFilter]);
+
+  const filteredHistory = useMemo(() => {
+    let list = transferHistory;
+    const q = historySearchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(log =>
+        log.student_name?.toLowerCase().includes(q) ||
+        log.from_class?.toLowerCase().includes(q) ||
+        log.to_class?.toLowerCase().includes(q) ||
+        log.by?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [transferHistory, historySearchQuery]);
 
   // Load detailed class roster
   const loadClassRoster = async (classId) => {
@@ -74,7 +147,11 @@ export default function TeacherStudentAllocationPage() {
       setStudentsList(sts);
       setSelectedStudentIds([]);
     } catch (err) {
-      toast.error("Failed to load class roster: " + (err.message || err));
+      if (err.status === 403 || err.statusCode === 403 || (err.message && err.message.includes("403"))) {
+        setForbidden(true);
+      } else {
+        toast.error("Failed to load class roster: " + (err.message || err));
+      }
     } finally {
       setLoading(false);
     }
@@ -262,25 +339,45 @@ export default function TeacherStudentAllocationPage() {
 
     setModalSubmitting(true);
     try {
-      const studentIds = isBulkAction ? selectedStudentIds : [singleTargetStudent.id];
-      const payload = {
-        student_ids: studentIds,
-        school_class_id: modalTargetClassId,
-        to_school_class_id: modalTargetClassId,
-        to_class_id: modalTargetClassId,
-        section_id: modalTargetSectionId,
-        to_section_id: modalTargetSectionId
-      };
+      const selectedStudents = isBulkAction 
+        ? (studentsList || []).filter(s => selectedStudentIds.includes(s.id))
+        : [singleTargetStudent];
 
-      if (isBulkAction) {
-        await bulkAssignTeacherStudents(payload);
-        toast.success(`Successfully allocated ${studentIds.length} students.`);
-      } else {
-        await assignTeacherStudentsToSection(payload);
-        toast.success(`Successfully allocated student ${singleTargetStudent.full_name}.`);
+      const allocatedIds = selectedStudents.filter(s => s.section_id || s.section).map(s => s.id);
+      const unallocatedIds = selectedStudents.filter(s => !s.section_id && !s.section).map(s => s.id);
+
+      if (allocatedIds.length > 0) {
+        const transferPayload = {
+          student_ids: allocatedIds,
+          school_class_id: modalTargetClassId,
+          to_school_class_id: modalTargetClassId,
+          to_class_id: modalTargetClassId,
+          section_id: modalTargetSectionId,
+          to_section_id: modalTargetSectionId
+        };
+        if (allocatedIds.length > 1) {
+          await bulkTransferTeacherStudents(transferPayload);
+        } else {
+          await transferTeacherStudents(transferPayload);
+        }
       }
 
+      if (unallocatedIds.length > 0) {
+        const assignPayload = {
+          student_ids: unallocatedIds,
+          school_class_id: modalTargetClassId,
+          section_id: modalTargetSectionId
+        };
+        if (unallocatedIds.length > 1) {
+          await bulkAssignTeacherStudents(assignPayload);
+        } else {
+          await assignTeacherStudentsToSection(assignPayload);
+        }
+      }
+
+      toast.success(`Successfully moved ${selectedStudents.length} student(s) to target class & section.`);
       setIsAssignModalOpen(false);
+      setSelectedStudentIds([]);
       loadClassRoster(selectedClass?.id);
     } catch (err) {
       toast.error("Allocation failed: " + (err.message || err));
@@ -289,16 +386,63 @@ export default function TeacherStudentAllocationPage() {
     }
   };
 
+  if (forbidden) {
+    return (
+      <div className="p-8 text-center animate-fade-in max-w-7xl mx-auto text-xs">
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-8 max-w-md mx-auto shadow-sm">
+          <FaUserCheck className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <h2 className="text-base font-extrabold text-zinc-800 uppercase tracking-wider">Access Restricted</h2>
+          <p className="text-zinc-650 mt-2 text-sm leading-relaxed font-semibold">
+            You do not have permission to manage student allocations. Please contact the administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const sortedClasses = sortClassesNaturally(classesList, "name");
+
+  const formatClassName = (name) => {
+    if (!name) return "";
+    const match = name.match(/class\s*-?\s*(\d+)/i);
+    if (match) {
+      return `Class ${match[1]}`;
+    }
+    return name;
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
-        <PageHeader
-          title="Student Allocation & Transfer"
-          subtitle="Manage student classroom assignations and transfers between sections."
-        />
+      <PageHeader
+        title="Student Allocation & Transfer"
+        subtitle="Manage student classroom assignations, transfers, and track transfer history."
+      />
 
-      {loading && !selectedClass ? (
+      {/* Tabs Layout */}
+      <div className="flex border-b border-zinc-200 gap-6 mb-6">
+        <button
+          onClick={() => setActiveTab("workspace")}
+          className={`py-3 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${activeTab === "workspace"
+              ? "border-violet-600 text-violet-600"
+              : "border-transparent text-zinc-500 hover:text-zinc-700"
+            }`}
+        >
+          <FaUserGraduate /> Allocation Workspace
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`py-3 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${activeTab === "history"
+              ? "border-violet-600 text-violet-600"
+              : "border-transparent text-zinc-500 hover:text-zinc-700"
+            }`}
+        >
+          <FaHistory /> Transfer Log History
+        </button>
+      </div>
+
+      {loading && activeTab === "workspace" && !selectedClass ? (
         <div className="py-12"><PageLoader /></div>
-      ) : (
+      ) : activeTab === "workspace" ? (
         <div>
           {/* Class Select Mode */}
           {!selectedClass ? (
@@ -308,32 +452,32 @@ export default function TeacherStudentAllocationPage() {
                 <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Choose a classroom to manage its roster list</p>
               </div>
 
-              {classesList.length === 0 ? (
+              {sortedClasses.length === 0 ? (
                 <EmptyState
                   title="No Classes Assigned"
                   desc="No classes were found under your roster directory."
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {classesList.map((cls) => (
+                  {sortedClasses.map((cls) => (
                     <div
                       key={cls.id}
                       className="bg-white border border-zinc-200 shadow-sm hover:shadow-md hover:border-violet-200 transition-all rounded-2xl p-6 flex flex-col justify-between"
                     >
                       <div>
-                        <h3 className="text-zinc-800 font-black text-base">{cls.name}</h3>
+                        <h3 className="text-zinc-800 font-black text-base">{formatClassName(cls.name)}</h3>
                         <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-1">
                           Sections: {cls.sections_count || cls.sections?.length || 0}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-100">
-                        <span className="text-[10px] bg-zinc-100 font-extrabold text-zinc-600 px-2.5 py-1 rounded-lg">
+                        <span className="text-[10px] bg-zinc-100 font-extrabold text-zinc-600 px-2.5 py-1.5 rounded-lg">
                           {cls.students_count || 0} Enrolled
                         </span>
                         <button
                           onClick={() => handleSelectClass(cls)}
-                          className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-black transition-all cursor-pointer"
+                          className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-black transition-all cursor-pointer shadow-sm hover:shadow"
                         >
                           Manage Roster
                         </button>
@@ -464,16 +608,16 @@ export default function TeacherStudentAllocationPage() {
                               {student.section_id || student.section ? (
                                 <button
                                   onClick={() => openSingleTransfer(student)}
-                                  className="px-3 py-1.5 bg-zinc-50 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 rounded-lg text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer transition-all"
+                                  className="px-3 py-1.5 bg-zinc-50 border border-zinc-200 text-zinc-600 hover:bg-zinc-100 rounded-lg text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer transition-all whitespace-nowrap"
                                 >
-                                  <FaExchangeAlt className="w-2.5 h-2.5" /> Transfer
+                                  <FaExchangeAlt className="w-2.5 h-2.5" /> Change Section
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => openSingleAssign(student)}
-                                  className="px-3 py-1.5 bg-violet-50 border border-violet-100 text-violet-600 hover:bg-violet-100 rounded-lg text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer transition-all"
+                                  className="px-3 py-1.5 bg-violet-50 border border-violet-100 text-violet-600 hover:bg-violet-100 rounded-lg text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer transition-all whitespace-nowrap"
                                 >
-                                  <FaUserCheck className="w-2.5 h-2.5" /> Allocate
+                                  <FaUserCheck className="w-2.5 h-2.5" /> Move to Class & Section
                                 </button>
                               )}
                             </td>
@@ -487,23 +631,23 @@ export default function TeacherStudentAllocationPage() {
 
               {/* Sticky bottom Bulk Actions bar */}
               {selectedStudentIds.length > 0 && (
-                <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-zinc-900 text-white rounded-2xl shadow-2xl px-6 py-4 flex items-center justify-between gap-8 z-40 border border-zinc-800 max-w-lg w-full animate-scale-up">
-                  <div className="flex flex-col text-left">
+                <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-zinc-900 text-white rounded-2xl shadow-2xl px-6 py-4 flex items-center justify-between gap-8 z-40 border border-zinc-800 w-auto animate-scale-up">
+                  <div className="flex flex-col text-left shrink-0">
                     <span className="text-xs font-black">{selectedStudentIds.length} Students Selected</span>
                     <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Execute batch class actions</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={openBulkTransfer}
-                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
                     >
-                      <FaExchangeAlt className="w-3 h-3" /> Bulk Transfer
+                      <FaExchangeAlt className="w-3 h-3" /> Change Section
                     </button>
                     <button
                       onClick={openBulkAssign}
-                      className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                      className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
                     >
-                      <FaUserCheck className="w-3 h-3" /> Bulk Allocate
+                      <FaUserCheck className="w-3 h-3" /> Move to Class & Section
                     </button>
                     <button
                       onClick={() => setSelectedStudentIds([])}
@@ -517,15 +661,107 @@ export default function TeacherStudentAllocationPage() {
             </div>
           )}
         </div>
+      ) : (
+        /* History Log Tab */
+        <div className="space-y-6">
+          {/* Filters Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 border border-zinc-200 shadow-sm rounded-2xl">
+            <div>
+              <h2 className="text-zinc-800 font-extrabold text-sm">Transfer History Logs</h2>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">Track student transfers and allocation edits</p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Search History */}
+              <div className="relative w-full sm:w-60">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 pointer-events-none">
+                  <FaSearch className="w-3 h-3" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search name, class or admin..."
+                  value={historySearchQuery}
+                  onChange={(e) => setHistorySearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 border border-zinc-200 rounded-xl text-[11px] font-semibold outline-none focus:border-violet-500 bg-zinc-50 focus:bg-white text-black"
+                />
+              </div>
+
+              {/* Class Filter */}
+              <select
+                value={historyClassFilter}
+                onChange={(e) => setHistoryClassFilter(e.target.value)}
+                className="px-3 py-1.5 border border-zinc-200 rounded-xl text-[11px] font-bold text-zinc-700 bg-white outline-none cursor-pointer"
+              >
+                <option value="all">All Classes</option>
+                {[...sortedClasses].map(cls => (
+                  <option key={cls.id} value={cls.id}>{formatClassName(cls.name)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* History Listing */}
+          {historyLoading ? (
+            <div className="py-12"><PageLoader /></div>
+          ) : filteredHistory.length === 0 ? (
+            <div className="py-12 bg-white rounded-2xl border border-zinc-200">
+              <EmptyState
+                title="No transfers logged"
+                desc="No transfer actions were found in this index. Run a transfer in the workspace tab to log entries."
+              />
+            </div>
+          ) : (
+            <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="bg-zinc-50 border-b border-zinc-100 text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">
+                      <th className="px-6 py-4">Transfer Date</th>
+                      <th className="px-6 py-4">Student</th>
+                      <th className="px-6 py-4">From Class/Section</th>
+                      <th className="px-6 py-4 text-center w-12"><FaArrowRight className="text-zinc-400" /></th>
+                      <th className="px-6 py-4">To Class/Section</th>
+                      <th className="px-6 py-4">Action By</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 text-xs font-semibold text-zinc-700">
+                    {filteredHistory.map((log) => (
+                      <tr key={log.id} className="hover:bg-zinc-50/50 transition-colors">
+                        <td className="px-6 py-4 text-zinc-500">
+                          {new Date(log.created_at).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="px-6 py-4 font-bold text-zinc-800">{log.student_name}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-extrabold text-[10px]">
+                            {log.from_class} - {log.from_section}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <FaArrowRight className="text-zinc-300 w-3 h-3 mx-auto" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 font-extrabold text-[10px]">
+                            {log.to_class} - {log.to_section}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-zinc-600 font-bold">{log.by}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Transfer Dialog Modal */}
+      {/* Change Section Dialog Modal */}
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up text-left">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-1.5">
-                <FaExchangeAlt className="text-violet-500" /> Student Transfer
+                <FaExchangeAlt className="text-violet-500" /> Change Section
               </h3>
               <button onClick={() => setIsTransferModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 transition-all cursor-pointer">
                 <FaTimes className="w-4 h-4" />
@@ -543,25 +779,24 @@ export default function TeacherStudentAllocationPage() {
                 </span>
               </div>
 
-              {/* Destination Class Selection */}
+              {/* Current Class Static Display */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Destination Class</label>
-                <select
-                  required
-                  value={modalTargetClassId}
-                  onChange={(e) => handleModalClassChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none text-zinc-700 font-semibold"
-                >
-                  <option value="">Select Destination Class</option>
-                  {classesList.map(cls => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Current Class</label>
+                <div className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 text-zinc-700 font-bold text-[12px] select-none">
+                  {(() => {
+                    const currentClassObj = classesList.find(c => c.id === modalTargetClassId);
+                    return currentClassObj ? (
+                      currentClassObj.name.match(/class\s*-?\s*(\d+)/i)
+                        ? `Class ${currentClassObj.name.match(/class\s*-?\s*(\d+)/i)[1]}`
+                        : currentClassObj.name
+                    ) : selectedClass?.name || "Current Class";
+                  })()}
+                </div>
               </div>
 
               {/* Destination Section Selection */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Destination Section</label>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">New Section</label>
                 <select
                   required
                   disabled={!modalTargetClassId}
@@ -589,7 +824,7 @@ export default function TeacherStudentAllocationPage() {
                   disabled={modalSubmitting}
                   className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
                 >
-                  {modalSubmitting ? "Processing..." : "Transfer Students"}
+                  {modalSubmitting ? "Changing..." : "Change Section"}
                 </button>
               </div>
             </form>
@@ -597,13 +832,13 @@ export default function TeacherStudentAllocationPage() {
         </div>
       )}
 
-      {/* Assign/Allocate Dialog Modal */}
+      {/* Move to Class & Section Dialog Modal */}
       {isAssignModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up text-left">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50">
               <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-1.5">
-                <FaUserCheck className="text-violet-500" /> Student Allocation
+                <FaUserCheck className="text-violet-500" /> Move to Class & Section
               </h3>
               <button onClick={() => setIsAssignModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 transition-all cursor-pointer">
                 <FaTimes className="w-4 h-4" />

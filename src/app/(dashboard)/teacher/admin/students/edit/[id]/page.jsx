@@ -106,7 +106,7 @@ export default function TeacherStudentsEditPage() {
       if (data.address) formData.append("address", data.address.trim());
       
       if (data.status) {
-        formData.append("is_active", data.status === "Active" ? "true" : "false");
+        formData.append("is_active", data.status === "Active" ? "1" : "0");
       }
       
       // Append files if changed
@@ -122,10 +122,6 @@ export default function TeacherStudentsEditPage() {
       if (data.transfer_certificate && data.transfer_certificate[0]) {
         formData.append("transfer_certificate", data.transfer_certificate[0]);
       }
-
-      // Add standard PUT method spoofing if the backend uses Laravel and requires it for FormData, 
-      // however the user mentioned POST /api/teacher/students/{student_id} is used for update.
-      formData.append("_method", "PUT");
 
       const response = await updateTeacherStudent(id, formData);
       if (response.success) {

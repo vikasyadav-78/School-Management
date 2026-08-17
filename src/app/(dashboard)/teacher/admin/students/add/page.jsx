@@ -63,18 +63,31 @@ export default function TeacherStudentsAddPage() {
       }
       
       // Auto ID generation
-      formData.append("auto_generate_id", data.auto_generate_id ? "true" : "false");
+      formData.append("auto_generate_id", data.auto_generate_id ? "1" : "0");
       if (!data.auto_generate_id) {
-        if (data.admissionNo) formData.append("admission_no", data.admissionNo.trim());
-        if (data.student_id) formData.append("student_id", data.student_id.trim());
+        if (data.admissionNo) {
+          formData.append("admission_no", data.admissionNo.trim());
+          formData.append("admissionNo", data.admissionNo.trim());
+        }
+        if (data.student_id) {
+          formData.append("student_id", data.student_id.trim());
+        }
       }
       
-      if (data.father_name) formData.append("father_name", data.father_name.trim());
+      if (data.father_name) {
+        formData.append("father_name", data.father_name.trim());
+        formData.append("parentName", data.father_name.trim());
+      }
       if (data.mother_name) formData.append("mother_name", data.mother_name.trim());
-      if (data.phone) formData.append("guardian_phone", data.phone.trim());
+      if (data.phone) {
+        formData.append("phone", data.phone.trim());
+        formData.append("guardian_phone", data.phone.trim());
+      }
       if (data.email) formData.append("email", data.email.trim());
       if (data.password) formData.append("password", data.password);
       if (data.address) formData.append("address", data.address.trim());
+      
+      formData.append("is_active", "1");
       
       // Append files
       if (data.profileImage && data.profileImage[0]) {

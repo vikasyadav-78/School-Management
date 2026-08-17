@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
         <FormInput
           name="email"
           label="Email Address"
-          placeholder="tanishqtour@gmail.com"
+          placeholder="admin@gmail.com"
           type="email"
           labelClassName="text-zinc-300 font-medium"
           className="bg-zinc-950/40 border-zinc-800/80 text-white placeholder-zinc-500 focus:bg-zinc-900/50 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl"

@@ -220,8 +220,9 @@ export default function TeacherStudentProfilePage() {
               </div>
               <div>
                 <div className="text-xs font-medium text-zinc-500 mb-1">Email Address</div>
-                <div className="text-sm font-semibold text-zinc-800 flex items-center gap-2">
-                  <FaEnvelope className="text-zinc-400" /> {student.email || "—"}
+                <div className="text-sm font-semibold text-zinc-800 flex items-start gap-2">
+                  <FaEnvelope className="text-zinc-400 mt-1 shrink-0" />
+                  <span className="break-all">{student.email || "—"}</span>
                 </div>
               </div>
               <div>

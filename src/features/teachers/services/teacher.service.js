@@ -158,6 +158,22 @@ export const deleteClassNotes = async (id) => {
   return response.data;
 };
 
+// Class Notes Reports APIs
+export const getTeacherClassNotesReportTeacher = async (params = {}) => {
+  const response = await api.get("/teacher/class-notes/reports/teacher", { params });
+  return response.data;
+};
+
+export const getTeacherClassNotesReportClass = async () => {
+  const response = await api.get("/teacher/class-notes/reports/class");
+  return response.data;
+};
+
+export const getTeacherClassNotesReportSubject = async (params = {}) => {
+  const response = await api.get("/teacher/class-notes/reports/subject", { params });
+  return response.data;
+};
+
 export const getTeacherHolidays = async () => {
   const response = await api.get("/teacher/holidays");
   return response.data;
@@ -442,6 +458,37 @@ export const deleteTeacherSection = async (sectionId) => {
 
 export const generateTeacherSectionRollNumbers = async (sectionId) => {
   const response = await api.post(`/teacher/sections/${sectionId}/generate-roll-numbers`);
+  return response.data;
+};
+
+// Teacher Classes Reports APIs
+export const getTeacherClassReportsStrength = async () => {
+  const response = await api.get("/teacher/classes/reports/strength");
+  return response.data;
+};
+
+export const getTeacherClassReportsClassStudents = async (params = {}) => {
+  const response = await api.get("/teacher/classes/reports/class-students", { params });
+  return response.data;
+};
+
+export const getTeacherClassReportsSectionStudents = async (params = {}) => {
+  const response = await api.get("/teacher/classes/reports/section-students", { params });
+  return response.data;
+};
+
+export const getTeacherClassReportsAttendance = async (params = {}) => {
+  const response = await api.get("/teacher/classes/reports/attendance", { params });
+  return response.data;
+};
+
+export const getTeacherClassReportsSubjectTeachers = async (params = {}) => {
+  const response = await api.get("/teacher/classes/reports/subject-teachers", { params });
+  return response.data;
+};
+
+export const getTeacherClassReportsTransfers = async (params = {}) => {
+  const response = await api.get("/teacher/classes/reports/transfers", { params });
   return response.data;
 };
 
@@ -853,6 +900,170 @@ export const getTeacherFeePaymentReceipt = async (paymentId, format = "") => {
 export const getTeacherFeeTransactionReceipt = async (transactionId, format = "") => {
   const url = `/teacher/fees/transactions/${transactionId}/receipt` + (format ? `?format=${format}` : "");
   const response = await api.get(url);
+  return response.data;
+};
+
+// Transport APIs (Teacher)
+export const getTeacherTransportMeta = async () => {
+  const response = await api.get("/teacher/transport/meta");
+  return response.data;
+};
+
+export const getTeacherTransportRoutes = async (params = {}) => {
+  const response = await api.get("/teacher/transport", { params });
+  return response.data;
+};
+
+export const createTeacherTransportRoute = async (payload) => {
+  const response = await api.post("/teacher/transport", payload);
+  return response.data;
+};
+
+export const getTeacherTransportLive = async () => {
+  const response = await api.get("/teacher/transport/live");
+  return response.data;
+};
+
+export const getTeacherTransportRouteDetail = async (routeId) => {
+  const response = await api.get(`/teacher/transport/${routeId}`);
+  return response.data;
+};
+
+export const updateTeacherTransportRoute = async (routeId, payload) => {
+  const response = await api.post(`/teacher/transport/${routeId}`, payload);
+  return response.data;
+};
+
+export const updateTeacherTransportGPS = async (routeId, payload) => {
+  const response = await api.post(`/teacher/transport/${routeId}/location`, payload);
+  return response.data;
+};
+
+export const toggleTeacherTransportRouteStatus = async (routeId) => {
+  const response = await api.post(`/teacher/transport/${routeId}/toggle-status`);
+  return response.data;
+};
+
+export const deleteTeacherTransportRoute = async (routeId) => {
+  const response = await api.delete(`/teacher/transport/${routeId}`);
+  return response.data;
+};
+
+export const getTeacherTransportAssignments = async (params = {}) => {
+  const response = await api.get("/teacher/transport/assignments", { params });
+  return response.data;
+};
+
+export const assignTeacherTransportStudent = async (payload) => {
+  const response = await api.post("/teacher/transport/assign", payload);
+  return response.data;
+};
+
+export const unassignTeacherTransportStudent = async (payload) => {
+  const response = await api.post("/teacher/transport/unassign", payload);
+  return response.data;
+};
+
+export const getTeacherTransportRoutesReport = async () => {
+  const response = await api.get("/teacher/transport/reports/routes");
+  return response.data;
+};
+
+export const getTeacherTransportAssignmentsReport = async () => {
+  const response = await api.get("/teacher/transport/reports/assignments");
+  return response.data;
+};
+
+export const deleteTeacherTransportAssignment = async (assignmentId) => {
+  const response = await api.delete(`/teacher/transport/assignments/${assignmentId}`);
+  return response.data;
+};
+
+// Teacher Reports APIs (Admin Access)
+export const getTeacherReports = async () => {
+  const response = await api.get("/teacher/reports");
+  return response.data;
+};
+
+export const getTeacherReportsExamsList = async () => {
+  const response = await api.get("/teacher/exams");
+  return response.data;
+};
+
+export const getTeacherReportsExamOverview = async (examId) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/overview`);
+  return response.data;
+};
+
+export const getTeacherReportsExamClassWise = async (examId, params = {}) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/class-wise`, { params });
+  return response.data;
+};
+
+export const getTeacherReportsExamSubjectWise = async (examId, params = {}) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/subject-wise`, { params });
+  return response.data;
+};
+
+export const getTeacherReportsExamToppers = async (examId, params = {}) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/toppers`, { params });
+  return response.data;
+};
+
+export const getTeacherReportsExamFailList = async (examId) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/fail-list`);
+  return response.data;
+};
+
+export const getTeacherReportsExamMeritList = async (examId) => {
+  const response = await api.get(`/teacher/exams/${examId}/reports/merit-list`);
+  return response.data;
+};
+
+export const getTeacherReportsExamReportCard = async (examId, studentId) => {
+  const response = await api.get(`/teacher/exams/${examId}/report-card/${studentId}`);
+  return response.data;
+};
+
+export const getTeacherReportsStaffAttendance = async () => {
+  const response = await api.get("/teacher/manage/staff-attendance");
+  return response.data;
+};
+
+export const getTeacherReportsStaffAttendanceHistory = async (params = {}) => {
+  const response = await api.get("/teacher/manage/staff-attendance/history", { params });
+  return response.data;
+};
+
+// Teacher Fees Reports
+export const getTeacherFeeStructuresReport = async () => {
+  const response = await api.get("/teacher/fees/structures/report");
+  return response.data;
+};
+
+export const getTeacherFeeOnlinePaymentsReport = async (params = {}) => {
+  const response = await api.get("/teacher/fees/online-payments", { params });
+  return response.data;
+};
+
+// Teacher Homework Reports APIs
+export const getTeacherHomeworkReportTeacher = async (params = {}) => {
+  const response = await api.get("/teacher/homework/reports/teacher", { params });
+  return response.data;
+};
+
+export const getTeacherHomeworkReportStudent = async (params = {}) => {
+  const response = await api.get("/teacher/homework/reports/student", { params });
+  return response.data;
+};
+
+export const getTeacherHomeworkReportClass = async () => {
+  const response = await api.get("/teacher/homework/reports/class");
+  return response.data;
+};
+
+export const getTeacherHomeworkReportMonthly = async (params = {}) => {
+  const response = await api.get("/teacher/homework/reports/monthly", { params });
   return response.data;
 };
 

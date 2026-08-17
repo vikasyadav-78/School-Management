@@ -574,6 +574,37 @@ export const generateTeacherSectionRollNumbers = async (sectionId) => {
   return response.data;
 };
 
+// Classes Reports APIs
+export const getClassReportsStrength = async () => {
+  const response = await api.get("/admin/classes/reports/strength");
+  return response.data;
+};
+
+export const getClassReportsClassStudents = async (params = {}) => {
+  const response = await api.get("/admin/classes/reports/class-students", { params });
+  return response.data;
+};
+
+export const getClassReportsSectionStudents = async (params = {}) => {
+  const response = await api.get("/admin/classes/reports/section-students", { params });
+  return response.data;
+};
+
+export const getClassReportsAttendance = async (params = {}) => {
+  const response = await api.get("/admin/classes/reports/attendance", { params });
+  return response.data;
+};
+
+export const getClassReportsSubjectTeachers = async (params = {}) => {
+  const response = await api.get("/admin/classes/reports/subject-teachers", { params });
+  return response.data;
+};
+
+export const getClassReportsTransfers = async (params = {}) => {
+  const response = await api.get("/admin/classes/reports/transfers", { params });
+  return response.data;
+};
+
 // ==========================================
 // STREAMS (Class 11/12)
 // ==========================================
@@ -1174,6 +1205,72 @@ export const getInventorySales = async (params = {}) => {
 
 export const getInventoryReport = async () => {
   const response = await api.get("/admin/inventory/report");
+  return response.data;
+};
+
+// Transport APIs (Admin)
+export const getAdminTransportMeta = async () => {
+  const response = await api.get("/admin/transport/meta");
+  return response.data;
+};
+
+export const getAdminTransportRoutes = async (params = {}) => {
+  const response = await api.get("/admin/transport", { params });
+  return response.data;
+};
+
+export const createAdminTransportRoute = async (payload) => {
+  const response = await api.post("/admin/transport", payload);
+  return response.data;
+};
+
+export const getAdminTransportLive = async () => {
+  const response = await api.get("/admin/transport/live");
+  return response.data;
+};
+
+export const getAdminTransportRouteDetail = async (routeId) => {
+  const response = await api.get(`/admin/transport/${routeId}`);
+  return response.data;
+};
+
+export const updateAdminTransportRoute = async (routeId, payload) => {
+  const response = await api.post(`/admin/transport/${routeId}`, payload);
+  return response.data;
+};
+
+export const updateAdminTransportGPS = async (routeId, payload) => {
+  const response = await api.post(`/admin/transport/${routeId}/location`, payload);
+  return response.data;
+};
+
+export const toggleAdminTransportRouteStatus = async (routeId) => {
+  const response = await api.post(`/admin/transport/${routeId}/toggle-status`);
+  return response.data;
+};
+
+export const deleteAdminTransportRoute = async (routeId) => {
+  const response = await api.delete(`/admin/transport/${routeId}`);
+  return response.data;
+};
+
+export const getAdminTransportAssignments = async (params = {}) => {
+  const response = await api.get("/admin/transport/assignments", { params });
+  return response.data;
+};
+
+export const assignAdminTransportStudent = async (payload) => {
+  const response = await api.post("/admin/transport/assign", payload);
+  return response.data;
+};
+
+export const unassignAdminTransportStudent = async (payload) => {
+  const response = await api.post("/admin/transport/unassign", payload);
+  return response.data;
+};
+
+export const deleteAdminTransportAssignment = async (assignmentId) => {
+  const response = await api.delete(`/admin/transport/assignments/${assignmentId}`);
   return response.data;
 };
 

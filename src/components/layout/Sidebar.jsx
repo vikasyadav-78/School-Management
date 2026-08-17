@@ -149,8 +149,14 @@ export default function Sidebar() {
             if (sub.path === "/teacher/admin/holidays" && !checkPermission("holidays", "can_manage_holidays")) return null;
             if (sub.path === "/teacher/admin/leaves" && !checkPermission("leave", "can_manage_leaves")) return null;
             if (sub.path === "/teacher/admin/certificates" && !checkPermission("certificates", "can_manage_certificates")) return null;
+            if (sub.path === "/teacher/admin/transport" && !checkPermission("transport", "can_manage_transport")) return null;
             if (sub.path === "/teacher/admin/manage-timetable" && !checkPermission("timetable", "can_manage_timetable")) return null;
             if (sub.path === "/teacher/admin/online-mcq" && !checkPermission("online_mcq", "can_manage_online_mcq")) return null;
+            
+            // New permission checks for restructured routes
+            if (sub.path === "/teacher/marks" && !checkPermission("exams", "can_manage_exams")) return null;
+            if (sub.path === "/teacher/class-notes" && !checkPermission("class_notes", "can_view_class_notes_reports")) return null;
+            if (sub.path && (sub.path.includes("/reports") || sub.path === "/teacher/admin/reports") && !checkPermission("reports", "can_manage_reports")) return null;
 
             if (sub.title === "Live Classes" && sub.submenu) {
               const hasLiveClassesAccess = checkPermission("live_classes", "can_manage_live_classes");
@@ -192,7 +198,19 @@ export default function Sidebar() {
     setExpandedMenus((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
-  const isPathActive = (itemPath, siblings = []) => {
+  const getAllMenuPaths = (items) => {
+    let paths = [];
+    const traverse = (list) => {
+      list.forEach(item => {
+        if (item.path) paths.push(item.path);
+        if (item.submenu) traverse(item.submenu);
+      });
+    };
+    traverse(items);
+    return paths;
+  };
+
+  const isPathActive = (itemPath) => {
     if (itemPath === "/" && pathname === "/") return true;
     if (itemPath === "/") return false;
     
@@ -201,11 +219,12 @@ export default function Sidebar() {
     
     // Prefix match
     if (pathname.startsWith(itemPath)) {
-      // Check if there is any sibling path that is a longer prefix match
-      const hasLongerMatch = siblings.some(sib => 
-        sib.path !== itemPath && 
-        pathname.startsWith(sib.path) && 
-        sib.path.length > itemPath.length
+      // Check if there is any path in the entire menu that is a longer prefix match
+      const allPaths = getAllMenuPaths(navItems);
+      const hasLongerMatch = allPaths.some(path => 
+        path !== itemPath && 
+        pathname.startsWith(path) && 
+        path.length > itemPath.length
       );
       return !hasLongerMatch;
     }

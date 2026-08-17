@@ -1,4 +1,5 @@
 import axios from "axios";
+import { sortClassesNaturally } from "../utils/classUtils";
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -27,8 +28,34 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+const processResponseData = (data) => {
+  if (!data || typeof data !== "object") return data;
+
+  if (data.hasOwnProperty("classes") && Array.isArray(data.classes)) {
+    data.classes = sortClassesNaturally(data.classes);
+  }
+  if (data.hasOwnProperty("classesList") && Array.isArray(data.classesList)) {
+    data.classesList = sortClassesNaturally(data.classesList);
+  }
+  if (data.hasOwnProperty("classesMeta") && Array.isArray(data.classesMeta)) {
+    data.classesMeta = sortClassesNaturally(data.classesMeta);
+  }
+
+  for (const key in data) {
+    if (data.hasOwnProperty(key) && data[key] && typeof data[key] === "object") {
+      processResponseData(data[key]);
+    }
+  }
+  return data;
+};
+
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response && response.data && typeof response.data === "object") {
+      processResponseData(response.data);
+    }
+    return response;
+  },
   (error) => {
     const status = error.response ? error.response.status : null;
     if (status === 401) {
