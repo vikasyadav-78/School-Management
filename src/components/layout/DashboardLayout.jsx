@@ -34,7 +34,7 @@ function DashboardLayoutContent({ children }) {
       window.location.href = currentPath;
       return;
     }
-    
+
     if (!token) {
       if (role === "admin" || role === "super_admin") {
         router.push("/admin-login");
@@ -76,7 +76,7 @@ function DashboardLayoutContent({ children }) {
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const adminToken = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
-  
+
   if (!mounted || !token || (loading && !isAuthenticated)) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center space-y-4">
@@ -90,10 +90,9 @@ function DashboardLayoutContent({ children }) {
     <div className="min-h-screen bg-zinc-50 flex">
       <Sidebar />
 
-      <div 
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          isOpen ? "lg:pl-[280px]" : "lg:pl-[80px]"
-        }`}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isOpen ? "lg:pl-[280px]" : "lg:pl-[80px]"
+          }`}
       >
         <Navbar />
 

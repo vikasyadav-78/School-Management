@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
-  FaCalendarAlt, FaTimes, FaCheck, FaHistory, FaUserCheck, FaSave
+import {
+  FaCalendarAlt, FaTimes, FaCheck, FaHistory, FaUserCheck, FaSave, FaCheckDouble, FaUserTimes
 } from "react-icons/fa";
-import { 
+import {
   getTeacherManageTeacherAttendanceRoster,
   saveTeacherManageTeacherAttendance,
   getTeacherManageTeacherAttendanceHistory
@@ -27,7 +27,6 @@ export default function TeacherManageTeacherAttendancePage() {
 
   // History State
   const [historyList, setHistoryList] = useState([]);
-
   const [submitting, setSubmitting] = useState(false);
 
   // Load Daily Roster
@@ -103,6 +102,18 @@ export default function TeacherManageTeacherAttendancePage() {
     }));
   };
 
+  // Quick Action: Mark All Present / Absent
+  const handleBulkStatusChange = (status) => {
+    setAttendanceState(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(tId => {
+        updated[tId] = { ...updated[tId], status };
+      });
+      return updated;
+    });
+    toast.info(`All staff marked as ${status.toUpperCase()}`);
+  };
+
   const handleSaveAttendance = async () => {
     try {
       setSubmitting(true);
@@ -149,8 +160,9 @@ export default function TeacherManageTeacherAttendancePage() {
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader 
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm">
+        <PageHeader
           title="Teacher Attendance Desk"
           subtitle="Mark daily faculty attendance roster and inspect monthly attendance reports."
         />
@@ -158,29 +170,27 @@ export default function TeacherManageTeacherAttendancePage() {
           <button
             onClick={handleSaveAttendance}
             disabled={submitting}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-sm"
           >
             <FaSave className="w-3.5 h-3.5" />
-            {submitting ? "Saving..." : "Save Attendance"}
+            {submitting ? "Saving Roster..." : "Save Attendance"}
           </button>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-zinc-200">
+      <div className="flex border-b border-zinc-200 gap-2">
         <button
           onClick={() => setActiveTab("roster")}
-          className={`px-6 py-2.5 font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-            activeTab === "roster" ? "border-violet-600 text-violet-600" : "border-transparent text-zinc-400 hover:text-zinc-600"
-          }`}
+          className={`px-6 py-3 font-bold text-xs uppercase tracking-wider border-b-2 transition-all cursor-pointer ${activeTab === "roster" ? "border-violet-600 text-violet-600 bg-violet-50/50 rounded-t-xl" : "border-transparent text-zinc-400 hover:text-zinc-600"
+            }`}
         >
           Daily Attendance Roster
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`px-6 py-2.5 font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-            activeTab === "history" ? "border-violet-600 text-violet-600" : "border-transparent text-zinc-400 hover:text-zinc-600"
-          }`}
+          className={`px-6 py-3 font-bold text-xs uppercase tracking-wider border-b-2 transition-all cursor-pointer ${activeTab === "history" ? "border-violet-600 text-violet-600 bg-violet-50/50 rounded-t-xl" : "border-transparent text-zinc-400 hover:text-zinc-600"
+            }`}
         >
           Monthly Report & History
         </button>
@@ -189,18 +199,43 @@ export default function TeacherManageTeacherAttendancePage() {
       {/* TAB 1: ROSTER */}
       {activeTab === "roster" && (
         <div className="space-y-4">
-          <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Target Attendance Date:</span>
-              <input 
+          {/* Controls Bar */}
+          <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-zinc-500 font-extrabold uppercase tracking-wider shrink-0">
+                Target Date:
+              </span>
+              <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-3.5 py-1.5 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700 focus:bg-white"
+                className="px-3 py-1.5 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-800 focus:bg-white focus:ring-2 focus:ring-violet-500/20 transition-all cursor-pointer"
               />
             </div>
+
+            {/* Quick Actions */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mr-1 hidden sm:inline-block">Quick Mark:</span>
+              <button
+                type="button"
+                onClick={() => handleBulkStatusChange("present")}
+                className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <FaCheckDouble className="w-3 h-3" /> Mark All Present
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkStatusChange("absent")}
+                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <FaUserTimes className="w-3 h-3" /> Mark All Absent
+              </button>
+            </div>
+
           </div>
 
+          {/* Table Area */}
           {listLoading ? (
             <div className="flex items-center justify-center py-20"><PageLoader /></div>
           ) : teachersList.length === 0 ? (
@@ -210,56 +245,72 @@ export default function TeacherManageTeacherAttendancePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                      <th className="px-6 py-4">Faculty Member</th>
-                      <th className="px-6 py-4">Employee ID</th>
-                      <th className="px-6 py-4 text-center">Mark Status</th>
-                      <th className="px-6 py-4">Remarks</th>
+                    <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 min-w-[220px]">Faculty Member</th>
+                      <th className="px-6 py-4 min-w-[150px]">Employee ID</th>
+                      <th className="px-6 py-4 text-center min-w-[340px]">Mark Status</th>
+                      <th className="px-6 py-4 min-w-[240px]">Remarks</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-150 text-zinc-700">
+                  <tbody className="divide-y divide-zinc-100 text-zinc-700">
                     {teachersList.map((t) => {
                       const tId = t.id || t.teacher_id;
+                      const name = t.full_name || t.name || t.teacher_name || "Faculty Member";
                       const currentStatus = attendanceState[tId]?.status || "present";
                       const currentRemarks = attendanceState[tId]?.remarks || "";
 
                       return (
-                        <tr key={tId} className="hover:bg-zinc-50/50 transition-colors">
-                          <td className="px-6 py-4 font-bold text-zinc-800">
-                            {t.full_name || t.name || t.teacher_name}
+                        <tr key={tId} className="hover:bg-zinc-50/60 transition-colors">
+                          {/* Faculty Name & Avatar */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs shrink-0">
+                                {name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-bold text-zinc-900 text-xs">
+                                {name}
+                              </span>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 font-semibold text-zinc-500">
+
+                          {/* ID */}
+                          <td className="px-6 py-4 font-semibold text-zinc-500 whitespace-nowrap">
                             {t.employee_id || "—"}
                           </td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              {["present", "absent", "late", "half_day", "leave"].map((st) => (
+
+                          {/* Status Options */}
+                          <td className="px-6 py-4 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {[
+                                { id: "present", label: "Present", color: "bg-emerald-600 border-emerald-600" },
+                                { id: "absent", label: "Absent", color: "bg-rose-600 border-rose-600" },
+                                { id: "late", label: "Late", color: "bg-amber-500 border-amber-500" },
+                                { id: "half_day", label: "Half Day", color: "bg-purple-600 border-purple-600" },
+                                { id: "leave", label: "Leave", color: "bg-blue-600 border-blue-600" }
+                              ].map((st) => (
                                 <button
-                                  key={st}
+                                  key={st.id}
                                   type="button"
-                                  onClick={() => handleStatusChange(tId, st)}
-                                  className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase transition-all cursor-pointer ${
-                                    currentStatus === st ? (
-                                      st === "present" ? "bg-emerald-600 text-white border-emerald-600" :
-                                      st === "absent" ? "bg-rose-600 text-white border-rose-600" :
-                                      st === "late" ? "bg-amber-500 text-white border-amber-500" :
-                                      st === "half_day" ? "bg-purple-600 text-white border-purple-600" :
-                                      "bg-blue-600 text-white border-blue-600"
-                                    ) : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:bg-zinc-100"
-                                  }`}
+                                  onClick={() => handleStatusChange(tId, st.id)}
+                                  className={`px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase transition-all cursor-pointer ${currentStatus === st.id
+                                      ? `${st.color} text-white shadow-sm scale-105`
+                                      : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:bg-zinc-100"
+                                    }`}
                                 >
-                                  {st.replace("_", " ")}
+                                  {st.label}
                                 </button>
                               ))}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <input 
+
+                          {/* Remarks */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
                               type="text"
                               value={currentRemarks}
                               onChange={(e) => handleRemarksChange(tId, e.target.value)}
-                              placeholder="Optional remarks..."
-                              className="w-full px-2.5 py-1 border border-zinc-200 rounded-lg text-xs outline-none focus:border-violet-500"
+                              placeholder="Add optional remark..."
+                              className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
                             />
                           </td>
                         </tr>
@@ -285,27 +336,26 @@ export default function TeacherManageTeacherAttendancePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase">
+                    <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                       <th className="px-6 py-4">Date</th>
                       <th className="px-6 py-4">Faculty Member</th>
                       <th className="px-6 py-4 text-center">Status</th>
                       <th className="px-6 py-4">Remarks</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-150 text-zinc-700">
+                  <tbody className="divide-y divide-zinc-100 text-zinc-700">
                     {historyList.map((h) => (
-                      <tr key={h.id} className="hover:bg-zinc-50/50">
-                        <td className="px-6 py-4 font-bold text-zinc-700">{h.date}</td>
-                        <td className="px-6 py-4 font-bold text-zinc-800">{h.teacher_name || h.teacher?.full_name}</td>
+                      <tr key={h.id} className="hover:bg-zinc-50/50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-zinc-800">{h.date}</td>
+                        <td className="px-6 py-4 font-bold text-zinc-900">{h.teacher_name || h.teacher?.full_name}</td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                            h.status === "present" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                            h.status === "absent" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-amber-50 text-amber-600 border border-amber-100"
-                          }`}>
+                          <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${h.status === "present" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                              h.status === "absent" ? "bg-rose-50 text-rose-700 border border-rose-200" : "bg-amber-50 text-amber-700 border border-amber-200"
+                            }`}>
                             {h.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-semibold text-zinc-500">{h.remarks || "—"}</td>
+                        <td className="px-6 py-4 font-medium text-zinc-500">{h.remarks || "—"}</td>
                       </tr>
                     ))}
                   </tbody>
