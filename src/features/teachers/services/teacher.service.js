@@ -80,7 +80,7 @@ export const getAttendanceHistory = async (params) => {
 
 export const qrLookup = async (data) => {
   const response = await api.post("/teacher/attendance/qr-lookup", data);
-  return response.data; 
+  return response.data;
 };
 
 export const qrMark = async (data) => {
@@ -599,7 +599,7 @@ export const downloadTeacherCertificate = async (certOrId) => {
     const response = await api.get(endpoint, { responseType: "blob" });
     const blob = new Blob([response.data], { type: "application/pdf" });
     const blobUrl = window.URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.href = blobUrl;
     link.download = `${certNo}.pdf`;
@@ -838,7 +838,9 @@ export const markTeacherPayrollPaid = async (payrollId, payload) => {
 };
 
 export const getTeacherPayrollReceipt = async (payrollId) => {
-  const response = await api.get(`/teacher/payroll/${payrollId}/receipt`);
+  const response = await api.get(`/teacher/payroll/${payrollId}/receipt`, {
+    responseType: "blob",
+  });
   return response.data;
 };
 

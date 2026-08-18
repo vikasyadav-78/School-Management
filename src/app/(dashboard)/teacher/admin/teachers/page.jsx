@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
+import {
   FaPlus, FaTimes, FaChalkboardTeacher, FaEdit, FaToggleOn, FaToggleOff, FaIdCard,
   FaEye, FaCheckCircle, FaSignInAlt
 } from "react-icons/fa";
-import { 
+import {
   getTeacherTeachersMeta,
   getTeacherTeachers,
   addTeacherTeacher,
@@ -280,7 +280,7 @@ export default function TeacherTeachersManagementPage() {
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader 
+        <PageHeader
           title="Teacher Roster Management"
           subtitle="Add new faculty teachers, update qualifications, and manage active status."
         />
@@ -301,18 +301,16 @@ export default function TeacherTeachersManagementPage() {
           {teachersList.map((t) => (
             <div key={t.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col gap-4">
               <div className="flex justify-between items-center">
-                <span className={`inline-flex px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider ${
-                  t.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
-                }`}>
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider ${t.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
+                  }`}>
                   {t.is_active ? "Active" : "Inactive"}
                 </span>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleStatus(t)}
-                    className={`p-1.5 rounded-md transition-colors ${
-                      t.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
-                    }`}
+                    className={`p-1.5 rounded-md transition-colors ${t.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
+                      }`}
                     title={t.is_active ? "Deactivate" : "Activate"}
                   >
                     {t.is_active ? <FaToggleOn className="w-5 h-5" /> : <FaToggleOff className="w-5 h-5" />}
@@ -371,9 +369,8 @@ export default function TeacherTeachersManagementPage() {
                 </button>
                 <button
                   onClick={() => handleToggleStatus(t)}
-                  className={`py-1.5 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors ${
-                    t.is_active ? "bg-amber-50 text-amber-700 hover:bg-amber-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                  }`}
+                  className={`py-1.5 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors ${t.is_active ? "bg-amber-50 text-amber-700 hover:bg-amber-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    }`}
                 >
                   <FaCheckCircle className="w-3 h-3" /> {t.is_active ? "DEACTIVATE" : "ACTIVATE"}
                 </button>
@@ -392,58 +389,168 @@ export default function TeacherTeachersManagementPage() {
 
       {/* View Teacher Details Modal */}
       {viewingTeacher && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up text-left flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50 shrink-0">
-              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-                <FaChalkboardTeacher className="text-violet-500" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up text-left flex flex-col max-h-[85vh]">
+
+            {/* Sleek Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shrink-0">
+              <h3 className="font-extrabold text-sm flex items-center gap-2 tracking-wide uppercase">
+                <FaChalkboardTeacher className="w-4 h-4" />
                 Teacher Profile Details
               </h3>
-              <button onClick={() => setViewingTeacher(null)} className="text-zinc-400 hover:text-zinc-600"><FaTimes className="w-4 h-4" /></button>
+              <button
+                onClick={() => setViewingTeacher(null)}
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-colors cursor-pointer"
+              >
+                <FaTimes className="w-4 h-4" />
+              </button>
             </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar text-xs font-semibold text-zinc-600 space-y-6">
-              <div className="flex items-center gap-4 border-b border-zinc-100 pb-4">
-                <div className="w-16 h-16 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 font-bold text-xl overflow-hidden shrink-0">
-                  {viewingTeacher.photo ? (
-                    <img src={viewingTeacher.photo} alt={viewingTeacher.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    (viewingTeacher.full_name || viewingTeacher.name || "T").charAt(0).toUpperCase()
-                  )}
+
+            {/* Main Body with Clean Scrollbar */}
+            <div className="p-6 overflow-y-auto custom-scrollbar space-y-6 text-xs">
+
+              {/* Profile Card Header */}
+              <div className="flex items-center justify-between bg-violet-50/60 border border-violet-100 p-4 rounded-2xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-white border-2 border-violet-200 flex items-center justify-center text-violet-700 font-extrabold text-2xl overflow-hidden shrink-0 shadow-sm">
+                    {viewingTeacher.photo ? (
+                      <img src={viewingTeacher.photo} alt={viewingTeacher.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      (viewingTeacher.full_name || viewingTeacher.name || "T").charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-zinc-900 text-base leading-tight">
+                      {viewingTeacher.full_name || `${viewingTeacher.first_name || ""} ${viewingTeacher.last_name || ""}`}
+                    </h3>
+                    <p className="text-xs text-zinc-500 font-medium mt-1">
+                      Employee ID: <span className="font-bold text-violet-700">{viewingTeacher.employee_id || "—"}</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-zinc-800 text-base leading-tight">{viewingTeacher.full_name || `${viewingTeacher.first_name} ${viewingTeacher.last_name || ""}`}</h4>
-                  <span className="text-xs text-zinc-400 block mt-1">Employee ID: {viewingTeacher.employee_id || "—"}</span>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${viewingTeacher.is_active
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}>
+                  {viewingTeacher.is_active ? "Active" : "Inactive"}
+                </span>
+              </div>
+
+              {/* Personal Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Personal Details
+                </h5>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Gender</span>
+                    <span className="text-zinc-800 font-bold capitalize">{viewingTeacher.gender || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Date of Birth</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.date_of_birth_label || viewingTeacher.date_of_birth || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">PAN Number</span>
+                    <span className="text-zinc-800 font-bold uppercase">{viewingTeacher.pan_number || "—"}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[10px] mb-3">Personal Details</h5>
-                  <div className="space-y-2">
-                    <div className="flex justify-between"><span>Gender:</span><span className="text-zinc-800 capitalize font-bold">{viewingTeacher.gender || "—"}</span></div>
-                    <div className="flex justify-between"><span>Date of Birth:</span><span className="text-zinc-800 font-bold">{viewingTeacher.date_of_birth_label || viewingTeacher.date_of_birth || "—"}</span></div>
-                    <div className="flex justify-between"><span>Phone:</span><span className="text-zinc-800 font-bold">{viewingTeacher.phone || "—"}</span></div>
-                    <div className="flex justify-between"><span>Email:</span><span className="text-zinc-800 font-bold">{viewingTeacher.email || "—"}</span></div>
-                    <div className="flex justify-between"><span>Address:</span><span className="text-zinc-800 font-bold">{viewingTeacher.address || "—"}</span></div>
+              {/* Contact Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Contact Details
+                </h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Email Address</span>
+                    <span className="text-zinc-800 font-bold break-all">{viewingTeacher.email || "—"}</span>
                   </div>
-                </div>
-
-                <div>
-                  <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[10px] mb-3">Academic & Bank Details</h5>
-                  <div className="space-y-2">
-                    <div className="flex justify-between"><span>Qualification:</span><span className="text-zinc-800 font-bold">{viewingTeacher.qualification || "—"}</span></div>
-                    <div className="flex justify-between"><span>Specialization:</span><span className="text-zinc-800 font-bold">{viewingTeacher.specialization || "—"}</span></div>
-                    <div className="flex justify-between"><span>Salary:</span><span className="text-zinc-800 font-bold">₹{(viewingTeacher.salary || 0).toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span>Experience:</span><span className="text-zinc-800 font-bold">{viewingTeacher.total_experience || 0} Years</span></div>
-                    <div className="flex justify-between"><span>Bank Account:</span><span className="text-zinc-800 font-bold">{viewingTeacher.bank_name || "—"} ({viewingTeacher.account_number || "—"})</span></div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Phone Number</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.phone || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl col-span-2">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Residential Address</span>
+                    <span className="text-zinc-800 font-bold leading-relaxed">{viewingTeacher.address || "—"}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Academic & Experience */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Academic & Experience Profile
+                </h5>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Qualification</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.qualification || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Specialization</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.specialization || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Total Experience</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.total_experience || 0} Years</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl col-span-3">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Previous Schools</span>
+                    <span className="text-zinc-800 font-bold leading-relaxed">{viewingTeacher.previous_schools || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bank & Salary Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Bank Account & Salary Details
+                </h5>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Monthly Salary</span>
+                    <span className="text-emerald-700 font-extrabold text-sm">₹{(viewingTeacher.salary || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Bank Name</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.bank_name || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Number</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.account_number || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">IFSC Code</span>
+                    <span className="text-zinc-800 font-bold uppercase">{viewingTeacher.ifsc_code || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Type</span>
+                    <span className="text-zinc-800 font-bold capitalize">{viewingTeacher.account_type || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Holder</span>
+                    <span className="text-zinc-800 font-bold">{viewingTeacher.account_holder_name || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
+
+            {/* Footer Button */}
+            <div className="p-4 px-6 border-t border-zinc-100 bg-zinc-50/50 flex justify-end shrink-0">
+              <button
+                onClick={() => setViewingTeacher(null)}
+                className="px-6 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+              >
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}
-
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up text-left flex flex-col">
@@ -493,12 +600,12 @@ export default function TeacherTeachersManagementPage() {
                     {meta?.genders?.map((g) => (
                       <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>
                     )) || (
-                      <>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </>
-                    )}
+                        <>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </>
+                      )}
                   </select>
                 </div>
                 <div className="space-y-1">
@@ -594,11 +701,11 @@ export default function TeacherTeachersManagementPage() {
                     {meta?.account_types?.map((t) => (
                       <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                     )) || (
-                      <>
-                        <option value="savings">Savings</option>
-                        <option value="current">Current</option>
-                      </>
-                    )}
+                        <>
+                          <option value="savings">Savings</option>
+                          <option value="current">Current</option>
+                        </>
+                      )}
                   </select>
                 </div>
                 <div className="space-y-1">

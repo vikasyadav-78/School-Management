@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
 import EmptyState from "@/components/common/EmptyState";
-import { 
+import {
   FaSearch, FaPlus, FaTimes, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt,
   FaEye, FaEdit, FaToggleOn, FaToggleOff, FaIdCard, FaCamera, FaFolder, FaFileAlt
 } from "react-icons/fa";
-import { 
+import {
   getTeacherStaffMeta,
   getTeacherStaff,
   getTeacherStaffDetail,
@@ -27,7 +27,7 @@ export default function TeacherStaffPage() {
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [forbidden, setForbidden] = useState(false);
-  
+
   // Filters State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all"); // "all" | "active" | "inactive"
@@ -74,7 +74,7 @@ export default function TeacherStaffPage() {
       setLoading(true);
       const metaData = await getTeacherStaffMeta();
       setMeta(metaData.meta || metaData.data || metaData);
-      
+
       const listData = await getTeacherStaff();
       setStaffList(listData.staff || listData.data || (Array.isArray(listData) ? listData : []));
     } catch (err) {
@@ -99,7 +99,7 @@ export default function TeacherStaffPage() {
       const params = {};
       if (searchQuery.trim()) params.search = searchQuery.trim();
       if (selectedStatus !== "all") params.status = selectedStatus;
-      
+
       const listData = await getTeacherStaff(params);
       setStaffList(listData.staff || listData.data || (Array.isArray(listData) ? listData : []));
     } catch (err) {
@@ -150,7 +150,7 @@ export default function TeacherStaffPage() {
       setLoading(true);
       const detailed = await getTeacherStaffDetail(staff.id);
       const s = detailed.staff || detailed.data || detailed || staff;
-      
+
       setEditingStaffId(s.id);
       setFirstName(s.first_name || s.full_name?.split(" ")[0] || "");
       setLastName(s.last_name || s.full_name?.split(" ").slice(1).join(" ") || "");
@@ -218,7 +218,7 @@ export default function TeacherStaffPage() {
     try {
       toast.info("Preparing authenticated ID Card layout...");
       const htmlContent = await printTeacherStaffIdCard(targetStaffIdCard.id, { theme: selectedTheme });
-      
+
       const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(htmlContent);
@@ -288,7 +288,7 @@ export default function TeacherStaffPage() {
       if (editingStaffId) {
         await updateTeacherStaff(editingStaffId, formData);
         toast.success("Staff profile updated successfully!");
-        
+
         // Refresh details modal in real time
         try {
           const detailed = await getTeacherStaffDetail(editingStaffId);
@@ -348,7 +348,7 @@ export default function TeacherStaffPage() {
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader 
+        <PageHeader
           title="Staff Roster Manager"
           subtitle="Administer teachers profiles, department tags, designations, and contact databases."
         />
@@ -394,7 +394,7 @@ export default function TeacherStaffPage() {
           <PageLoader />
         </div>
       ) : staffList.length === 0 ? (
-        <EmptyState 
+        <EmptyState
           title="No Staff Members Found"
           desc="Try adjusting your filters or typing a different search query."
         />
@@ -442,11 +442,10 @@ export default function TeacherStaffPage() {
                       <span className="text-[9px] text-zinc-400">{staff.phone || "—"}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className={`inline-flex px-2 py-0.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider ${
-                        staff.is_active 
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                      <span className={`inline-flex px-2 py-0.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider ${staff.is_active
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : "bg-rose-50 text-rose-600 border-rose-100"
-                      }`}>
+                        }`}>
                         {staff.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
@@ -475,9 +474,8 @@ export default function TeacherStaffPage() {
                         </button>
                         <button
                           onClick={() => handleToggleStatus(staff)}
-                          className={`p-1 rounded-lg transition-colors ${
-                            staff.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
-                          }`}
+                          className={`p-1 rounded-lg transition-colors ${staff.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
+                            }`}
                           title={staff.is_active ? "Deactivate" : "Activate"}
                         >
                           {staff.is_active ? <FaToggleOn className="w-5.5 h-5.5" /> : <FaToggleOff className="w-5.5 h-5.5" />}
@@ -501,7 +499,7 @@ export default function TeacherStaffPage() {
                 <FaIdCard className="text-violet-500" />
                 {editingStaffId ? "Edit Staff Registry Profile" : "Register New Staff Profile"}
               </h3>
-              <button 
+              <button
                 onClick={() => setIsFormModalOpen(false)}
                 className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
               >
@@ -522,7 +520,7 @@ export default function TeacherStaffPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">First Name</label>
-                    <input 
+                    <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -532,7 +530,7 @@ export default function TeacherStaffPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Last Name</label>
-                    <input 
+                    <input
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
@@ -549,7 +547,7 @@ export default function TeacherStaffPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-1 col-span-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Email Address</label>
-                    <input 
+                    <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -559,7 +557,7 @@ export default function TeacherStaffPage() {
                   </div>
                   <div className="space-y-1 col-span-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Password</label>
-                    <input 
+                    <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -569,7 +567,7 @@ export default function TeacherStaffPage() {
                   </div>
                   <div className="space-y-1 col-span-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Phone Number</label>
-                    <input 
+                    <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -586,7 +584,7 @@ export default function TeacherStaffPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Designation</label>
-                    <input 
+                    <input
                       type="text"
                       value={designation}
                       onChange={(e) => setDesignation(e.target.value)}
@@ -596,7 +594,7 @@ export default function TeacherStaffPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Department</label>
-                    <input 
+                    <input
                       type="text"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
@@ -606,7 +604,7 @@ export default function TeacherStaffPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Joining Date</label>
-                    <input 
+                    <input
                       type="date"
                       value={joiningDate}
                       onChange={(e) => setJoiningDate(e.target.value)}
@@ -618,7 +616,7 @@ export default function TeacherStaffPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Residential Address</label>
-                <textarea 
+                <textarea
                   rows={2}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
@@ -651,7 +649,7 @@ export default function TeacherStaffPage() {
 
                   <div className="sm:ml-auto flex items-center gap-2">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Active Status</span>
-                    <input 
+                    <input
                       type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
@@ -670,11 +668,11 @@ export default function TeacherStaffPage() {
                     <div className="flex flex-col gap-2">
                       <label className="px-3 py-2 border border-dashed border-zinc-300 hover:border-violet-500 bg-white rounded-lg flex items-center justify-center gap-1.5 transition-all text-[10px] font-bold text-zinc-600 cursor-pointer">
                         <span>{aadhaarName || existingAadhaar ? "Change File" : "Choose File"}</span>
-                        <input 
-                          type="file" 
+                        <input
+                          type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileChange(e, setAadhaarCard, setAadhaarName)} 
-                          className="hidden" 
+                          onChange={(e) => handleFileChange(e, setAadhaarCard, setAadhaarName)}
+                          className="hidden"
                         />
                       </label>
                       {aadhaarName ? (
@@ -717,135 +715,243 @@ export default function TeacherStaffPage() {
 
       {/* Staff Details Modal */}
       {isDetailModalOpen && activeStaff && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up text-left">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
-              <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-                <FaFolder className="text-violet-500" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl w-full max-w-xl overflow-hidden animate-scale-up text-left flex flex-col max-h-[90vh]">
+
+            {/* Sleek Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shrink-0">
+              <h3 className="font-extrabold text-sm flex items-center gap-2 tracking-wide uppercase">
+                <FaFolder className="w-4 h-4 text-violet-200" />
                 Staff File Inspector
               </h3>
-              <button 
+              <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-colors cursor-pointer"
               >
                 <FaTimes className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              {/* Header Profile Info */}
-              <div className="flex items-center gap-4 pb-4 border-b border-zinc-100">
-                {activeStaff.photo ? (
-                  <img src={activeStaff.photo} alt={activeStaff.full_name} className="w-14 h-14 rounded-full object-cover border border-zinc-200 shadow-sm shrink-0 aspect-square min-w-[56px] min-h-[56px]" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-extrabold text-lg shadow-sm shrink-0 aspect-square min-w-[56px] min-h-[56px]">
-                    {(activeStaff.full_name || activeStaff.first_name || "S").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-base font-extrabold text-zinc-800 leading-tight">
-                    {activeStaff.full_name || `${activeStaff.first_name} ${activeStaff.last_name || ""}`}
-                  </h4>
-                  <div className="flex items-center gap-3 text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-1">
-                    <span>ID: {activeStaff.employee_id || "STF-SCH-000" + activeStaff.id.toString().slice(0, 3)}</span>
-                    <span>•</span>
-                    <span>Joined: {activeStaff.joining_date || "—"}</span>
+            {/* Main Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar space-y-6 text-xs">
+
+              {/* Profile Banner Card */}
+              <div className="flex items-center justify-between bg-violet-50/60 border border-violet-100 p-4 rounded-2xl">
+                <div className="flex items-center gap-4">
+                  {activeStaff.photo ? (
+                    <img
+                      src={activeStaff.photo}
+                      alt={activeStaff.full_name}
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-violet-200 shadow-sm shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-violet-100 border-2 border-violet-200 flex items-center justify-center text-violet-700 font-extrabold text-2xl shadow-sm shrink-0">
+                      {(activeStaff.full_name || activeStaff.first_name || "S").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-extrabold text-zinc-900 text-base leading-tight">
+                      {activeStaff.full_name || `${activeStaff.first_name || ""} ${activeStaff.last_name || ""}`}
+                    </h3>
+                    <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                      ID: <span className="font-bold text-violet-700">{activeStaff.employee_id || "—"}</span>
+                    </p>
+                    <p className="text-[11px] text-zinc-400 font-semibold mt-0.5">
+                      Joined: <span className="text-zinc-700">{activeStaff.joining_date_label || activeStaff.joining_date || "—"}</span>
+                    </p>
                   </div>
                 </div>
 
-                <div className="ml-auto">
-                  <span className={`inline-flex px-2.5 py-0.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider ${
-                    activeStaff.is_active 
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                      : "bg-rose-50 text-rose-600 border-rose-100"
-                  }`}>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${activeStaff.is_active
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-rose-50 text-rose-700 border-rose-200"
+                    }`}>
                     {activeStaff.is_active ? "Active" : "Inactive"}
                   </span>
+                  {activeStaff.qr_image && (
+                    <img src={activeStaff.qr_image} alt="QR Code" className="w-10 h-10 border border-zinc-200 rounded-lg p-0.5 bg-white shadow-xs" />
+                  )}
                 </div>
               </div>
 
-              {/* Roster details list */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs font-semibold text-zinc-600">
-                <div className="space-y-1">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Designation</span>
-                  <span className="text-zinc-800 text-xs font-extrabold">{activeStaff.designation || "—"}</span>
+              {/* Basic & Job Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Employment Info
+                </h5>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Designation</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.designation || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Department</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.department || "General"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Monthly Salary</span>
+                    <span className="text-emerald-700 font-extrabold">₹{(activeStaff.salary || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Gender</span>
+                    <span className="text-zinc-800 font-bold capitalize">{activeStaff.gender || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Date of Birth</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.date_of_birth_label || activeStaff.date_of_birth || "—"}</span>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Department</span>
-                  <span className="text-zinc-800 text-xs font-extrabold">{activeStaff.department || "General"}</span>
-                </div>
+              </div>
 
-                <div className="space-y-1 border-t border-zinc-100 pt-3 col-span-2">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Email Address</span>
-                  <span className="text-zinc-800 text-xs font-extrabold flex items-center gap-1.5">
-                    <FaEnvelope className="text-zinc-400 w-3 h-3" />
-                    {activeStaff.email}
-                  </span>
-                </div>
-
-                <div className="space-y-1 border-t border-zinc-100 pt-3 col-span-2">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Phone Contact</span>
-                  <span className="text-zinc-800 text-xs font-extrabold flex items-center gap-1.5">
-                    <FaPhone className="text-zinc-400 w-3 h-3" />
-                    {activeStaff.phone || "—"}
-                  </span>
-                </div>
-
-                <div className="space-y-1 border-t border-zinc-100 pt-3 col-span-2">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Residential Address</span>
-                  <span className="text-zinc-800 text-xs font-extrabold flex items-start gap-1.5 leading-relaxed">
-                    <FaMapMarkerAlt className="text-zinc-400 w-3.5 h-3.5 mt-0.5 shrink-0" />
-                    {activeStaff.address || "—"}
-                  </span>
-                </div>
-
-                <div className="space-y-1.5 border-t border-zinc-100 pt-3 col-span-2">
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Uploaded Documents</span>
-                  <div className="grid grid-cols-1 gap-2 mt-1">
-                    {/* Aadhaar Card */}
-                    <div className="flex items-center justify-between p-2 bg-zinc-50 rounded-lg border border-zinc-100">
-                      <div className="space-y-0.5 max-w-[60%]">
-                        <span className="font-bold text-zinc-700 text-[10px] block">Aadhaar Card</span>
-                        {activeStaff.documents?.aadhaar_card && (
-                          <span className="text-[9px] text-emerald-600 font-bold block truncate">✔ {activeStaff.documents.aadhaar_card.file_name}</span>
-                        )}
-                      </div>
-                      {activeStaff.documents?.aadhaar_card ? (
-                        <div className="flex gap-2 shrink-0">
-                          <a href={activeStaff.documents.aadhaar_card.url} target="_blank" rel="noreferrer" className="text-[10px] text-violet-600 font-extrabold hover:underline">View</a>
-                          <span className="text-zinc-300">|</span>
-                          <a href={activeStaff.documents.aadhaar_card.url} download className="text-[10px] text-violet-600 font-extrabold hover:underline">Download</a>
-                        </div>
-                      ) : (
-                        <span className="text-zinc-400 text-[9px] font-bold uppercase shrink-0">Not Uploaded</span>
-                      )}
+              {/* Contact Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Contact Information
+                </h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl flex items-center gap-2.5">
+                    <FaEnvelope className="text-violet-500 w-4 h-4 shrink-0" />
+                    <div>
+                      <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Email</span>
+                      <span className="text-zinc-800 font-bold break-all">{activeStaff.email || "—"}</span>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl flex items-center gap-2.5">
+                    <FaPhone className="text-violet-500 w-4 h-4 shrink-0" />
+                    <div>
+                      <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Phone</span>
+                      <span className="text-zinc-800 font-bold">{activeStaff.phone || "—"}</span>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl sm:col-span-2 flex items-start gap-2.5">
+                    <FaMapMarkerAlt className="text-violet-500 w-4 h-4 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Residential Address</span>
+                      <span className="text-zinc-800 font-bold leading-relaxed">{activeStaff.address || "—"}</span>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Bank & Tax Details */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Bank & Tax Details
+                </h5>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Bank Name</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.bank?.bank_name || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Number</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.bank?.account_number || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">IFSC Code</span>
+                    <span className="text-zinc-800 font-bold uppercase">{activeStaff.bank?.ifsc_code || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Holder</span>
+                    <span className="text-zinc-800 font-bold">{activeStaff.bank?.account_holder_name || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">PAN Number</span>
+                    <span className="text-zinc-800 font-bold uppercase">{activeStaff.bank?.pan_number || "—"}</span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-xl">
+                    <span className="text-zinc-400 block text-[10px] font-bold uppercase mb-0.5">Account Type</span>
+                    <span className="text-zinc-800 font-bold capitalize">{activeStaff.bank?.account_type || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Uploaded Documents List */}
+              <div>
+                <h5 className="font-bold text-violet-600 uppercase tracking-wider text-[11px] mb-2.5">
+                  Uploaded Documents
+                </h5>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { label: "Aadhaar Card", doc: activeStaff.documents?.aadhaar },
+                    { label: "PAN Card", doc: activeStaff.documents?.pan },
+                    { label: "ID Proof", doc: activeStaff.documents?.id_proof }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div>
+                        <span className="font-bold text-zinc-800 text-xs block">{item.label}</span>
+                        {item.doc ? (
+                          <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5 truncate max-w-[240px]">
+                            ✔ {item.doc.file_name}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-zinc-400 font-medium block mt-0.5">Not Uploaded</span>
+                        )}
+                      </div>
+                      {item.doc?.url ? (
+                        <div className="flex gap-3 shrink-0">
+                          <a
+                            href={item.doc.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-violet-600 font-bold hover:underline"
+                          >
+                            View
+                          </a>
+                          <span className="text-zinc-300">|</span>
+                          <a
+                            href={item.doc.url}
+                            download
+                            className="text-xs text-violet-600 font-bold hover:underline"
+                          >
+                            Download
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-400 text-[10px] font-bold uppercase">Missing</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
 
-            <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between">
-              <button
-                onClick={() => {
-                  setIsDetailModalOpen(false);
-                  handleOpenIdCard(activeStaff);
-                }}
-                className="px-4 py-2 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-xl transition-all cursor-pointer text-xs flex items-center gap-1.5"
-              >
-                <FaIdCard className="w-3.5 h-3.5" /> Staff ID Card
-              </button>
+            {/* Footer Actions */}
+            <div className="p-4 px-6 border-t border-zinc-100 bg-zinc-50/50 flex items-center justify-between shrink-0">
+              {activeStaff.id_card_url ? (
+                <a
+                  href={activeStaff.id_card_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all cursor-pointer text-xs flex items-center gap-1.5 shadow-sm"
+                >
+                  <FaIdCard className="w-3.5 h-3.5" /> Staff ID Card
+                </a>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsDetailModalOpen(false);
+                    handleOpenIdCard(activeStaff);
+                  }}
+                  className="px-4 py-2 bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold rounded-xl transition-all cursor-pointer text-xs flex items-center gap-1.5"
+                >
+                  <FaIdCard className="w-3.5 h-3.5" /> Staff ID Card
+                </button>
+              )}
+
               <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold rounded-xl transition-all cursor-pointer text-xs"
+                className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl transition-all cursor-pointer text-xs shadow-sm"
               >
                 Close File
               </button>
             </div>
+
           </div>
         </div>
       )}
-
       {/* Staff ID Card Preview & Print Modal */}
       {isIdCardModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-fade-in">
@@ -855,7 +961,7 @@ export default function TeacherStaffPage() {
                 <FaIdCard className="text-violet-500" />
                 Staff Identity Card
               </h3>
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsIdCardModalOpen(false)}
                 className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
@@ -872,11 +978,10 @@ export default function TeacherStaffPage() {
                     key={th.key}
                     type="button"
                     onClick={() => handleThemeChange(th.key)}
-                    className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                      selectedTheme === th.key
+                    className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${selectedTheme === th.key
                         ? "bg-violet-600 text-white shadow-sm"
                         : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-100"
-                    }`}
+                      }`}
                   >
                     {th.key}
                   </button>
@@ -897,11 +1002,10 @@ export default function TeacherStaffPage() {
               ) : idCardData ? (
                 <div className="w-[260px] bg-white rounded-2xl border border-zinc-200 shadow-xl relative overflow-hidden flex flex-col">
                   {/* Decorative Header Bar */}
-                  <div className={`px-3.5 py-2.5 text-center text-white shrink-0 relative ${
-                    selectedTheme === "wave" ? "bg-blue-600" :
-                    selectedTheme === "green" ? "bg-emerald-600" :
-                    selectedTheme === "navy" ? "bg-slate-900" : "bg-violet-600"
-                  }`}>
+                  <div className={`px-3.5 py-2.5 text-center text-white shrink-0 relative ${selectedTheme === "wave" ? "bg-blue-600" :
+                      selectedTheme === "green" ? "bg-emerald-600" :
+                        selectedTheme === "navy" ? "bg-slate-900" : "bg-violet-600"
+                    }`}>
                     <div className="flex items-center justify-center gap-1.5">
                       {idCardData.school?.logo && (
                         <img src={idCardData.school.logo} alt="Logo" className="w-4 h-4 object-contain" />
