@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import * as service from "../services/module.service";
+import { syncAuthCookies, clearAuthCookies } from "@/utils/cookieSync";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -13,6 +14,7 @@ export const loginUser = createAsyncThunk(
       if (typeof window !== "undefined") {
         if (token) localStorage.setItem("token", token);
         if (role) localStorage.setItem("role", role);
+        syncAuthCookies(token, role);
       }
       return { ...data, token, role };
     } catch (error) {
@@ -34,6 +36,7 @@ export const getCurrentUser = createAsyncThunk(
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
+        clearAuthCookies();
       }
       return rejectWithValue(error.message || "Failed to load session");
     }
@@ -52,6 +55,7 @@ export const impersonateStudentUser = createAsyncThunk(
         if (currentToken) localStorage.setItem("admin_token", currentToken);
         if (token) localStorage.setItem("token", token);
         localStorage.setItem("role", "student");
+        syncAuthCookies(token, "student", currentToken);
       }
       
       return { ...data, token, role: "student" };
@@ -73,6 +77,7 @@ export const impersonateTeacherUser = createAsyncThunk(
         if (currentToken) localStorage.setItem("admin_token", currentToken);
         if (token) localStorage.setItem("token", token);
         localStorage.setItem("role", "teacher");
+        syncAuthCookies(token, "teacher", currentToken);
       }
       
       return { ...data, token, role: "teacher" };

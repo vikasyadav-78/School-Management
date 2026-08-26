@@ -56,8 +56,8 @@ function PaymentSuccessContent() {
     }
 
     setPaymentDetails({
-      transactionId: searchParams.get("transaction_id") || searchParams.get("txnid") || searchParams.get("razorpay_payment_id") || "TXN-" + Math.floor(Math.random() * 100000000),
-      receiptNo: searchParams.get("receipt_no") || searchParams.get("receipt") || "REC-" + Math.floor(Math.random() * 1000000),
+      transactionId: searchParams.get("transaction_id") || searchParams.get("txnid") || searchParams.get("razorpay_payment_id") || "Transaction ID Not Available",
+      receiptNo: searchParams.get("receipt_no") || searchParams.get("receipt") || "Receipt Not Available",
       amount: resolvedAmount,
       paymentMethod: searchParams.get("payment_method") || "Online Payment",
       paymentDate: searchParams.get("date") || new Date().toLocaleDateString(),
@@ -112,8 +112,8 @@ function PaymentSuccessContent() {
           }
           
           setPaymentDetails((prev) => ({
-            transactionId: details.transaction_id || details.payment_id || prev.transactionId,
-            receiptNo: details.receipt_no || details.receipt_number || prev.receiptNo,
+            transactionId: details.transaction_id || details.payment_id || (prev.transactionId === "Transaction ID Not Available" ? "Transaction ID Not Available" : prev.transactionId),
+            receiptNo: details.receipt_no || details.receipt_number || (prev.receiptNo === "Receipt Not Available" ? "Receipt Not Available" : prev.receiptNo),
             amount: resolvedVerifyAmount,
             paymentMethod: details.payment_method || details.gateway || prev.paymentMethod,
             paymentDate: details.payment_date || details.created_at || prev.paymentDate,

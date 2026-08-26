@@ -32,7 +32,7 @@ export default function DriverDashboardPage() {
   const [overrideLng, setOverrideLng] = useState("75.7873");
 
   const checkLoggedInStatus = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("driver_token");
     if (!token) {
       setIsLoggedIn(false);
       setLoading(false);
@@ -46,12 +46,12 @@ export default function DriverDashboardPage() {
         setRouteInfo(data.route || data.assigned_route);
         setIsLoggedIn(true);
       } else {
-        localStorage.removeItem("token");
+        localStorage.removeItem("driver_token");
         setIsLoggedIn(false);
       }
     } catch (err) {
       console.warn("Auth check failed, logging out:", err);
-      localStorage.removeItem("token");
+      localStorage.removeItem("driver_token");
       setIsLoggedIn(false);
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ export default function DriverDashboardPage() {
       const res = await loginDriver(phone.trim(), pin.trim());
       if (res.token || res.data?.token) {
         const token = res.token || res.data?.token;
-        localStorage.setItem("token", token);
+        localStorage.setItem("driver_token", token);
         
         // Load driver details
         const details = await getDriverMe();
@@ -100,7 +100,7 @@ export default function DriverDashboardPage() {
     } catch (err) {
       console.warn("Logout request failed:", err);
     }
-    localStorage.removeItem("token");
+    localStorage.removeItem("driver_token");
     setIsLoggedIn(false);
     setDriverInfo(null);
     setRouteInfo(null);

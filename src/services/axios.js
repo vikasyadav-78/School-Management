@@ -1,5 +1,6 @@
 import axios from "axios";
 import { sortClassesNaturally } from "../utils/classUtils";
+import { clearAuthCookies } from "@/utils/cookieSync";
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -13,7 +14,8 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const isDriverRoute = config.url && config.url.startsWith("/driver");
+      const token = isDriverRoute ? localStorage.getItem("driver_token") : localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -60,13 +62,20 @@ axiosInstance.interceptors.response.use(
     const status = error.response ? error.response.status : null;
     if (status === 401) {
       if (typeof window !== "undefined") {
-        const role = localStorage.getItem("role");
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        if (role === "admin") {
-          window.location.href = "/admin-login";
+        const isDriverRoute = error.config?.url && error.config.url.startsWith("/driver");
+        if (isDriverRoute) {
+          localStorage.removeItem("driver_token");
+          window.location.href = "/driver";
         } else {
-          window.location.href = "/login";
+          const role = localStorage.getItem("role");
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          clearAuthCookies();
+          if (role === "admin") {
+            window.location.href = "/admin-login";
+          } else {
+            window.location.href = "/login";
+          }
         }
       }
     }

@@ -15,7 +15,7 @@ export default function HomeRedirector() {
     const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
     
     if (!token) {
-      if (role === "admin") {
+      if (role === "admin" || role === "super_admin") {
         router.replace("/admin-login");
       } else {
         router.replace("/login");
@@ -26,7 +26,7 @@ export default function HomeRedirector() {
     if (!user && !loading) {
       dispatch(getCurrentUser()).then((res) => {
         if (res.meta.requestStatus === "rejected") {
-          if (role === "admin") {
+          if (role === "admin" || role === "super_admin") {
             router.replace("/admin-login");
           } else {
             router.replace("/login");
@@ -38,7 +38,9 @@ export default function HomeRedirector() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === "admin") {
+      if (user.role === "super_admin") {
+        router.replace("/super-admin/dashboard");
+      } else if (user.role === "admin") {
         router.replace("/admin/dashboard");
       } else if (user.role === "teacher") {
         router.replace("/teacher/dashboard");
@@ -46,7 +48,7 @@ export default function HomeRedirector() {
         router.replace("/student/dashboard");
       } else {
         const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
-        if (role === "admin") {
+        if (role === "admin" || role === "super_admin") {
           router.replace("/admin-login");
         } else {
           router.replace("/login");

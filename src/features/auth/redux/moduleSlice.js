@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { loginUser, getCurrentUser, impersonateStudentUser, impersonateTeacherUser } from "./moduleThunk";
+import { clearAuthCookies } from "@/utils/cookieSync";
 
 const initialState = {
   user: null,
@@ -27,6 +28,7 @@ const authSlice = createSlice({
         localStorage.removeItem("token");
         localStorage.removeItem("admin_token");
         localStorage.removeItem("role");
+        clearAuthCookies();
       }
     },
     clearAuthError(state) {
@@ -82,6 +84,7 @@ const authSlice = createSlice({
         if (typeof window !== "undefined") {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
+          clearAuthCookies();
         }
       })
       .addCase(impersonateStudentUser.pending, (state) => {

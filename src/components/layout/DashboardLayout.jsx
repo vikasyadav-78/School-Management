@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import Breadcrumb from "./Breadcrumb";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import { syncAuthCookies, clearAuthCookies } from "@/utils/cookieSync";
 
 function DashboardLayoutContent({ children }) {
   const dispatch = useDispatch();
@@ -20,58 +21,66 @@ function DashboardLayoutContent({ children }) {
   useEffect(() => {
     setMounted(true);
 
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    const adminToken = localStorage.getItem("admin_token");
-    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+    const checkAndRestore = async () => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+      const adminToken = localStorage.getItem("admin_token");
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+      const isTransitioning = currentPath.startsWith("/admin/students") || currentPath.startsWith("/admin/teachers");
 
-    const isTransitioning = currentPath.startsWith("/admin/students") || currentPath.startsWith("/admin/teachers");
-
-    if (adminToken && currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
-      localStorage.setItem("token", adminToken);
-      localStorage.setItem("role", "admin");
-      localStorage.removeItem("admin_token");
-      window.location.href = currentPath;
-      return;
-    }
-
-    if (!token) {
-      if (role === "admin" || role === "super_admin") {
-        router.push("/admin-login");
-      } else {
-        router.push("/login");
-      }
-      return;
-    }
-
-    if (token && role) {
-      if (currentPath.startsWith("/super-admin") && role !== "super_admin") {
-        router.push(role === "admin" ? "/admin/dashboard" : role === "teacher" ? "/teacher/dashboard" : "/student/dashboard");
+      if (adminToken && currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
+        localStorage.setItem("token", adminToken);
+        localStorage.setItem("role", "admin");
+        localStorage.removeItem("admin_token");
+        await syncAuthCookies(adminToken, "admin", null);
+        window.location.href = currentPath;
         return;
       }
-      if (currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
-        if (role === "super_admin") {
-          router.push("/super-admin/dashboard");
-        } else if (role === "teacher") {
-          router.push("/teacher/dashboard");
-        } else if (role === "student") {
-          router.push("/student/dashboard");
+
+      if (!token) {
+        await clearAuthCookies();
+        if (role === "admin" || role === "super_admin") {
+          router.push("/admin-login");
+        } else {
+          router.push("/login");
         }
         return;
       }
-    }
 
-    if (!user) {
-      dispatch(getCurrentUser()).then((res) => {
-        if (res.meta.requestStatus === "rejected") {
-          if (role === "admin") {
-            router.push("/admin-login");
-          } else {
-            router.push("/login");
+      if (token && role) {
+        await syncAuthCookies(token, role, adminToken);
+
+        if (currentPath.startsWith("/super-admin") && role !== "super_admin") {
+          router.push(role === "admin" ? "/admin/dashboard" : role === "teacher" ? "/teacher/dashboard" : "/student/dashboard");
+          return;
+        }
+        if (currentPath.startsWith("/admin") && role !== "admin" && !isTransitioning) {
+          if (role === "super_admin") {
+            router.push("/super-admin/dashboard");
+          } else if (role === "teacher") {
+            router.push("/teacher/dashboard");
+          } else if (role === "student") {
+            router.push("/student/dashboard");
           }
+          return;
         }
-      });
-    }
+      }
+
+      if (!user) {
+        dispatch(getCurrentUser()).then(async (res) => {
+          if (res.meta.requestStatus === "rejected") {
+            await clearAuthCookies();
+            if (role === "admin") {
+              router.push("/admin-login");
+            } else {
+              router.push("/login");
+            }
+          }
+        });
+      }
+    };
+
+    checkAndRestore();
   }, [dispatch, router, user]);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;

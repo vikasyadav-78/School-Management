@@ -86,3 +86,13 @@ export const impersonateTeacher = async (teacherId) => {
   });
   return response.data;
 };
+
+export const forgotPassword = async (email) => {
+  const response = await api.post("/password/forgot", { email });
+  return response.data;
+};
+
+export const resetPassword = async (payload) => {
+  const response = await api.post("/password/reset", payload);
+  return response.data;
+};
