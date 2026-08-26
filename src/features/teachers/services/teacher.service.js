@@ -1069,4 +1069,35 @@ export const getTeacherHomeworkReportMonthly = async (params = {}) => {
   return response.data;
 };
 
+// Teacher Class Streams APIs
+export const getTeacherClassStreams = async (classId) => {
+  const response = await api.get(`/teacher/classes/${classId}/streams`);
+  return response.data;
+};
+
+export const addTeacherStream = async (classId, payload) => {
+  const response = await api.post(`/teacher/classes/${classId}/streams`, payload);
+  return response.data;
+};
+
+export const updateTeacherStream = async (streamId, payload) => {
+  const response = await api.post(`/teacher/streams/${streamId}`, payload);
+  return response.data;
+};
+
+export const deleteTeacherStream = async (streamId) => {
+  const response = await api.delete(`/teacher/streams/${streamId}`);
+  return response.data;
+};
+
+export const getTeacherOnlineMcqPassFailReports = async (params = {}) => {
+  const response = await api.get("/teacher/online-mcq/reports/pass-fail", { params });
+  return response.data;
+};
+
+export const saveTeacherReportsStaffAttendance = async (payload) => {
+  const response = await api.post("/teacher/manage/staff-attendance", payload);
+  return response.data;
+};
+
 

@@ -266,6 +266,22 @@ export default function TeacherManageHolidaysPage() {
                 </div>
               </div>
 
+              {fromDate && toDate && (() => {
+                const start = new Date(fromDate);
+                const end = new Date(toDate);
+                if (end >= start) {
+                  const diffTime = Math.abs(end - start);
+                  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                  return (
+                    <div className="p-2.5 bg-violet-50 border border-violet-100 rounded-xl flex items-center justify-between text-xs text-violet-750 font-bold uppercase tracking-wider animate-fade-in">
+                      <span>Total Duration:</span>
+                      <span className="font-extrabold px-2 py-0.5 bg-violet-600 text-white rounded-lg">{days} {days === 1 ? "Day" : "Days"}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <div className="flex items-center gap-2 pt-2">
                 <input 
                   type="checkbox"

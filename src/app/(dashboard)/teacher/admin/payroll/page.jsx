@@ -29,6 +29,46 @@ const getPreviousMonthString = () => {
   return `${y}-${m}`;
 };
 
+const getCurrentMonthString = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+};
+
+const getDeductionTotal = (deductionsField) => {
+  if (Array.isArray(deductionsField)) {
+    return deductionsField.reduce((acc, curr) => {
+      const amt = parseFloat(curr.amount || curr.deduction_amount || curr.deductions || 0);
+      return acc + (isNaN(amt) ? 0 : amt);
+    }, 0);
+  }
+  const parsed = parseFloat(deductionsField);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+const getEmployeeName = (p) => {
+  if (!p) return "Staff Member";
+  return (
+    p.teacher_name ||
+    p.staff_name ||
+    p.employee_name ||
+    p.full_name ||
+    p.name ||
+    p.teacher?.full_name ||
+    p.teacher?.name ||
+    p.teacher?.first_name ||
+    p.staff?.full_name ||
+    p.staff?.name ||
+    p.staff?.first_name ||
+    p.user?.full_name ||
+    p.user?.name ||
+    p.employee?.full_name ||
+    p.employee?.name ||
+    "Staff Member"
+  );
+};
+
 export default function TeacherPayrollPage() {
   const dialog = useAppDialog();
   const [activeTab, setActiveTab] = useState("pending"); // "pending" | "history"
@@ -38,13 +78,13 @@ export default function TeacherPayrollPage() {
   const [rawPayrollList, setRawPayrollList] = useState([]);
 
   // Filters State
-  const [selectedMonth, setSelectedMonth] = useState(getPreviousMonthString());
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthString());
   const [statusFilter, setStatusFilter] = useState("all"); // "all" | "pending" | "paid"
   const [searchQuery, setSearchQuery] = useState("");
 
   // Modals State
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
-  const [generatePeriod, setGeneratePeriod] = useState(getPreviousMonthString());
+  const [generatePeriod, setGeneratePeriod] = useState(getCurrentMonthString());
 
   const [isDeductionModalOpen, setIsDeductionModalOpen] = useState(false);
   const [activePayroll, setActivePayroll] = useState(null);
@@ -98,7 +138,7 @@ export default function TeacherPayrollPage() {
   // Client-side filtering as secondary layer to ensure absolute search correctness
   const payrollList = useMemo(() => {
     return rawPayrollList.filter(p => {
-      const name = (p.teacher_name || p.teacher?.full_name || p.staff_name || "").toLowerCase();
+      const name = getEmployeeName(p).toLowerCase();
       const empId = (p.employee_id || p.teacher?.employee_id || p.id || "").toLowerCase();
       const dept = (p.department || p.teacher?.department || "academic").toLowerCase();
       const desig = (p.designation || p.teacher?.designation || "teacher").toLowerCase();
@@ -145,11 +185,11 @@ export default function TeacherPayrollPage() {
   };
 
   const handleReset = () => {
-    const prevMonth = getPreviousMonthString();
-    setSelectedMonth(prevMonth);
+    const currMonth = getCurrentMonthString();
+    setSelectedMonth(currMonth);
     setStatusFilter("all");
     setSearchQuery("");
-    fetchPayroll({ period: prevMonth, search: undefined, status: undefined });
+    fetchPayroll({ period: currMonth, search: undefined, status: undefined });
   };
 
   const handleGenerateSubmit = async (e) => {
@@ -316,7 +356,7 @@ export default function TeacherPayrollPage() {
           subtitle="Generate salary, manage payroll, deductions and payment history."
         />
         <button
-          onClick={() => { setGeneratePeriod("2026-07"); setFormError(""); setIsGenerateModalOpen(true); }}
+          onClick={() => { setGeneratePeriod(getCurrentMonthString()); setFormError(""); setIsGenerateModalOpen(true); }}
           className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md self-start sm:self-auto cursor-pointer"
         >
           <FaPlus className="w-3.5 h-3.5" /> Generate Monthly Payroll
@@ -485,8 +525,8 @@ export default function TeacherPayrollPage() {
                 <tbody className="divide-y divide-zinc-100 text-zinc-700">
                   {payrollList.map((p) => {
                     const gross = parseFloat(p.gross_salary || p.net_salary || 0);
-                    const ded = parseFloat(p.deductions || 0);
-                    const net = parseFloat(p.net_salary || 0);
+                    const ded = getDeductionTotal(p.deductions);
+                    const net = gross - ded;
                     const isPaid = (p.status || "pending").toLowerCase() === "paid";
 
                     return (
@@ -495,11 +535,11 @@ export default function TeacherPayrollPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm shrink-0 select-none">
-                              {p.teacher_name ? p.teacher_name.charAt(0) : "S"}
+                              {getEmployeeName(p).charAt(0)}
                             </div>
                             <div>
                               <p className="font-bold text-zinc-900 text-sm">
-                                {p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}
+                                {getEmployeeName(p)}
                               </p>
                               <p className="text-xs text-zinc-400 font-medium mt-0.5">
                                 ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + p.id.slice(0, 5).toUpperCase()}
@@ -777,11 +817,11 @@ export default function TeacherPayrollPage() {
                 </div>
                 <div className="flex justify-between font-semibold text-rose-600">
                   <span>Deductions:</span>
-                  <span>- ₹{parseFloat(activePayroll.deductions || 0).toLocaleString()}</span>
+                  <span>- ₹{getDeductionTotal(activePayroll.deductions).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-black text-zinc-900 text-xs">
                   <span>Net Salary Payable:</span>
-                  <span>₹{parseFloat(activePayroll.net_salary || 0).toLocaleString()}</span>
+                  <span>₹{(parseFloat(activePayroll.gross_salary || 0) - getDeductionTotal(activePayroll.deductions)).toLocaleString()}</span>
                 </div>
               </div>
 
@@ -840,10 +880,10 @@ export default function TeacherPayrollPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-sm shrink-0 select-none">
-                  {activePayroll.teacher_name ? activePayroll.teacher_name.charAt(0) : "S"}
+                  {getEmployeeName(activePayroll).charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-black text-zinc-800">{activePayroll.teacher_name || activePayroll.staff_name || "Staff Member"}</h4>
+                  <h4 className="font-black text-zinc-800">{getEmployeeName(activePayroll)}</h4>
                   <p className="text-[9px] text-zinc-400 font-bold uppercase">ID: {activePayroll.employee_id || activePayroll.teacher?.employee_id || activePayroll.id}</p>
                 </div>
               </div>
@@ -859,7 +899,7 @@ export default function TeacherPayrollPage() {
                 </div>
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Deductions</span>
-                  <span className="font-bold text-rose-600">₹{parseFloat(activePayroll.deductions || 0).toLocaleString()}</span>
+                  <span className="font-bold text-rose-600">₹{getDeductionTotal(activePayroll.deductions).toLocaleString()}</span>
                 </div>
                 {activePayroll.deduction_reason && (
                   <div className="flex justify-between px-4 py-2.5">
@@ -869,7 +909,7 @@ export default function TeacherPayrollPage() {
                 )}
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Net Salary</span>
-                  <span className="font-black text-zinc-900">₹{parseFloat(activePayroll.net_salary || 0).toLocaleString()}</span>
+                  <span className="font-black text-zinc-900">₹{(parseFloat(activePayroll.gross_salary || 0) - getDeductionTotal(activePayroll.deductions)).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="font-extrabold text-zinc-400 uppercase text-[9px]">Status</span>

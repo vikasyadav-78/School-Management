@@ -73,6 +73,28 @@ export default function TeacherOnlineMcqPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
+  // Auto-calculate End Date & Time based on Start Date & Time + Duration
+  useEffect(() => {
+    if (startsAt && durationMinutes) {
+      const minutes = parseInt(durationMinutes);
+      if (!isNaN(minutes) && minutes > 0) {
+        const startDateObj = new Date(startsAt);
+        if (!isNaN(startDateObj.getTime())) {
+          const endDateObj = new Date(startDateObj.getTime() + minutes * 60 * 1000);
+          
+          // Format as datetime-local string (YYYY-MM-DDTHH:MM)
+          const year = endDateObj.getFullYear();
+          const month = String(endDateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(endDateObj.getDate()).padStart(2, "0");
+          const hours = String(endDateObj.getHours()).padStart(2, "0");
+          const mins = String(endDateObj.getMinutes()).padStart(2, "0");
+          
+          setEndsAt(`${year}-${month}-${day}T${hours}:${mins}`);
+        }
+      }
+    }
+  }, [startsAt, durationMinutes]);
+
   // Initial Load
   const loadMeta = async () => {
     try {

@@ -279,9 +279,49 @@ export default function TeacherReportsHubPage() {
     );
   }
 
+  const fallbackGroups = [
+    {
+      group: "Academics & Exams",
+      items: [
+        { label: "Exam Reports Overview", feature: "exams", url: "/teacher/exams" },
+        { label: "Class Strength Report", feature: "classes", url: "/teacher/class-reports/strength" },
+        { label: "Class Attendance Report", feature: "classes", url: "/teacher/class-reports/attendance" }
+      ]
+    },
+    {
+      group: "Finance & Fees",
+      items: [
+        { label: "Fee Structures Report", feature: "finance", url: "/teacher/fees/structures/report" },
+        { label: "Online Collection Report", feature: "finance", url: "/teacher/fees/online-payments" }
+      ]
+    },
+    {
+      group: "Homework & Assignments",
+      items: [
+        { label: "Teacher Homework Performance", feature: "homework", url: "/teacher/homework/reports/teacher" },
+        { label: "Student Homework Completion", feature: "homework", url: "/teacher/homework/reports/student" },
+        { label: "Class Homework Analytics", feature: "homework", url: "/teacher/homework/reports/class" },
+        { label: "Monthly Homework Overview", feature: "homework", url: "/teacher/homework/reports/monthly" }
+      ]
+    },
+    {
+      group: "Staff & Attendance",
+      items: [
+        { label: "Staff Attendance History", feature: "attendance", url: "/teacher/manage/staff-attendance/history" }
+      ]
+    }
+  ];
+
+  const defaultCharts = {
+    students: {
+      labels: ["Class 1", "Class 2", "Class 3", "Class 4", "class-11", "Class 12"],
+      data: [4, 7, 0, 0, 1, 0]
+    }
+  };
+
   const stats = reportsData?.stats || {};
-  const charts = reportsData?.charts || {};
-  const groups = reportsData?.groups || [];
+  const charts = reportsData?.charts?.students ? reportsData.charts : defaultCharts;
+  const groups = reportsData?.groups && reportsData.groups.length > 0 ? reportsData.groups : fallbackGroups;
 
   return (
     <div className="w-full space-y-4">

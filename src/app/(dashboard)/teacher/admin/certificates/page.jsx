@@ -177,9 +177,9 @@ export default function TeacherCertificatesPage() {
       ) : (
         <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                   <th className="px-6 py-4 whitespace-nowrap">Certificate No.</th>
                   <th className="px-6 py-4 whitespace-nowrap">Student</th>
                   <th className="px-6 py-4 whitespace-nowrap">Certificate Type</th>
@@ -202,17 +202,17 @@ export default function TeacherCertificatesPage() {
                           <span className="font-bold text-zinc-800 block">
                             {cert.student_name || cert.student?.full_name || "Student"}
                           </span>
-                          <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
                             Session: {cert.session || "2025-26"}
                           </span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${
-                        cert.type === "tc" ? "bg-amber-50 border-amber-100 text-amber-600" :
-                        cert.type === "character" ? "bg-blue-50 border-blue-100 text-blue-600" :
-                        "bg-emerald-50 border-emerald-100 text-emerald-600"
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${
+                        cert.type === "tc" ? "bg-amber-50 border-amber-100 text-amber-700" :
+                        cert.type === "character" ? "bg-blue-50 border-blue-100 text-blue-700" :
+                        "bg-emerald-50 border-emerald-100 text-emerald-700"
                       }`}>
                         {cert.type === "tc" ? "Transfer Certificate (TC)" : cert.type === "character" ? "Character Certificate" : "Bonafide Certificate"}
                       </span>
@@ -223,7 +223,7 @@ export default function TeacherCertificatesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <button
                         onClick={() => handleDownload(cert)}
-                        className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 mx-auto text-[10px] cursor-pointer"
+                        className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-600 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 mx-auto text-[11px] cursor-pointer"
                       >
                         <FaDownload className="w-3 h-3" /> Download PDF
                       </button>

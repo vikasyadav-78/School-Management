@@ -4,39 +4,39 @@ import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import { FaChalkboardTeacher, FaUserGraduate, FaHospital, FaArrowRight } from "react-icons/fa";
 
-export default function AttendanceReportsLandingPage() {
+export default function TeacherAdminAttendanceLandingPage() {
   const options = [
     {
       id: "teacher",
-      title: "Teachers Report",
-      description: "Analyze daily logs, review leaf summaries, and compile attendance history sheets for faculty members.",
+      title: "Teacher Attendance",
+      description: "Manage, track, and record daily attendance sheets and logs for school faculty members.",
       icon: FaChalkboardTeacher,
-      path: "/teacher/admin/attendance/reports/teacher",
+      path: "/teacher/admin/attendance/teacher",
       color: "amber",
       iconClass: "bg-amber-50 text-amber-600 border-amber-100",
-      buttonText: "View Teachers Report",
+      buttonText: "Manage Teachers",
       buttonClass: "border-amber-200 text-amber-600 hover:bg-amber-50"
     },
     {
       id: "student",
-      title: "Students Report",
-      description: "View class-wise rosters, search specific students, and compile comprehensive attendance percentage sheets.",
+      title: "Student Attendance",
+      description: "Record daily attendance, manage class rosters, and review student attendance history reports.",
       icon: FaUserGraduate,
-      path: "/teacher/admin/attendance/reports/student",
+      path: "/teacher/admin/attendance/student",
       color: "violet",
       iconClass: "bg-violet-50 text-violet-600 border-violet-100",
-      buttonText: "View Students Report",
+      buttonText: "Manage Students",
       buttonClass: "border-violet-200 text-violet-600 hover:bg-violet-50"
     },
     {
       id: "staff",
-      title: "Staff Report",
-      description: "Review administrative staff attendance logs, leave remarks, and monthly summary reports.",
+      title: "Staff Attendance",
+      description: "Track daily attendance and leave records for support staff and administrative teams.",
       icon: FaHospital,
-      path: "/teacher/admin/attendance/reports/staff",
+      path: "/teacher/admin/attendance/staff",
       color: "sky",
       iconClass: "bg-sky-50 text-sky-600 border-sky-100",
-      buttonText: "View Staff Report",
+      buttonText: "Manage Staff",
       buttonClass: "border-sky-200 text-sky-600 hover:bg-sky-50"
     }
   ];
@@ -44,8 +44,8 @@ export default function AttendanceReportsLandingPage() {
   return (
     <div className="w-full space-y-4">
       <PageHeader
-        title="Attendance Reports"
-        subtitle="Select a reports module below to begin"
+        title="Attendance Management"
+        subtitle="Select an attendance module below to begin"
       />
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">

@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import { useAppDialog } from "@/context/DialogContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function TeacherFeesPage() {
   const dialog = useAppDialog();
@@ -55,6 +56,12 @@ export default function TeacherFeesPage() {
   const [paidAmount, setPaidAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState("cash");
   const [transactionRef, setTransactionRef] = useState("");
+
+  // Pagination states
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [structuresPage, setStructuresPage] = useState(1);
+  const [historyPage, setHistoryPage] = useState(1);
+  const pageSize = 10;
 
   // View Payment Receipts Modal
   const [selectedPaymentDetails, setSelectedPaymentDetails] = useState(null);
@@ -129,6 +136,7 @@ export default function TeacherFeesPage() {
   };
 
   useEffect(() => {
+    setPaymentsPage(1);
     if (!loading && !forbidden && activeTab === "payments") {
       const handler = setTimeout(() => {
         fetchPayments();
@@ -151,6 +159,8 @@ export default function TeacherFeesPage() {
   };
 
   useEffect(() => {
+    setStructuresPage(1);
+    setHistoryPage(1);
     if (!loading && !forbidden && activeTab === "structures") {
       fetchStructures();
     }
@@ -562,76 +572,88 @@ export default function TeacherFeesPage() {
           ) : payments.length === 0 ? (
             <EmptyState title="No Fee Payments Found" desc="Try adjusting your filters or typing a search query." />
           ) : (
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-bold text-zinc-400 uppercase">
-                      <th className="px-6 py-4">Student</th>
-                      <th className="px-6 py-4">Fee Structure</th>
-                      <th className="px-6 py-4">Total Amount</th>
-                      <th className="px-6 py-4">Due Date</th>
-                      <th className="px-6 py-4 text-center">Status</th>
-                      <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-150 text-zinc-700">
-                    {payments.map(p => (
-                      <tr key={p.id} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-zinc-800">
-                          {p.student_name || p.student?.full_name || "Student"}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-zinc-600">
-                          {p.fee_structure_name || p.structure?.name || "Standard Fee"}
-                        </td>
-                        <td className="px-6 py-4 font-black text-zinc-900">
-                          ₹{p.amount}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-zinc-500">
-                          {p.due_date || "—"}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex px-2 py-0.5 text-[8px] font-black rounded-lg border uppercase ${
-                            p.status === "paid" ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
-                            p.status === "partial" ? "bg-amber-50 border-amber-100 text-amber-600" : "bg-rose-50 border-rose-100 text-rose-600"
-                          }`}>
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            {p.status !== "paid" && (
-                              <button
-                                onClick={() => handleOpenRecordPayment(p)}
-                                className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[9px] rounded-lg border border-emerald-100 cursor-pointer"
-                              >
-                                Record Payment
-                              </button>
-                            )}
-                            {(p.status === "paid" || p.status === "partial") && (
-                              <button
-                                onClick={() => handleOpenReceiptDetails(p)}
-                                className="px-2 py-1 bg-violet-50 hover:bg-violet-100 text-violet-750 font-bold text-[9px] rounded-lg border border-violet-100 cursor-pointer"
-                              >
-                                Receipts / Details
-                              </button>
-                            )}
-                            {p.status === "unpaid" && (
-                              <button
-                                onClick={() => handleDeletePayment(p.id)}
-                                className="p-1 text-zinc-400 hover:text-rose-600 rounded cursor-pointer"
-                                title="Delete Entry"
-                              >
-                                <FaTrash className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-bold text-zinc-500 uppercase">
+                        <th className="px-6 py-4">Student</th>
+                        <th className="px-6 py-4">Fee Structure</th>
+                        <th className="px-6 py-4">Total Amount</th>
+                        <th className="px-6 py-4">Due Date</th>
+                        <th className="px-6 py-4 text-center">Status</th>
+                        <th className="px-6 py-4 text-center">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-150 text-zinc-700">
+                      {payments.slice((paymentsPage - 1) * pageSize, paymentsPage * pageSize).map(p => (
+                        <tr key={p.id} className="hover:bg-zinc-50/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-zinc-800">
+                            {p.student_name || p.student?.full_name || "Student"}
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-zinc-600">
+                            {p.fee_structure_name || p.structure?.name || "Standard Fee"}
+                          </td>
+                          <td className="px-6 py-4 font-black text-zinc-900">
+                            ₹{p.amount}
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-zinc-500">
+                            {p.due_date || "—"}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`inline-flex px-2 py-0.5 text-[9px] font-black rounded-lg border uppercase ${
+                              p.status === "paid" ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
+                              p.status === "partial" ? "bg-amber-50 border-amber-100 text-amber-600" : "bg-rose-50 border-rose-100 text-rose-600"
+                            }`}>
+                              {p.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {p.status !== "paid" && (
+                                <button
+                                  onClick={() => handleOpenRecordPayment(p)}
+                                  className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] rounded-lg border border-emerald-100 cursor-pointer"
+                                >
+                                  Record Payment
+                                </button>
+                              )}
+                              {(p.status === "paid" || p.status === "partial") && (
+                                <button
+                                  onClick={() => handleOpenReceiptDetails(p)}
+                                  className="px-2 py-1 bg-violet-50 hover:bg-violet-100 text-violet-750 font-bold text-[10px] rounded-lg border border-violet-100 cursor-pointer"
+                                >
+                                  Receipts / Details
+                                </button>
+                              )}
+                              {p.status === "unpaid" && (
+                                <button
+                                  onClick={() => handleDeletePayment(p.id)}
+                                  className="p-1 text-zinc-400 hover:text-rose-600 rounded cursor-pointer"
+                                  title="Delete Entry"
+                                >
+                                  <FaTrash className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
+              {payments.length > pageSize && (
+                <div className="w-full pt-2">
+                  <Pagination
+                    totalCount={payments.length}
+                    pageSize={pageSize}
+                    currentPage={paymentsPage}
+                    onPageChange={setPaymentsPage}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -660,21 +682,33 @@ export default function TeacherFeesPage() {
           ) : structures.length === 0 ? (
             <EmptyState title="No Fee Structures" desc="Add tuition, transport, or lab fee structures." />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {structures.map(s => (
-                <div key={s.id} className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-sm relative flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-[9px] font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded border border-violet-100 uppercase">{s.frequency || "monthly"}</span>
-                      <button onClick={() => handleDeleteStructure(s.id)} className="p-1 text-zinc-400 hover:text-rose-600">
-                        <FaTrash className="w-3.5 h-3.5" />
-                      </button>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {structures.slice((structuresPage - 1) * pageSize, structuresPage * pageSize).map(s => (
+                  <div key={s.id} className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-sm relative flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[9px] font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded border border-violet-100 uppercase">{s.frequency || "monthly"}</span>
+                        <button onClick={() => handleDeleteStructure(s.id)} className="p-1 text-zinc-400 hover:text-rose-600">
+                          <FaTrash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <h4 className="font-extrabold text-zinc-800 text-sm">{s.name}</h4>
+                      <span className="text-base font-black text-zinc-900 block mt-1">₹{s.amount}</span>
                     </div>
-                    <h4 className="font-extrabold text-zinc-800 text-sm">{s.name}</h4>
-                    <span className="text-base font-black text-zinc-900 block mt-1">₹{s.amount}</span>
                   </div>
+                ))}
+              </div>
+              {structures.length > pageSize && (
+                <div className="w-full pt-2">
+                  <Pagination
+                    totalCount={structures.length}
+                    pageSize={pageSize}
+                    currentPage={structuresPage}
+                    onPageChange={setStructuresPage}
+                  />
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
@@ -871,12 +905,12 @@ export default function TeacherFeesPage() {
 
           {/* History List */}
           {lateRulesData?.history && lateRulesData.history.length > 0 && (
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
               <h4 className="font-extrabold text-zinc-800 text-xs flex items-center gap-1.5 mb-3">
                 <FaHistory className="text-violet-500" /> Late Fee Rule History
               </h4>
               <div className="divide-y divide-zinc-100">
-                {lateRulesData.history.map(h => (
+                {lateRulesData.history.slice((historyPage - 1) * pageSize, historyPage * pageSize).map(h => (
                   <div key={h.id} className="py-3 flex items-center justify-between text-xs font-semibold">
                     <div>
                       <span className="font-bold text-zinc-800 block">Structure: {h.fee_structure_name || "All Structures"}</span>
@@ -888,6 +922,16 @@ export default function TeacherFeesPage() {
                   </div>
                 ))}
               </div>
+              {lateRulesData.history.length > pageSize && (
+                <div className="w-full pt-2">
+                  <Pagination
+                    totalCount={lateRulesData.history.length}
+                    pageSize={pageSize}
+                    currentPage={historyPage}
+                    onPageChange={setHistoryPage}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -11,6 +11,7 @@ import {
   getTeacherFeeOnlinePaymentsReport
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
+import Pagination from "@/components/ui/Pagination";
 
 export default function TeacherAdminFinanceReportsPage() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +19,11 @@ export default function TeacherAdminFinanceReportsPage() {
 
   const [feeStructures, setFeeStructures] = useState([]);
   const [feePayments, setFeePayments] = useState(null);
+
+  // Pagination states
+  const [structuresPage, setStructuresPage] = useState(1);
+  const [transactionsPage, setTransactionsPage] = useState(1);
+  const pageSize = 10;
 
   const loadStructures = async () => {
     try {
@@ -44,6 +50,8 @@ export default function TeacherAdminFinanceReportsPage() {
   };
 
   useEffect(() => {
+    setStructuresPage(1);
+    setTransactionsPage(1);
     if (activeTab === "structures") {
       loadStructures();
     } else {
@@ -85,39 +93,51 @@ export default function TeacherAdminFinanceReportsPage() {
       ) : (
         <>
           {activeTab === "structures" ? (
-            <div className="border border-zinc-200 rounded-xl overflow-x-auto bg-white shadow-sm">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold uppercase tracking-wider text-[11px]">
-                  <tr>
-                    <th className="p-3">Structure Name</th>
-                    <th className="p-3">Amount</th>
-                    <th className="p-3">Frequency</th>
-                    <th className="p-3">Assigned Class</th>
-                    <th className="p-3">Assigned Students</th>
-                    <th className="p-3">Collected</th>
-                    <th className="p-3 text-right">Outstanding</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 font-medium text-zinc-700">
-                  {feeStructures.length === 0 ? (
+            <div className="space-y-4">
+              <div className="border border-zinc-200 rounded-xl overflow-x-auto bg-white shadow-sm">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <td colSpan={7} className="p-4 text-center text-zinc-400">No structures found.</td>
+                      <th className="p-3">Structure Name</th>
+                      <th className="p-3">Amount</th>
+                      <th className="p-3">Frequency</th>
+                      <th className="p-3">Assigned Class</th>
+                      <th className="p-3">Assigned Students</th>
+                      <th className="p-3">Collected</th>
+                      <th className="p-3 text-right">Outstanding</th>
                     </tr>
-                  ) : (
-                    feeStructures.map((row) => (
-                      <tr key={row.id} className="hover:bg-zinc-50 transition-colors">
-                        <td className="p-3 font-semibold text-zinc-900">{row.name}</td>
-                        <td className="p-3 font-semibold text-zinc-900">₹{(row.amount || 0).toLocaleString()}</td>
-                        <td className="p-3 capitalize">{row.frequency}</td>
-                        <td className="p-3">{row.class_name || "School-wide"}</td>
-                        <td className="p-3">{row.assigned_count} students</td>
-                        <td className="p-3 font-semibold text-emerald-600">₹{(row.total_collected || 0).toLocaleString()}</td>
-                        <td className="p-3 font-semibold text-rose-600 text-right">₹{(row.total_due || 0).toLocaleString()}</td>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 font-semibold text-zinc-700">
+                    {feeStructures.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-4 text-center text-zinc-400">No structures found.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      feeStructures.slice((structuresPage - 1) * pageSize, structuresPage * pageSize).map((row) => (
+                        <tr key={row.id} className="hover:bg-zinc-50 transition-colors">
+                          <td className="p-3 font-bold text-zinc-900">{row.name}</td>
+                          <td className="p-3 font-bold text-zinc-900">₹{(row.amount || 0).toLocaleString()}</td>
+                          <td className="p-3 capitalize">{row.frequency}</td>
+                          <td className="p-3">{row.class_name || "School-wide"}</td>
+                          <td className="p-3">{row.assigned_count} students</td>
+                          <td className="p-3 font-semibold text-emerald-600">₹{(row.total_collected || 0).toLocaleString()}</td>
+                          <td className="p-3 font-semibold text-rose-600 text-right">₹{(row.total_due || 0).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {feeStructures.length > pageSize && (
+                <div className="w-full pt-2">
+                  <Pagination
+                    totalCount={feeStructures.length}
+                    pageSize={pageSize}
+                    currentPage={structuresPage}
+                    onPageChange={setStructuresPage}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4 animate-fade-in">
@@ -172,42 +192,54 @@ export default function TeacherAdminFinanceReportsPage() {
                   <h3 className="font-bold text-zinc-900 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-zinc-200 pb-1.5">
                     <FaRegCreditCard className="text-emerald-600" /> Audit Database Log
                   </h3>
-                  <div className="border border-zinc-200 rounded-xl overflow-x-auto bg-white shadow-sm">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
-                        <tr>
-                          <th className="p-2.5">Receipt No</th>
-                          <th className="p-2.5">Fee Module Name</th>
-                          <th className="p-2.5">Amount</th>
-                          <th className="p-2.5">Gateway</th>
-                          <th className="p-2.5 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-100 font-medium text-zinc-700">
-                        {feePayments?.transactions?.length === 0 ? (
+                  <div className="space-y-4">
+                    <div className="border border-zinc-200 rounded-xl overflow-x-auto bg-white shadow-sm">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold uppercase tracking-wider text-[11px]">
                           <tr>
-                            <td colSpan={5} className="p-4 text-center text-zinc-400">No transactions recorded.</td>
+                            <th className="p-2.5">Receipt No</th>
+                            <th className="p-2.5">Fee Module Name</th>
+                            <th className="p-2.5">Amount</th>
+                            <th className="p-2.5">Gateway</th>
+                            <th className="p-2.5 text-right">Status</th>
                           </tr>
-                        ) : (
-                          feePayments?.transactions?.map((row) => (
-                            <tr key={row.id} className="hover:bg-zinc-50 transition-colors">
-                              <td className="p-2.5">
-                                <div className="font-semibold text-zinc-900">{row.receipt_no}</div>
-                                <div className="text-[10px] text-zinc-500 font-mono">{row.paid_at_label}</div>
-                              </td>
-                              <td className="p-2.5 capitalize">{row.fee_name}</td>
-                              <td className="p-2.5 font-semibold text-indigo-600">₹{(row.amount || 0).toLocaleString()}</td>
-                              <td className="p-2.5 uppercase text-[10px] font-bold text-zinc-500">{row.gateway}</td>
-                              <td className="p-2.5 text-right">
-                                <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase">
-                                  {row.status}
-                                </span>
-                              </td>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-100 font-semibold text-zinc-700">
+                          {(!feePayments?.transactions || feePayments.transactions.length === 0) ? (
+                            <tr>
+                              <td colSpan={5} className="p-4 text-center text-zinc-400">No transactions recorded.</td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                          ) : (
+                            feePayments.transactions.slice((transactionsPage - 1) * pageSize, transactionsPage * pageSize).map((row) => (
+                              <tr key={row.id} className="hover:bg-zinc-50 transition-colors">
+                                <td className="p-2.5">
+                                  <div className="font-bold text-zinc-900">{row.receipt_no}</div>
+                                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{row.paid_at_label}</div>
+                                </td>
+                                <td className="p-2.5 capitalize">{row.fee_name}</td>
+                                <td className="p-2.5 font-bold text-indigo-600">₹{(row.amount || 0).toLocaleString()}</td>
+                                <td className="p-2.5 uppercase text-[10px] font-bold text-zinc-500">{row.gateway}</td>
+                                <td className="p-2.5 text-right">
+                                  <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase">
+                                    {row.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {feePayments?.transactions?.length > pageSize && (
+                      <div className="w-full pt-2">
+                        <Pagination
+                          totalCount={feePayments.transactions.length}
+                          pageSize={pageSize}
+                          currentPage={transactionsPage}
+                          onPageChange={setTransactionsPage}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

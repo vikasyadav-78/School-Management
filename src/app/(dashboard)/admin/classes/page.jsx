@@ -285,8 +285,20 @@ export default function AdminClassesPage() {
 
     try {
       setSubmitting(true);
+      const finalSectionName = sectionName.trim().toUpperCase();
+
+      // Check if section name already exists for this class (case-insensitive)
+      const sectionExists = activeClass?.sections?.some(
+        sec => sec.name.trim().toUpperCase() === finalSectionName && sec.id !== editingSectionId
+      );
+
+      if (sectionExists) {
+        setFormError(`Section "${finalSectionName}" already exists for this class.`);
+        return;
+      }
+
       const payload = {
-        name: sectionName.trim(),
+        name: finalSectionName,
         room_number: roomNumber.trim(),
         capacity: parseInt(capacity) || 40
       };
@@ -1060,7 +1072,7 @@ export default function AdminClassesPage() {
                 <input 
                   type="text" 
                   value={sectionName} 
-                  onChange={(e) => setSectionName(e.target.value)} 
+                  onChange={(e) => setSectionName(e.target.value.toUpperCase())} 
                   placeholder="Section letter"
                   className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold"
                 />

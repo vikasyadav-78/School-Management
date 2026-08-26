@@ -154,7 +154,7 @@ export default function TeacherDashboardPage() {
               <FaBook className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Homework Assigned</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider leading-tight">Homework Assigned</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.homeworkCount}
               </h3>
@@ -176,7 +176,7 @@ export default function TeacherDashboardPage() {
               <MdOutlineClass className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Weekly Classes</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider leading-tight">Weekly Classes</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.weeklyClassesCount}
               </h3>
@@ -198,7 +198,7 @@ export default function TeacherDashboardPage() {
               <FaChalkboardTeacher className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Active Classes</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider leading-tight">Active Classes</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 {dashboardData.activeClassesCount}
               </h3>
@@ -220,7 +220,7 @@ export default function TeacherDashboardPage() {
               <FaMoneyBillWave className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">Basic Salary</p>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider leading-tight">Basic Salary</p>
               <h3 className="text-2xl font-extrabold text-zinc-800 mt-1">
                 ₹{(salaryPreview.monthly_salary || teacher.salary || 0).toLocaleString()}
               </h3>

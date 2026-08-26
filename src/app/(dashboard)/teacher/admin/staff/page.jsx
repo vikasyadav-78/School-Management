@@ -921,14 +921,12 @@ export default function TeacherStaffPage() {
             {/* Footer Actions */}
             <div className="p-4 px-6 border-t border-zinc-100 bg-zinc-50/50 flex items-center justify-between shrink-0">
               {activeStaff.id_card_url ? (
-                <a
-                  href={activeStaff.id_card_url}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  onClick={() => handleOpenIdCard(activeStaff)}
                   className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all cursor-pointer text-xs flex items-center gap-1.5 shadow-sm"
                 >
                   <FaIdCard className="w-3.5 h-3.5" /> Staff ID Card
-                </a>
+                </button>
               ) : (
                 <button
                   onClick={() => {

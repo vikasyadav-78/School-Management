@@ -201,18 +201,13 @@ export const TEACHER_NAVIGATION_ITEMS = [
           { title: "Classes & Sections", path: "/teacher/admin/classes" },
           {
             title: "Attendance",
+            path: "/teacher/admin/attendance",
             submenu: [
-              { title: "Mark Attendance", path: "/teacher/admin/teacher-attendance" },
+              { title: "Mark Attendance", path: "/teacher/admin/attendance" },
               { title: "Attendance Reports", path: "/teacher/admin/attendance/reports" }
             ]
           },
-          {
-            title: "Homework",
-            submenu: [
-              { title: "Homework List", path: "/teacher/admin/homework" },
-              { title: "Reports", path: "/teacher/admin/homework/reports" }
-            ]
-          },
+          { title: "Homework Reports", path: "/teacher/admin/homework/reports" },
           { title: "Class Notes", path: "/teacher/class-notes" },
           {
             title: "Examinations",
@@ -225,7 +220,7 @@ export const TEACHER_NAVIGATION_ITEMS = [
             title: "Online MCQ Exams",
             submenu: [
               { title: "MCQ Exams", path: "/teacher/admin/online-mcq" },
-              { title: "Reports", path: "/teacher/admin/reports" }
+              { title: "Reports", path: "/teacher/admin/online-mcq/reports" }
             ]
           },
           {
@@ -258,7 +253,8 @@ export const TEACHER_NAVIGATION_ITEMS = [
         submenu: [
           { title: "Leave Applications", path: "/teacher/admin/leaves" },
           { title: "Holidays", path: "/teacher/admin/holidays" },
-          { title: "Transport", path: "/teacher/admin/transport" }
+          { title: "Transport", path: "/teacher/admin/transport" },
+          { title: "Admin Reports Hub", path: "/teacher/admin/reports" }
         ]
       }
     ]
