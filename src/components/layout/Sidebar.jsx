@@ -132,59 +132,27 @@ export default function Sidebar() {
   let panelLabel = "Admin Panel";
   
   if (userRole === "teacher") {
-    navItems = TEACHER_NAVIGATION_ITEMS.map(item => {
-      if (item.title === "Admin Access" && item.submenu) {
-        const filterSubmenu = (menuList) => {
-          return menuList.map(sub => {
-            if (sub.path === "/teacher/admin/staff" && !checkPermission("staff", "can_manage_staff")) return null;
-            if (sub.path === "/teacher/admin/teachers" && !checkPermission("teachers", "can_manage_teachers")) return null;
-            if (sub.path === "/teacher/admin/teacher-attendance" && !checkPermission("attendance", "can_manage_teacher_attendance")) return null;
-            if (sub.path === "/teacher/admin/payroll" && !checkPermission("payroll", "can_manage_payroll")) return null;
-            if (sub.path === "/teacher/admin/students" && !checkPermission("students", "can_manage_students")) return null;
-            if (sub.path === "/teacher/admin/classes" && !checkPermission("classes", "can_manage_classes")) return null;
-            if (sub.path === "/teacher/admin/subjects" && !checkPermission("subjects", "can_manage_subjects")) return null;
-            if (sub.path === "/teacher/admin/academic-years" && !checkPermission("academic_years", "can_manage_academic_years")) return null;
-            if (sub.path === "/teacher/admin/fees" && !checkPermission("fees", "can_manage_fees")) return null;
-            if (sub.path === "/teacher/admin/notices" && !checkPermission("notices", "can_manage_notices")) return null;
-            if (sub.path === "/teacher/admin/holidays" && !checkPermission("holidays", "can_manage_holidays")) return null;
-            if (sub.path === "/teacher/admin/leaves" && !checkPermission("leave", "can_manage_leaves")) return null;
-            if (sub.path === "/teacher/admin/certificates" && !checkPermission("certificates", "can_manage_certificates")) return null;
-            if (sub.path === "/teacher/admin/transport" && !checkPermission("transport", "can_manage_transport")) return null;
-            if (sub.path === "/teacher/admin/manage-timetable" && !checkPermission("timetable", "can_manage_timetable")) return null;
-            if (sub.path === "/teacher/admin/online-mcq" && !checkPermission("online_mcq", "can_manage_online_mcq")) return null;
-            
-            // New permission checks for restructured routes
-            if (sub.path === "/teacher/marks" && !checkPermission("exams", "can_manage_exams")) return null;
-            if (sub.path === "/teacher/class-notes" && !checkPermission("class_notes", "can_view_class_notes_reports")) return null;
-            if (sub.path && (sub.path.includes("/reports") || sub.path === "/teacher/admin/reports") && !checkPermission("reports", "can_manage_reports")) return null;
+    const filterMenuByPermission = (menuList) => {
+      return menuList.map(item => {
+        // Check direct permission requirement
+        if (item.permission) {
+          const { feature, key } = item.permission;
+          if (!checkPermission(feature, key)) return null;
+        }
 
-            if (sub.title === "Live Classes" && sub.submenu) {
-              const hasLiveClassesAccess = checkPermission("live_classes", "can_manage_live_classes");
-              const filteredSub = sub.submenu.filter(subitem => {
-                if (subitem.path === "/teacher/admin/live-classes") return hasLiveClassesAccess;
-                return true; // Reports is always allowed
-              });
-              if (filteredSub.length === 0) return null;
-              return { ...sub, submenu: filteredSub };
-            }
+        // Recursively filter submenus
+        if (item.submenu) {
+          const filteredSub = filterMenuByPermission(item.submenu).filter(Boolean);
+          // If all child elements are hidden, hide parent
+          if (filteredSub.length === 0) return null;
+          return { ...item, submenu: filteredSub };
+        }
 
-            if (sub.submenu && sub.title !== "Live Classes") {
-              const nestedFiltered = filterSubmenu(sub.submenu).filter(Boolean);
-              if (nestedFiltered.length === 0) return null;
-              return { ...sub, submenu: nestedFiltered };
-            }
+        return item;
+      }).filter(Boolean);
+    };
 
-            return sub;
-          });
-        };
-
-        const filteredSubmenu = filterSubmenu(item.submenu).filter(Boolean);
-
-        if (filteredSubmenu.length === 0) return null;
-        return { ...item, submenu: filteredSubmenu };
-      }
-      return item;
-    }).filter(Boolean);
+    navItems = filterMenuByPermission(TEACHER_NAVIGATION_ITEMS);
     panelLabel = "Teacher Panel";
   } else if (userRole === "student") {
     navItems = STUDENT_NAVIGATION_ITEMS;

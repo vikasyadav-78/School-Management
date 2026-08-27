@@ -572,7 +572,7 @@ export default function TeacherSalariesPage() {
                             )}
                             <div>
                               <p className="font-extrabold text-zinc-800">{p.name || p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}</p>
-                              <p className="text-[10px] text-zinc-400 font-bold mt-0.5">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + String(p.id).substring(0, 5).toUpperCase()}</p>
+                              <p className="text-[10px] text-zinc-400 font-bold mt-0.5">ID: {p.employee_id || p.teacher?.employee_id || "—"}</p>
                             </div>
                           </div>
                         </td>
@@ -687,7 +687,7 @@ export default function TeacherSalariesPage() {
                       )}
                       <div>
                         <h4 className="font-extrabold text-zinc-800">{p.name || p.teacher_name || p.teacher?.full_name || p.staff_name || "Staff Member"}</h4>
-                        <p className="text-[9px] text-zinc-400 font-extrabold font-mono">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + String(p.id).substring(0, 5).toUpperCase()}</p>
+                        <p className="text-[9px] text-zinc-400 font-extrabold font-mono">ID: {p.employee_id || p.teacher?.employee_id || "—"}</p>
                         {payrollDetailsMap[p.id]?.breakdown && (
                           <div className="mt-1 flex items-center gap-1 flex-wrap text-[8px] font-black text-zinc-500 uppercase tracking-tight">
                             <span className="bg-violet-100 px-1 py-0.2 rounded text-violet-750">Base: ₹{payrollDetailsMap[p.id].breakdown.monthly_salary?.toLocaleString()}</span>
@@ -978,7 +978,7 @@ export default function TeacherSalariesPage() {
                 </div>
                 <div>
                   <h4 className="font-black text-zinc-800">{activePayroll.name || activePayroll.teacher_name || activePayroll.teacher?.full_name || activePayroll.staff_name || "Staff Member"}</h4>
-                  <p className="text-[9px] text-zinc-400 font-bold uppercase">ID: {activePayroll.employee_id || activePayroll.teacher?.employee_id || "EMP-" + String(activePayroll.id).substring(0, 5).toUpperCase()}</p>
+                  <p className="text-[9px] text-zinc-400 font-bold uppercase">ID: {activePayroll.employee_id || activePayroll.teacher?.employee_id || "—"}</p>
                 </div>
               </div>
 

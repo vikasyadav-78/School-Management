@@ -35,10 +35,14 @@ export default function TeacherLeavesPage() {
 
     dispatch(fetchTeacherLeaves(params)).then((action) => {
       if (action.payload) {
-        console.log("Teacher Leaves API response payload:", action.payload);
+        if (process.env.NODE_ENV === "development") {
+          console.log("Teacher Leaves API response payload:", action.payload);
+        }
         const hasApprovedInBackend = action.payload.records?.some(r => r.status?.toLowerCase() === "approved");
         const hasPendingInBackend = action.payload.records?.some(r => r.status?.toLowerCase() === "pending");
-        console.log(`Backend reports: hasApproved=${hasApprovedInBackend}, hasPending=${hasPendingInBackend}. Note: If approved leaves display as Pending, please verify the backend database status.`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`Backend reports: hasApproved=${hasApprovedInBackend}, hasPending=${hasPendingInBackend}. Note: If approved leaves display as Pending, please verify the backend database status.`);
+        }
       }
     });
   }, [dispatch, statusFilter, monthFilter]);

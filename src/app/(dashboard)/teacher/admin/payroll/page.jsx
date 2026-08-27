@@ -542,7 +542,7 @@ export default function TeacherPayrollPage() {
                                 {getEmployeeName(p)}
                               </p>
                               <p className="text-xs text-zinc-400 font-medium mt-0.5">
-                                ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + p.id.slice(0, 5).toUpperCase()}
+                                ID: {p.employee_id || p.teacher?.employee_id || "—"}
                               </p>
                             </div>
                           </div>
@@ -550,7 +550,7 @@ export default function TeacherPayrollPage() {
 
                         {/* Month */}
                         <td className="px-6 py-4 font-bold text-zinc-700 text-xs whitespace-nowrap">
-                          {p.period || p.month || "2026-07"}
+                          {p.period || p.month || "—"}
                         </td>
 
                         {/* Gross Salary */}
@@ -570,11 +570,25 @@ export default function TeacherPayrollPage() {
 
                         {/* Attendance */}
                         <td className="px-6 py-4 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1.5 text-xs font-bold">
-                            <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-200">P:22</span>
-                            <span className="bg-rose-50 text-rose-700 px-2 py-1 rounded-md border border-rose-200">A:1</span>
-                            <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded-md border border-amber-200">L:2</span>
-                          </div>
+                          {(() => {
+                            const presentDays = p.present_days !== undefined ? p.present_days : (p.breakdown?.present_days !== undefined ? p.breakdown.present_days : null);
+                            const absentDays = p.absent_days !== undefined ? p.absent_days : (p.breakdown?.absent_days !== undefined ? p.breakdown.absent_days : null);
+                            const lateDays = p.late_days !== undefined ? p.late_days : (p.breakdown?.late_days !== undefined ? p.breakdown.late_days : null);
+                            const hasAttendance = presentDays !== null && absentDays !== null;
+
+                            if (hasAttendance) {
+                              return (
+                                <div className="flex items-center justify-center gap-1.5 text-xs font-bold">
+                                  <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-200">P:{presentDays}</span>
+                                  <span className="bg-rose-50 text-rose-700 px-2 py-1 rounded-md border border-rose-200">A:{absentDays}</span>
+                                  {lateDays !== null && (
+                                    <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded-md border border-amber-200">L:{lateDays}</span>
+                                  )}
+                                </div>
+                              );
+                            }
+                            return <span className="text-zinc-400 font-medium">—</span>;
+                          })()}
                         </td>
 
                         {/* Status */}
@@ -645,7 +659,7 @@ export default function TeacherPayrollPage() {
                       </div>
                       <div>
                         <h4 className="font-extrabold text-zinc-800">{p.teacher_name || p.teacher?.full_name || p.staff_name}</h4>
-                        <p className="text-[9px] text-zinc-400 font-extrabold">ID: {p.employee_id || p.teacher?.employee_id || "EMP-" + p.id.slice(0, 5).toUpperCase()}</p>
+                        <p className="text-[9px] text-zinc-400 font-extrabold">ID: {p.employee_id || p.teacher?.employee_id || "—"}</p>
                       </div>
                     </div>
                     <span className={`px-2.5 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${isPaid ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-amber-50 border-amber-100 text-amber-600"
@@ -671,7 +685,21 @@ export default function TeacherPayrollPage() {
 
                   <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-1">
                     <span className="font-bold">Month: {p.period || p.month}</span>
-                    <span className="font-bold text-zinc-400">Attendance: P:22 A:1 L:2</span>
+                    {(() => {
+                      const presentDays = p.present_days !== undefined ? p.present_days : (p.breakdown?.present_days !== undefined ? p.breakdown.present_days : null);
+                      const absentDays = p.absent_days !== undefined ? p.absent_days : (p.breakdown?.absent_days !== undefined ? p.breakdown.absent_days : null);
+                      const lateDays = p.late_days !== undefined ? p.late_days : (p.breakdown?.late_days !== undefined ? p.breakdown.late_days : null);
+                      const hasAttendance = presentDays !== null && absentDays !== null;
+
+                      if (hasAttendance) {
+                        return (
+                          <span className="font-bold text-zinc-600">
+                            Attendance: P:{presentDays} A:{absentDays} {lateDays !== null ? `L:${lateDays}` : ""}
+                          </span>
+                        );
+                      }
+                      return <span className="font-bold text-zinc-400">Attendance: —</span>;
+                    })()}
                   </div>
 
                   <div className="flex gap-2 pt-2 border-t border-zinc-100">

@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
 import Link from "next/link";
+import { api } from "@/services/api";
 
 export default function AdminStudentSalesPage() {
   const dialog = useAppDialog();
@@ -138,30 +139,66 @@ export default function AdminStudentSalesPage() {
   };
 
   // Export Sales List Excel/PDF
-  const handleExport = (format) => {
+  const handleExport = async (format) => {
     try {
-      const token = localStorage.getItem("token") || "";
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
-      if (token) queryParams.append("token", token);
+      toast.loading(`Exporting sales roster as ${format.toUpperCase()}...`, { id: "export-sales" });
+      const queryParams = {};
+      if (searchQuery.trim()) queryParams.search = searchQuery.trim();
 
-      const downloadUrl = `https://erp.trishpay.in/api/admin/inventory/sales/export/${format}?${queryParams.toString()}`;
-      window.open(downloadUrl, "_blank");
-      toast.success(`Exporting sales roster as ${format.toUpperCase()}...`);
+      const response = await api.get(`/admin/inventory/sales/export/${format}`, {
+        params: queryParams,
+        responseType: "blob"
+      });
+
+      const blob = response.data;
+      if (blob.type === "application/json") {
+        const text = await blob.text();
+        const errObj = text ? JSON.parse(text) : {};
+        throw new Error(errObj.message || "Failed to export sales roster.");
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `sales_export.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Exported sales roster as ${format.toUpperCase()} successfully!`, { id: "export-sales" });
     } catch (err) {
-      toast.error("Failed to trigger sales export: " + (err.message || err));
+      toast.error("Failed to trigger sales export: " + (err.message || err), { id: "export-sales" });
     }
   };
 
   // Download sale receipt
-  const handleDownloadReceipt = (saleId) => {
+  const handleDownloadReceipt = async (saleId) => {
     try {
-      const token = localStorage.getItem("token") || "";
-      const downloadUrl = `https://erp.trishpay.in/api/admin/inventory/sales/${saleId}/receipt?token=${token}`;
-      window.open(downloadUrl, "_blank");
-      toast.success("Downloading sales receipt PDF...");
+      toast.loading("Downloading sales receipt PDF...", { id: `receipt-${saleId}` });
+      const response = await api.get(`/admin/inventory/sales/${saleId}/receipt`, {
+        responseType: "blob"
+      });
+
+      const blob = response.data;
+      if (blob.type === "application/json") {
+        const text = await blob.text();
+        const errObj = text ? JSON.parse(text) : {};
+        throw new Error(errObj.message || "Failed to download receipt.");
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `sale_receipt_${saleId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Download complete!", { id: `receipt-${saleId}` });
     } catch (err) {
-      toast.error("Failed to download sale receipt: " + (err.message || err));
+      toast.error("Failed to download sale receipt: " + (err.message || err), { id: `receipt-${saleId}` });
     }
   };
 

@@ -29,8 +29,13 @@ export default function AdminHomeworkReportsPage() {
   // Filter variables
   const [selectedClassId, setSelectedClassId] = useState("");
   const [selectedSectionId, setSelectedSectionId] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("2026-07");
-  const [selectedYear, setSelectedYear] = useState("2026");
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    return `${y}-${m}`;
+  });
+  const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
 
   // Load roster classes
   useEffect(() => {

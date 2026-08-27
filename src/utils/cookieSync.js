@@ -1,14 +1,16 @@
 export const syncAuthCookies = async (token, role, adminToken) => {
   try {
-    await fetch("/api/auth/cookie", {
+    const res = await fetch("/api/auth/cookie", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ token, role, adminToken }),
     });
+    return res.ok;
   } catch (err) {
     console.error("Failed to sync auth cookies:", err);
+    return false;
   }
 };
 

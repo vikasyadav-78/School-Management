@@ -47,8 +47,6 @@ export default function TeacherHomeworkPage() {
       try {
         setClassesLoading(true);
         const data = await getHomeworkClasses();
-        console.log("=== Homework Config Load ===");
-        console.log(data);
         setClasses(data.classes || []);
         setSections(data.sections || []);
         setSubjects(data.subjects || []);

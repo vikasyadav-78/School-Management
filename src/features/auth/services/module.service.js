@@ -1,12 +1,7 @@
 import { api } from "@/services/api";
 import { ENDPOINTS } from "@/services/endpoints";
-import * as mockService from "./module.mock";
-import { USE_MOCK } from "@/constants";
 
 export const login = async (credentials) => {
-  if (USE_MOCK && credentials.role !== "student" && credentials.role !== "teacher" && credentials.role !== "admin") {
-    return mockService.mockLogin(credentials);
-  }
 
   let body = {
     login_type: credentials.role,
@@ -52,9 +47,6 @@ export const login = async (credentials) => {
 
 
 export const getMe = async (role) => {
-  if (USE_MOCK && role !== "teacher" && role !== "student" && role !== "admin") {
-    return mockService.mockGetMe();
-  }
 
   const endpoint =
     role === "teacher"
@@ -94,5 +86,10 @@ export const forgotPassword = async (email) => {
 
 export const resetPassword = async (payload) => {
   const response = await api.post("/password/reset", payload);
+  return response.data;
+};
+
+export const logout = async () => {
+  const response = await api.post("/logout");
   return response.data;
 };

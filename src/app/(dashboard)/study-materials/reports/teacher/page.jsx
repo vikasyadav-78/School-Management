@@ -13,7 +13,12 @@ export default function TeacherReportsPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [month, setMonth] = useState("2026-07");
+  const [month, setMonth] = useState(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    return `${y}-${m}`;
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 

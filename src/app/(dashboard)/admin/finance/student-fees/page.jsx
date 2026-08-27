@@ -89,8 +89,17 @@ export default function AdminFeesPage() {
   const [onlinePayments, setOnlinePayments] = useState([]);
   const [onlineSummary, setOnlineSummary] = useState(null);
   const [onlineDaily, setOnlineDaily] = useState([]);
-  const [dateFrom, setDateFrom] = useState("2026-07-01");
-  const [dateTo, setDateTo] = useState("2026-07-31");
+  const [dateFrom, setDateFrom] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  });
+  const [dateTo, setDateTo] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  });
   const [onlineSearch, setOnlineSearch] = useState("");
   const [onlineModeFilter, setOnlineModeFilter] = useState("");
 

@@ -14,7 +14,10 @@ export const loginUser = createAsyncThunk(
       if (typeof window !== "undefined") {
         if (token) localStorage.setItem("token", token);
         if (role) localStorage.setItem("role", role);
-        syncAuthCookies(token, role);
+        const syncSuccess = await syncAuthCookies(token, role);
+        if (!syncSuccess) {
+          throw new Error("Failed to synchronize authentication cookies");
+        }
       }
       return { ...data, token, role };
     } catch (error) {
@@ -28,11 +31,9 @@ export const getCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const role = localStorage.getItem("role");
-      console.log("ROLE FROM LOCALSTORAGE =", role);
       const data = await service.getMe(role);
       return data;
     } catch (error) {
-      console.log(error);
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
@@ -55,7 +56,10 @@ export const impersonateStudentUser = createAsyncThunk(
         if (currentToken) localStorage.setItem("admin_token", currentToken);
         if (token) localStorage.setItem("token", token);
         localStorage.setItem("role", "student");
-        syncAuthCookies(token, "student", currentToken);
+        const syncSuccess = await syncAuthCookies(token, "student", currentToken);
+        if (!syncSuccess) {
+          throw new Error("Failed to synchronize impersonation cookies");
+        }
       }
       
       return { ...data, token, role: "student" };
@@ -77,12 +81,39 @@ export const impersonateTeacherUser = createAsyncThunk(
         if (currentToken) localStorage.setItem("admin_token", currentToken);
         if (token) localStorage.setItem("token", token);
         localStorage.setItem("role", "teacher");
-        syncAuthCookies(token, "teacher", currentToken);
+        const syncSuccess = await syncAuthCookies(token, "teacher", currentToken);
+        if (!syncSuccess) {
+          throw new Error("Failed to synchronize impersonation cookies");
+        }
       }
       
       return { ...data, token, role: "teacher" };
     } catch (error) {
       return rejectWithValue(error.message || "Failed to impersonate teacher");
+    }
+  }
+);
+
+export const logoutUserThunk = createAsyncThunk(
+  "auth/logoutUserThunk",
+  async (_, { dispatch, getState }) => {
+    const state = getState();
+    const role = state.auth.user?.role || (typeof window !== "undefined" ? localStorage.getItem("role") : null);
+    try {
+      await service.logout();
+    } catch (err) {
+      console.warn("Backend logout failed:", err);
+    } finally {
+      const { logoutUser } = await import("./moduleSlice");
+      dispatch(logoutUser());
+      
+      if (typeof window !== "undefined") {
+        if (role === "admin" || role === "super_admin") {
+          window.location.href = "/admin-login";
+        } else {
+          window.location.href = "/login";
+        }
+      }
     }
   }
 );

@@ -18,9 +18,7 @@ export const fetchStudentsById = createAsyncThunk(
   "students/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      console.log("fetchStudentsById: id =", id);
       const res = await service.getById(id);
-      console.log("fetchStudentsById success: res =", res);
       return res;
     } catch (error) {
       console.error("fetchStudentsById error:", error);

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FaBars, FaBell, FaSearch, FaUserCircle, FaSignOutAlt, FaTimes, FaArrowLeft } from "react-icons/fa";
-import { logoutUser } from "@/features/auth/redux/moduleSlice";
+import { logoutUserThunk } from "@/features/auth/redux/moduleThunk";
 import { APP_CONFIG } from "@/constants/appConfig";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
@@ -90,7 +90,7 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    dispatch(logoutUser());
+    dispatch(logoutUserThunk());
   };
 
   const handleBackToAdmin = () => {

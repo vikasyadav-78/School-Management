@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaCheckCircle, FaReceipt, FaArrowLeft, FaHome } from "react-icons/fa";
+import { FaCheckCircle, FaReceipt, FaArrowLeft, FaHome, FaExclamationTriangle } from "react-icons/fa";
 import { api } from "@/services/api";
 import { toast } from "sonner";
 
@@ -22,6 +22,11 @@ function PaymentSuccessContent() {
 
   const paymentId = searchParams.get("payment_id");
 
+  const cleanParam = (val) => {
+    if (!val || val === "null" || val === "undefined" || String(val).trim() === "") return "";
+    return String(val).trim();
+  };
+
   useEffect(() => {
     // Run only on client side to prevent hydration mismatches
     const mockCheckout = {
@@ -31,10 +36,6 @@ function PaymentSuccessContent() {
         amount: searchParams.get("client_amount") || searchParams.get("amount")
       }
     };
-    console.log("Checkout Response:", mockCheckout);
-    console.log("Amount:", mockCheckout.amount);
-    console.log("Amount Rupees:", mockCheckout.amount_rupees);
-    console.log("Client Amount:", mockCheckout.client?.amount);
 
     const amtParam = searchParams.get("amount_rupees") || searchParams.get("client_amount") || searchParams.get("amount");
     let resolvedAmount = "Amount Not Available";
@@ -55,19 +56,21 @@ function PaymentSuccessContent() {
       }
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPaymentDetails({
-      transactionId: searchParams.get("transaction_id") || searchParams.get("txnid") || searchParams.get("razorpay_payment_id") || "Transaction ID Not Available",
-      receiptNo: searchParams.get("receipt_no") || searchParams.get("receipt") || "Receipt Not Available",
+      transactionId: cleanParam(searchParams.get("transaction_id") || searchParams.get("txnid") || searchParams.get("razorpay_payment_id")),
+      receiptNo: cleanParam(searchParams.get("receipt_no") || searchParams.get("receipt")),
       amount: resolvedAmount,
-      paymentMethod: searchParams.get("payment_method") || "Online Payment",
-      paymentDate: searchParams.get("date") || new Date().toLocaleDateString(),
-      feeName: searchParams.get("fee_name") || "Tuition Fee"
+      paymentMethod: cleanParam(searchParams.get("payment_method")) || "Online Payment",
+      paymentDate: cleanParam(searchParams.get("date")) || new Date().toLocaleDateString(),
+      feeName: cleanParam(searchParams.get("fee_name")) || "Tuition Fee"
     });
   }, [searchParams]);
 
   useEffect(() => {
     // If backend provides a payment_id, we can verify the status
     if (paymentId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true);
       const verifyPayment = async () => {
         try {
@@ -94,31 +97,32 @@ function PaymentSuccessContent() {
           
           const response = await api.post(`/student/fees/${paymentId}/verify`, verifyPayload);
           const details = response.data.payment || response.data.data || {};
-          console.log("Verify response details:", details);
 
-          let resolvedVerifyAmount = paymentDetails.amount;
-          const verifyAmt = details.amount_rupees || details.amount || details.total_payable;
-          if (verifyAmt) {
-            const parsedVerifyAmt = parseFloat(verifyAmt);
-            if (!isNaN(parsedVerifyAmt)) {
-              if (details.amount_rupees) {
-                resolvedVerifyAmount = parsedVerifyAmt.toFixed(2);
-              } else if (parsedVerifyAmt > 5000 && String(verifyAmt).indexOf(".") === -1) {
-                resolvedVerifyAmount = (parsedVerifyAmt / 100).toFixed(2);
-              } else {
-                resolvedVerifyAmount = parsedVerifyAmt.toFixed(2);
+          setPaymentDetails((prev) => {
+            let resolvedVerifyAmount = prev.amount;
+            const verifyAmt = details.amount_rupees || details.amount || details.total_payable;
+            if (verifyAmt) {
+              const parsedVerifyAmt = parseFloat(verifyAmt);
+              if (!isNaN(parsedVerifyAmt)) {
+                if (details.amount_rupees) {
+                  resolvedVerifyAmount = parsedVerifyAmt.toFixed(2);
+                } else if (parsedVerifyAmt > 5000 && String(verifyAmt).indexOf(".") === -1) {
+                  resolvedVerifyAmount = (parsedVerifyAmt / 100).toFixed(2);
+                } else {
+                  resolvedVerifyAmount = parsedVerifyAmt.toFixed(2);
+                }
               }
             }
-          }
-          
-          setPaymentDetails((prev) => ({
-            transactionId: details.transaction_id || details.payment_id || (prev.transactionId === "Transaction ID Not Available" ? "Transaction ID Not Available" : prev.transactionId),
-            receiptNo: details.receipt_no || details.receipt_number || (prev.receiptNo === "Receipt Not Available" ? "Receipt Not Available" : prev.receiptNo),
-            amount: resolvedVerifyAmount,
-            paymentMethod: details.payment_method || details.gateway || prev.paymentMethod,
-            paymentDate: details.payment_date || details.created_at || prev.paymentDate,
-            feeName: details.fee_name || prev.feeName
-          }));
+
+            return {
+              transactionId: cleanParam(details.transaction_id || details.payment_id) || prev.transactionId,
+              receiptNo: cleanParam(details.receipt_no || details.receipt_number) || prev.receiptNo,
+              amount: resolvedVerifyAmount,
+              paymentMethod: cleanParam(details.payment_method || details.gateway) || prev.paymentMethod,
+              paymentDate: cleanParam(details.payment_date || details.created_at) || prev.paymentDate,
+              feeName: cleanParam(details.fee_name) || prev.feeName
+            };
+          });
           toast.success("Payment verified successfully!");
         } catch (err) {
           console.error("Verification error:", err);
@@ -130,6 +134,8 @@ function PaymentSuccessContent() {
       verifyPayment();
     }
   }, [paymentId, searchParams]);
+
+  const isDetailsUnavailable = !paymentDetails.transactionId || !paymentDetails.receiptNo;
 
   if (loading) {
     return (
@@ -146,63 +152,126 @@ function PaymentSuccessContent() {
   return (
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6 text-xs text-zinc-700">
       <div className="bg-white rounded-3xl border border-zinc-200/80 shadow-xl w-full max-w-md overflow-hidden text-center p-8 space-y-6 animate-scale-up">
-        {/* Success Icon */}
-        <div className="flex justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping scale-75 opacity-75" />
-            <FaCheckCircle className="w-16 h-16 text-emerald-500 relative z-10 animate-bounce" />
-          </div>
-        </div>
+        {isDetailsUnavailable ? (
+          <>
+            {/* Warning Icon */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-amber-100 rounded-full animate-ping scale-75 opacity-75" />
+                <FaExclamationTriangle className="w-16 h-16 text-amber-500 relative z-10 animate-bounce" />
+              </div>
+            </div>
 
-        {/* Title */}
-        <div className="space-y-1">
-          <h2 className="text-lg font-black text-zinc-850 uppercase tracking-wide">
-            Payment Successful
-          </h2>
-          <p className="text-zinc-450 font-semibold text-[10px]">
-            Your fee payment has been completed successfully.
-          </p>
-        </div>
+            {/* Title */}
+            <div className="space-y-1">
+              <h2 className="text-lg font-black text-zinc-855 uppercase tracking-wide">
+                Transaction Details Unavailable
+              </h2>
+              <p className="text-zinc-450 font-semibold text-[10px]">
+                The transaction/receipt details could not be retrieved.
+              </p>
+            </div>
 
-        {/* Details Grid */}
-        <div className="bg-zinc-50 rounded-2xl border border-zinc-150 p-5 space-y-3.5 text-left">
-          <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Fee Name</span>
-            <span className="font-extrabold text-zinc-800">{paymentDetails.feeName}</span>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Amount Paid</span>
-            <span className="font-black text-emerald-600 text-sm">
-              {paymentDetails.amount === "Amount Not Available" ? "Amount Not Available" : `₹${Number(paymentDetails.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Transaction ID</span>
-            <span className="font-semibold text-zinc-650 font-mono text-[10px] break-all">{paymentDetails.transactionId}</span>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Receipt Number</span>
-            <span className="font-bold text-zinc-800">{paymentDetails.receiptNo}</span>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Method</span>
-            <span className="font-bold text-zinc-800 capitalize">{paymentDetails.paymentMethod}</span>
-          </div>
-          <div className="flex justify-between items-center py-0.5">
-            <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Date</span>
-            <span className="font-semibold text-zinc-650">{paymentDetails.paymentDate}</span>
-          </div>
-        </div>
+            {/* Details Grid */}
+            <div className="bg-zinc-50 rounded-2xl border border-zinc-150 p-5 space-y-3.5 text-left">
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Fee Name</span>
+                <span className="font-extrabold text-zinc-800">{paymentDetails.feeName || "Unavailable"}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Amount Paid</span>
+                <span className="font-black text-zinc-800 text-sm">
+                  {paymentDetails.amount === "Amount Not Available" ? "Unavailable" : `₹${Number(paymentDetails.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Transaction ID</span>
+                <span className="font-bold text-zinc-500">Unavailable</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Receipt Number</span>
+                <span className="font-bold text-zinc-500">Unavailable</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Method</span>
+                <span className="font-bold text-zinc-800 capitalize">{paymentDetails.paymentMethod || "Unavailable"}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Date</span>
+                <span className="font-semibold text-zinc-650">{paymentDetails.paymentDate || "Unavailable"}</span>
+              </div>
+            </div>
+
+            {/* Note */}
+            <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 text-left">
+              <p className="text-[10px] text-amber-700 font-medium leading-normal">
+                If the amount has been deducted from your account, it will be updated in your dashboard within 24-48 hours. Please check your payment history or contact support.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Success Icon */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping scale-75 opacity-75" />
+                <FaCheckCircle className="w-16 h-16 text-emerald-500 relative z-10 animate-bounce" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-1">
+              <h2 className="text-lg font-black text-zinc-850 uppercase tracking-wide">
+                Payment Successful
+              </h2>
+              <p className="text-zinc-450 font-semibold text-[10px]">
+                Your fee payment has been completed successfully.
+              </p>
+            </div>
+
+            {/* Details Grid */}
+            <div className="bg-zinc-50 rounded-2xl border border-zinc-150 p-5 space-y-3.5 text-left">
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Fee Name</span>
+                <span className="font-extrabold text-zinc-800">{paymentDetails.feeName}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Amount Paid</span>
+                <span className="font-black text-emerald-600 text-sm">
+                  {paymentDetails.amount === "Amount Not Available" ? "Amount Not Available" : `₹${Number(paymentDetails.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Transaction ID</span>
+                <span className="font-semibold text-zinc-650 font-mono text-[10px] break-all">{paymentDetails.transactionId}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Receipt Number</span>
+                <span className="font-bold text-zinc-800">{paymentDetails.receiptNo}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-zinc-150/40">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Method</span>
+                <span className="font-bold text-zinc-800 capitalize">{paymentDetails.paymentMethod}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Payment Date</span>
+                <span className="font-semibold text-zinc-650">{paymentDetails.paymentDate}</span>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Buttons */}
         <div className="flex flex-col gap-3">
-          <Link
-            href="/student/fees"
-            className="w-full py-3 bg-violet-650 hover:bg-violet-750 text-white font-extrabold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 tracking-wide uppercase text-[10px]"
-          >
-            <FaReceipt className="w-3.5 h-3.5" /> View Receipt
-          </Link>
-          <div className="grid grid-cols-2 gap-3">
+          {!isDetailsUnavailable && (
+            <Link
+              href="/student/fees"
+              className="w-full py-3 bg-violet-650 hover:bg-violet-750 text-white font-extrabold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 tracking-wide uppercase text-[10px]"
+            >
+              <FaReceipt className="w-3.5 h-3.5" /> View Receipt
+            </Link>
+          )}
+          <div className={`${isDetailsUnavailable ? "flex flex-col" : "grid grid-cols-2"} gap-3`}>
             <Link
               href="/student/fees"
               className="py-3 border border-zinc-250 hover:bg-zinc-50 text-zinc-700 font-extrabold rounded-2xl transition-all flex items-center justify-center gap-1.5 uppercase text-[9px] tracking-wider"

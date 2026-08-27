@@ -59,6 +59,7 @@ export default function DriverDashboardPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkLoggedInStatus();
     return () => stopTracking();
   }, []);
@@ -124,9 +125,10 @@ export default function DriverDashboardPage() {
     setIsTripActive(true);
     toast.success("Trip started! Transmitting location telemetry...");
 
+    const isDev = process.env.NODE_ENV === "development";
     let toastShown = false;
     const track = () => {
-      if (useOverride) {
+      if (isDev && useOverride) {
         setGpsErrorText("");
         const lat = parseFloat(overrideLat);
         const lng = parseFloat(overrideLng);
@@ -168,13 +170,13 @@ export default function DriverDashboardPage() {
     trackingIntervalRef.current = setInterval(track, 8000);
   };
 
-  const stopTracking = () => {
+  function stopTracking() {
     if (trackingIntervalRef.current) {
       clearInterval(trackingIntervalRef.current);
       trackingIntervalRef.current = null;
     }
     setIsTripActive(false);
-  };
+  }
 
   if (loading) {
     return (
@@ -350,43 +352,45 @@ export default function DriverDashboardPage() {
         </div>
 
         {/* Simulated coordinates override panel */}
-        <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
-            <input
-              type="checkbox"
-              id="use_override"
-              checked={useOverride}
-              onChange={(e) => setUseOverride(e.target.checked)}
-              className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-            />
-            <label htmlFor="use_override" className="text-zinc-800 font-extrabold text-xs cursor-pointer select-none">
-              GPS Coordinates Override (Simulator)
-            </label>
-          </div>
-
-          {useOverride && (
-            <div className="grid grid-cols-2 gap-3 animate-fade-in">
-              <div className="space-y-1">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Latitude</span>
-                <input
-                  type="text"
-                  value={overrideLat}
-                  onChange={(e) => setOverrideLat(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-zinc-250 rounded-xl outline-none focus:border-indigo-500 text-zinc-800 font-bold bg-zinc-50/50"
-                />
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Longitude</span>
-                <input
-                  type="text"
-                  value={overrideLng}
-                  onChange={(e) => setOverrideLng(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-zinc-250 rounded-xl outline-none focus:border-indigo-500 text-zinc-800 font-bold bg-zinc-50/50"
-                />
-              </div>
+        {process.env.NODE_ENV === "development" && (
+          <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <input
+                type="checkbox"
+                id="use_override"
+                checked={useOverride}
+                onChange={(e) => setUseOverride(e.target.checked)}
+                className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <label htmlFor="use_override" className="text-zinc-800 font-extrabold text-xs cursor-pointer select-none">
+                GPS Coordinates Override (Simulator)
+              </label>
             </div>
-          )}
-        </div>
+
+            {useOverride && (
+              <div className="grid grid-cols-2 gap-3 animate-fade-in">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Latitude</span>
+                  <input
+                    type="text"
+                    value={overrideLat}
+                    onChange={(e) => setOverrideLat(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-zinc-250 rounded-xl outline-none focus:border-indigo-500 text-zinc-800 font-bold bg-zinc-50/50"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Longitude</span>
+                  <input
+                    type="text"
+                    value={overrideLng}
+                    onChange={(e) => setOverrideLng(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-zinc-250 rounded-xl outline-none focus:border-indigo-500 text-zinc-800 font-bold bg-zinc-50/50"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

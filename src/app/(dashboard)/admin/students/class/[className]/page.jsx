@@ -200,6 +200,9 @@ export default function ClassDetailsPage() {
           ["Name", "Student ID", "Phone", "Admission Number", "Class", "Academic Year", "QR Code", "QR Link"]
         ];
 
+        const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "";
+        const baseUrl = apiBase.replace(/\/api$/, "");
+
         studentsToExport.forEach(s => {
           worksheetData.push([
             s.full_name || `${s.first_name || ""} ${s.last_name || ""}`.trim(),
@@ -209,7 +212,7 @@ export default function ClassDetailsPage() {
             s.class || className || "—",
             s.academic_year || "—",
             s.qr_code || "—",
-            s.qr_url || `https://erp.trishpay.in/qr/student/${s.qr_code || s.id}`
+            s.qr_url || (baseUrl ? `${baseUrl}/qr/student/${s.qr_code || s.id}` : "")
           ]);
         });
 
@@ -223,7 +226,7 @@ export default function ClassDetailsPage() {
 
         studentsToExport.forEach((s, idx) => {
           const rowIdx = idx + 2; 
-          const url = s.qr_url || `https://erp.trishpay.in/qr/student/${s.qr_code || s.id}`;
+          const url = s.qr_url || (baseUrl ? `${baseUrl}/qr/student/${s.qr_code || s.id}` : "");
           worksheet[`H${rowIdx}`] = {
             f: `HYPERLINK("${url}", "${url}")`,
             v: url

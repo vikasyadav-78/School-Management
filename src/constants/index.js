@@ -1,5 +1,3 @@
-export const USE_MOCK = false;
-
 export const ADMIN_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/admin/dashboard", icon: "MdDashboard" },
   {

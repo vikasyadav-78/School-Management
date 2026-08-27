@@ -11,6 +11,7 @@ import {
 import { getInventoryDashboard } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 import Link from "next/link";
+import { api } from "@/services/api";
 
 export default function AdminStockItemsPage() {
   const [loading, setLoading] = useState(true);
@@ -45,18 +46,36 @@ export default function AdminStockItemsPage() {
   });
 
   // Export stock handler
-  const handleExport = (format) => {
+  const handleExport = async (format) => {
     try {
-      const token = localStorage.getItem("token") || "";
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
-      if (token) queryParams.append("token", token);
+      toast.loading(`Exporting stock list as ${format.toUpperCase()}...`, { id: "export-stock" });
+      const queryParams = {};
+      if (searchQuery.trim()) queryParams.search = searchQuery.trim();
 
-      const downloadUrl = `https://erp.trishpay.in/api/admin/inventory/stock/export/${format}?${queryParams.toString()}`;
-      window.open(downloadUrl, "_blank");
-      toast.success(`Exporting stock list as ${format.toUpperCase()}...`);
+      const response = await api.get(`/admin/inventory/stock/export/${format}`, {
+        params: queryParams,
+        responseType: "blob"
+      });
+
+      const blob = response.data;
+      if (blob.type === "application/json") {
+        const text = await blob.text();
+        const errObj = text ? JSON.parse(text) : {};
+        throw new Error(errObj.message || "Failed to export stock list.");
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `stock_export.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Exported stock list as ${format.toUpperCase()} successfully!`, { id: "export-stock" });
     } catch (err) {
-      toast.error("Failed to trigger stock export: " + (err.message || err));
+      toast.error("Failed to trigger stock export: " + (err.message || err), { id: "export-stock" });
     }
   };
 

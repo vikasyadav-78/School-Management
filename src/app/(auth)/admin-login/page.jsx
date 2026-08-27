@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/admin/dashboard");
+      router.replace("/admin/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -43,9 +43,9 @@ export default function AdminLoginPage() {
       if (res.meta.requestStatus === "fulfilled") {
         const role = res.payload?.role;
         if (role === "super_admin") {
-          window.location.href = "/super-admin/dashboard";
+          router.replace("/super-admin/dashboard");
         } else {
-          window.location.href = "/admin/dashboard";
+          router.replace("/admin/dashboard");
         }
       }
     });

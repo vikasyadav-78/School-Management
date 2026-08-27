@@ -1,7 +1,5 @@
 import { api } from "@/services/api";
 import { ENDPOINTS } from "@/services/endpoints";
-import * as mockService from "./module.mock";
-import { USE_MOCK } from "@/constants";
 
 export const getList = async (params) => {
   const response = await api.get("/admin/students", { params });

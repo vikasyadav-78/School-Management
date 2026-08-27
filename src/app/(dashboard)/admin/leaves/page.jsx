@@ -80,8 +80,6 @@ export default function AdminManageLeavesPage() {
         status: statusFilter || "all"
       };
 
-      console.log("Fetching leaves with params:", params);
-
       const listData = await getAdminManageLeaves(params);
       const nextLeaves = listData.leaves || listData.data || (Array.isArray(listData) ? listData : []);
       

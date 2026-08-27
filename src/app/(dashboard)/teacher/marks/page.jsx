@@ -62,7 +62,9 @@ export default function TeacherMarksExamsPage() {
             try {
               endDateInputRef.current.showPicker();
             } catch (e) {
-              console.log("showPicker not supported directly:", e);
+              if (process.env.NODE_ENV === "development") {
+                console.log("showPicker not supported directly:", e);
+              }
             }
           }
         }

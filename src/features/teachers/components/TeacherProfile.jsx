@@ -64,7 +64,9 @@ export default function TeacherProfile({ teacher = {} }) {
       }
     } catch (err) {
       console.warn("API fetch failed, falling back to cookie session view", err);
-      window.open(`https://erp.trishpay.in/school-admin/teachers/${teacher.id}/id-card?theme=classic`, '_blank');
+      const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const baseUrl = apiBase.replace(/\/api$/, "");
+      window.open(`${baseUrl}/school-admin/teachers/${teacher.id}/id-card?theme=classic`, '_blank');
     }
   };
 

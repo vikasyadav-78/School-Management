@@ -59,9 +59,6 @@ export default function TeacherClassNotesPage() {
       try {
         setOptionsLoading(true);
         const data = await getClassNotesClasses();
-        console.log("=== Class Notes API Response ===");
-        console.log(data);
-        console.log("Subjects list found in response:", data?.subjects);
 
         // The API returns options, let's map them
         setDropdowns(prev => ({
@@ -203,9 +200,6 @@ export default function TeacherClassNotesPage() {
       setDeleting(false);
     }
   };
-
-  console.log("=== Class Notes Render ===");
-  console.log("Form Subjects List:", formSubjects);
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left w-full">

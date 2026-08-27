@@ -31,8 +31,6 @@ export default function StudentProfilePage() {
   const { studentSummary } = useSelector((state) => state.attendance);
   const { studentFeeDetails } = useSelector((state) => state.finance);
 
-  console.log("StudentProfilePage: student =", student, "loading =", loading, "id =", id);
-
   useEffect(() => {
     if (id) {
       dispatch(resetFeeDetails());
@@ -100,7 +98,8 @@ export default function StudentProfilePage() {
     if (!url) return;
     try {
       toast.info("Loading student ID card...");
-      const response = await api.get(url.replace("https://erp.trishpay.in/api", ""));
+      const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const response = await api.get(apiBase ? url.replace(apiBase, "") : url);
       const htmlContent = response.data;
       
       const newWindow = window.open("", "_blank");

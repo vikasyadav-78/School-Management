@@ -1042,7 +1042,11 @@ function TeacherManagementContent() {
                   FEATURES
                 </button>
                 <button
-                  onClick={() => window.open(`https://erp.trishpay.in/school-admin/teachers/${previewTeacher.id}/id-card?theme=classic`, '_blank')}
+                  onClick={() => {
+                    const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "";
+                    const baseUrl = apiBase.replace(/\/api$/, "");
+                    window.open(`${baseUrl}/school-admin/teachers/${previewTeacher.id}/id-card?theme=classic`, '_blank');
+                  }}
                   className="py-2 px-4 bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-105 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all text-xs cursor-pointer shadow-sm"
                 >
                   <FaIdCard className="w-3.5 h-3.5" />

@@ -37,9 +37,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       const role = localStorage.getItem("role");
-      if (role === "teacher") router.push("/teacher/dashboard");
-      else if (role === "student") router.push("/student/dashboard");
-      else if (role === "admin") router.push("/admin/dashboard");
+      if (role === "teacher") router.replace("/teacher/dashboard");
+      else if (role === "student") router.replace("/student/dashboard");
+      else if (role === "admin") router.replace("/admin/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -52,9 +52,9 @@ export default function LoginPage() {
     dispatch(loginUser({ ...data, role: activeTab })).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
         if (activeTab === "teacher") {
-          window.location.href = "/teacher/dashboard";
+          router.replace("/teacher/dashboard");
         } else {
-          window.location.href = "/student/dashboard";
+          router.replace("/student/dashboard");
         }
       }
     });

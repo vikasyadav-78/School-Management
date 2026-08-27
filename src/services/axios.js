@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const isDriverRoute = config.url && config.url.startsWith("/driver");
+      const isDriverRoute = config.url && /\/driver(\/|$)/.test(config.url);
       const token = isDriverRoute ? localStorage.getItem("driver_token") : localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -62,7 +62,7 @@ axiosInstance.interceptors.response.use(
     const status = error.response ? error.response.status : null;
     if (status === 401) {
       if (typeof window !== "undefined") {
-        const isDriverRoute = error.config?.url && error.config.url.startsWith("/driver");
+        const isDriverRoute = error.config?.url && /\/driver(\/|$)/.test(error.config.url);
         if (isDriverRoute) {
           localStorage.removeItem("driver_token");
           window.location.href = "/driver";
@@ -71,7 +71,7 @@ axiosInstance.interceptors.response.use(
           localStorage.removeItem("token");
           localStorage.removeItem("role");
           clearAuthCookies();
-          if (role === "admin") {
+          if (role === "admin" || role === "super_admin") {
             window.location.href = "/admin-login";
           } else {
             window.location.href = "/login";

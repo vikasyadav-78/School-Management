@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
 import Link from "next/link";
+import { api } from "@/services/api";
 
 export default function AdminPurchaseOrdersPage() {
   const dialog = useAppDialog();
@@ -88,21 +89,39 @@ export default function AdminPurchaseOrdersPage() {
   }, [searchQuery]);
 
   // Export Purchase Orders (Step 3: Placeholder/Prepped formats)
-  const handleExport = (format) => {
+  const handleExport = async (format) => {
     try {
-      const token = localStorage.getItem("token") || "";
-      const queryParams = new URLSearchParams();
-      if (statusFilter) queryParams.append("status", statusFilter);
-      if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
-      if (dateFrom) queryParams.append("date_from", dateFrom);
-      if (dateTo) queryParams.append("date_to", dateTo);
-      if (token) queryParams.append("token", token);
+      toast.loading(`Exporting purchase orders as ${format.toUpperCase()}...`, { id: "export-purchases" });
+      const queryParams = {};
+      if (statusFilter) queryParams.status = statusFilter;
+      if (searchQuery.trim()) queryParams.search = searchQuery.trim();
+      if (dateFrom) queryParams.date_from = dateFrom;
+      if (dateTo) queryParams.date_to = dateTo;
 
-      const downloadUrl = `https://erp.trishpay.in/api/admin/inventory/purchases/export/${format}?${queryParams.toString()}`;
-      window.open(downloadUrl, "_blank");
-      toast.success(`Exporting purchase orders as ${format.toUpperCase()}...`);
+      const response = await api.get(`/admin/inventory/purchases/export/${format}`, {
+        params: queryParams,
+        responseType: "blob"
+      });
+
+      const blob = response.data;
+      if (blob.type === "application/json") {
+        const text = await blob.text();
+        const errObj = text ? JSON.parse(text) : {};
+        throw new Error(errObj.message || "Failed to export purchase orders.");
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `purchase_orders_export.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Exported purchase orders as ${format.toUpperCase()} successfully!`, { id: "export-purchases" });
     } catch (err) {
-      toast.error("Failed to trigger report export: " + (err.message || err));
+      toast.error("Failed to trigger report export: " + (err.message || err), { id: "export-purchases" });
     }
   };
 
@@ -130,14 +149,32 @@ export default function AdminPurchaseOrdersPage() {
   };
 
   // Download Order Receipt PDF
-  const handleDownloadReceipt = (orderId) => {
+  const handleDownloadReceipt = async (orderId) => {
     try {
-      const token = localStorage.getItem("token") || "";
-      const downloadUrl = `https://erp.trishpay.in/api/admin/inventory/orders/${orderId}/receipt?token=${token}`;
-      window.open(downloadUrl, "_blank");
-      toast.success("Downloading purchase receipt PDF...");
+      toast.loading("Downloading purchase receipt PDF...", { id: `receipt-${orderId}` });
+      const response = await api.get(`/admin/inventory/orders/${orderId}/receipt`, {
+        responseType: "blob"
+      });
+
+      const blob = response.data;
+      if (blob.type === "application/json") {
+        const text = await blob.text();
+        const errObj = text ? JSON.parse(text) : {};
+        throw new Error(errObj.message || "Failed to download receipt.");
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `purchase_receipt_${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Download complete!", { id: `receipt-${orderId}` });
     } catch (err) {
-      toast.error("Failed to download purchase receipt: " + (err.message || err));
+      toast.error("Failed to download purchase receipt: " + (err.message || err), { id: `receipt-${orderId}` });
     }
   };
 
