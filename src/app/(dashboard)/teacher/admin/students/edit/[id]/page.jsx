@@ -59,7 +59,8 @@ export default function TeacherStudentsEditPage() {
             phone: st.guardian_phone && st.guardian_phone !== "—" ? st.guardian_phone : "",
             address: st.address || "",
             status: st.is_active ? "Active" : "Inactive",
-            existingPhoto: st.photo || null
+            existingPhoto: st.photo || null,
+            stream: st.stream || ""
           });
         }
       } catch (error) {
@@ -92,6 +93,7 @@ export default function TeacherStudentsEditPage() {
       formData.append("school_class_id", data.school_class_id || "");
       formData.append("section_id", data.section_id || "");
       formData.append("academic_year_id", data.academic_year_id || "");
+      if (data.stream) formData.append("stream", data.stream);
       
       formData.append("gender", (data.gender || "").toLowerCase());
       formData.append("date_of_birth", data.date_of_birth || "");

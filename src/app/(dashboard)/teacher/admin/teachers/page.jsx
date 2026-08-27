@@ -169,6 +169,10 @@ export default function TeacherTeachersManagementPage() {
       setFormError("First Name and Email are required.");
       return;
     }
+    if (phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())) {
+      setFormError("Phone number must be exactly 10 digits and start with 6, 7, 8, or 9.");
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -614,7 +618,19 @@ export default function TeacherTeachersManagementPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase block">Phone Number</label>
-                  <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                  <input 
+                    type="text" 
+                    value={phone} 
+                    maxLength={10}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/[^0-9]/g, "");
+                      if (val.length > 0 && !/^[6-9]/.test(val)) {
+                        val = "";
+                      }
+                      setPhone(val.slice(0, 10));
+                    }} 
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" 
+                  />
                 </div>
               </div>
 

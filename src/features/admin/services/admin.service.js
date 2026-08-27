@@ -959,6 +959,11 @@ export const toggleTeacherTeacherStatus = async (teacherId) => {
   return response.data;
 };
 
+export const deleteTeacherTeacher = async (teacherId) => {
+  const response = await api.delete(`/admin/teachers/${teacherId}`);
+  return response.data;
+};
+
 // Teacher Manage Teacher Attendance APIs
 export const getTeacherManageTeacherAttendanceRoster = async (params = {}) => {
   const response = await api.get("/admin/teacher-attendance", { params });

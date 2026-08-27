@@ -37,7 +37,8 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
             profileImage: null,
             birth_certificate: null,
             aadhaar_card: null,
-            transfer_certificate: null
+            transfer_certificate: null,
+            stream: ""
         }
     });
 
@@ -49,6 +50,10 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
     const birthCertFile = watch("birth_certificate");
     const aadhaarCardFile = watch("aadhaar_card");
     const transferCertFile = watch("transfer_certificate");
+
+    const selectedClassObj = (meta?.classes || []).find(c => String(c.id) === String(schoolClassId));
+    const cleanName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+    const showStreamField = cleanName === "11" || cleanName === "12";
 
     const [photoPreview, setPhotoPreview] = useState("");
 
@@ -89,7 +94,8 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                 phone: initialData.guardian_phone || initialData.phone || "",
                 address: initialData.address || "",
                 status: initialData.is_active ? "Active" : "Inactive",
-                id_card_theme: initialData.id_card_theme || ""
+                id_card_theme: initialData.id_card_theme || "",
+                stream: initialData.stream || ""
             });
         } else if (meta) {
             reset({
@@ -224,7 +230,7 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
             {/* CLASS ENROLLMENT */}
             <div className="space-y-3 pt-2">
                 <h4 className="text-[10px] font-extrabold text-violet-600 uppercase tracking-wider pb-1 border-b border-zinc-100 block">Class Enrollment</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <div className={`grid gap-4 ${showStreamField ? "grid-cols-3" : "grid-cols-2"}`}>
                     <FormSelect
                         name="school_class_id"
                         label="School Class *"
@@ -243,6 +249,19 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                             ...((meta?.classes || []).find(c => String(c.id) === String(schoolClassId))?.sections || []).map(s => ({ value: String(s.id), label: s.name }))
                         ]}
                     />
+                    {showStreamField && (
+                        <FormSelect
+                            name="stream"
+                            label="Academic Stream *"
+                            validation={{ required: showStreamField ? "Stream selection is required" : false }}
+                            options={[
+                                { value: "", label: "Select Stream" },
+                                { value: "Science", label: "Science" },
+                                { value: "Commerce", label: "Commerce" },
+                                { value: "Arts", label: "Arts" }
+                            ]}
+                        />
+                    )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -274,8 +293,9 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                 <div className="grid grid-cols-3 gap-4">
                     <FormInput
                         name="father_name"
-                        label="Father Name"
+                        label="Father Name *"
                         placeholder="Father's Full Name"
+                        validation={{ required: "Father name is required" }}
                     />
                     <FormInput
                         name="mother_name"
@@ -284,12 +304,24 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                     />
                     <FormInput
                         name="phone"
-                        label="Guardian Phone"
+                        label="Guardian Phone *"
                         placeholder="10-digit number"
                         maxLength={10}
                         onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
-                            e.target.value = val;
+                            let val = e.target.value.replace(/[^0-9]/g, "");
+                            if (val.length > 0 && !/^[6-9]/.test(val)) {
+                                val = "";
+                            }
+                            const capped = val.slice(0, 10);
+                            e.target.value = capped;
+                            setValue("phone", capped);
+                        }}
+                        validation={{
+                            required: "Guardian phone is required",
+                            pattern: {
+                                value: /^[6-9]\d{9}$/,
+                                message: "Phone number must be exactly 10 digits and start with 6, 7, 8, or 9"
+                            }
                         }}
                     />
                 </div>

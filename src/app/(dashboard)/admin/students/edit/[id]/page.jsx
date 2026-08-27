@@ -43,6 +43,7 @@ export default function EditStudentPage() {
     formData.append("school_class_id", data.school_class_id || "");
     formData.append("section_id", data.section_id || "");
     formData.append("academic_year_id", data.academic_year_id || "");
+    if (data.stream) formData.append("stream", data.stream);
     
     // Force lowercase for gender to satisfy backend validation
     formData.append("gender", (data.gender || "").toLowerCase());

@@ -29,7 +29,12 @@ export default function AdminLoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/admin/dashboard");
+      const role = localStorage.getItem("role");
+      if (role === "super_admin") {
+        router.replace("/super-admin/dashboard");
+      } else {
+        router.replace("/admin/dashboard");
+      }
     }
   }, [isAuthenticated, router]);
 

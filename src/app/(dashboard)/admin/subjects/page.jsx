@@ -449,20 +449,34 @@ export default function AdminSubjectsPage() {
 
               {/* Class Assign Checkboxes */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
-                  Assign to Classroom Classes {editingSubjectId ? "(Optional)" : "(Required)"}
-                </label>
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+                    Assign to Classroom Classes {editingSubjectId ? "(Optional)" : "(Required)"}
+                  </label>
+                  {classes.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allSelected = selectedClassIds.length === classes.length;
+                        setSelectedClassIds(allSelected ? [] : classes.map(cls => cls.id));
+                      }}
+                      className="text-[10px] font-black uppercase text-violet-600 hover:text-violet-700 transition-colors cursor-pointer select-none"
+                    >
+                      {selectedClassIds.length === classes.length ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
+                </div>
                 {classes.length === 0 ? (
                   <p className="text-[10px] text-zinc-400 italic">No classes configured. Please create classes first.</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 bg-zinc-55 border border-zinc-155 p-3 rounded-xl max-h-[140px] overflow-y-auto text-black">
+                  <div className="grid grid-cols-2 gap-2 bg-zinc-50 border border-zinc-200 p-3 rounded-xl max-h-[140px] overflow-y-auto text-black">
                     {classes.map((cls) => {
                       const isChecked = selectedClassIds.includes(cls.id);
                       return (
                         <div 
                           key={cls.id} 
                           onClick={() => handleToggleClass(cls.id)}
-                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer select-none transition-all ${isChecked ? "bg-violet-50 border-violet-200 text-violet-750" : "bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-650"}`}
+                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer select-none transition-all ${isChecked ? "bg-violet-50 border-violet-200 text-violet-700" : "bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-650"}`}
                         >
                           <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition-all ${isChecked ? "bg-violet-600 border-violet-600 text-white" : "border-zinc-300 bg-white"}`}>
                             {isChecked && <FaCheck className="w-2 h-2" />}

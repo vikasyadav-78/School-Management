@@ -81,9 +81,9 @@ export default function ExamSchedulePage() {
                         {exam.name || exam.title}
                       </h4>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 font-semibold">
-                        <span>Type: <strong className="text-zinc-750 capitalize">{exam.type || exam.exam_type || "Written"}</strong></span>
-                        <span>Start: <strong className="text-zinc-750 font-mono">{exam.start_date || "N/A"}</strong></span>
-                        <span>End: <strong className="text-zinc-750 font-mono">{exam.end_date || "N/A"}</strong></span>
+                        <span>Type: <strong className="text-zinc-700 capitalize">{exam.type || exam.exam_type || "Written"}</strong></span>
+                        <span>Start: <strong className="text-zinc-700 font-mono">{exam.start_date || "N/A"}</strong></span>
+                        <span>End: <strong className="text-zinc-700 font-mono">{exam.end_date || "N/A"}</strong></span>
                       </div>
                     </div>
                   </div>

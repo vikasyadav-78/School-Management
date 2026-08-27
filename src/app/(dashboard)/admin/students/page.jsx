@@ -276,7 +276,7 @@ export default function StudentsClassDirectoryPage() {
           type="month"
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value || "2026-08")}
-          className="px-4 py-2 border border-zinc-200 rounded-xl bg-white text-xs font-bold text-zinc-750 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none cursor-pointer shadow-sm hover:border-zinc-300 transition-all"
+          className="px-4 py-2 border border-zinc-200 rounded-xl bg-white text-xs font-bold text-zinc-700 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none cursor-pointer shadow-sm hover:border-zinc-300 transition-all"
         />
       ) : null}
     </div>
@@ -297,13 +297,13 @@ export default function StudentsClassDirectoryPage() {
             onClick={() => setPageTab("directory")}
             className={`px-4 py-2 border-b-2 font-black uppercase text-[10px] tracking-wider transition-colors ${pageTab === "directory" ? "border-violet-600 text-violet-600" : "border-transparent text-zinc-500 hover:text-zinc-800"}`}
           >
-            <FaUsers className="inline mr-1.5" /> Class Directory
+            <FaUsers className="inline mr-1.5 text-xl" /> Class Directory
           </button>
           <button 
             onClick={() => setPageTab("reports")}
             className={`px-4 py-2 border-b-2 font-black uppercase text-[10px] tracking-wider transition-colors ${pageTab === "reports" ? "border-violet-600 text-violet-600" : "border-transparent text-zinc-500 hover:text-zinc-800"}`}
           >
-            <FaChartBar className="inline mr-1.5" /> Classes Reports & Analytics
+            <FaChartBar className="inline mr-1.5 text-xl" /> Classes Reports & Analytics
           </button>
         </div>
 
@@ -327,8 +327,8 @@ export default function StudentsClassDirectoryPage() {
                 </div>
                 <Button
                   size="sm"
-                  variant="secondary"
-                  className="whitespace-nowrap shadow-sm text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 font-bold"
+                  variant="outline"
+                  className="whitespace-nowrap font-bold shadow-sm"
                   onClick={() => setIsImportModalOpen(true)}
                 >
                   Import Students
@@ -359,7 +359,7 @@ export default function StudentsClassDirectoryPage() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-extrabold text-zinc-805 text-base">Class {cls.className}</h3>
+                        <h3 className="font-extrabold text-zinc-900 text-base">Class {cls.className}</h3>
                         {cls.isStreamBased ? (
                           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider w-43">
                             Streams: {cls.streams && cls.streams.length > 0 ? cls.streams.join(", ") : "—"}
@@ -444,7 +444,7 @@ export default function StudentsClassDirectoryPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveReportTab(item.id)}
-                    className={`w-full text-left p-3 rounded-xl transition-all cursor-pointer ${activeReportTab === item.id ? "bg-violet-50 text-violet-750 border-l-4 border-violet-600" : "hover:bg-zinc-50 text-zinc-650"}`}
+                    className={`w-full text-left p-3 rounded-xl transition-all cursor-pointer ${activeReportTab === item.id ? "bg-violet-50 text-violet-700 border-l-4 border-violet-600" : "hover:bg-zinc-50 text-zinc-650"}`}
                   >
                     <span className="font-extrabold text-[11px] block">{item.label}</span>
                     <span className="text-[9px] text-zinc-400 block font-medium mt-0.5">{item.desc}</span>
@@ -555,7 +555,7 @@ export default function StudentsClassDirectoryPage() {
                                   <td className="p-3 font-bold text-zinc-700">{row.roll_no || "—"}</td>
                                   <td className="p-3 capitalize">{row.class} - {row.section}</td>
                                   <td className="p-3 text-right">
-                                    <Link href={`/admin/students/profile/${row.id}`} className="text-violet-600 hover:text-violet-750 font-bold">
+                                    <Link href={`/admin/students/profile/${row.id}`} className="text-violet-600 hover:text-violet-700 font-bold">
                                       View Profile &rarr;
                                     </Link>
                                   </td>
@@ -616,7 +616,7 @@ export default function StudentsClassDirectoryPage() {
                                   <td className="p-3 font-bold text-zinc-700">{row.roll_no || "—"}</td>
                                   <td className="p-3 capitalize">{row.class} - {row.section}</td>
                                   <td className="p-3 text-right">
-                                    <Link href={`/admin/students/profile/${row.id}`} className="text-violet-600 hover:text-violet-750 font-bold">
+                                    <Link href={`/admin/students/profile/${row.id}`} className="text-violet-600 hover:text-violet-700 font-bold">
                                       View Profile &rarr;
                                     </Link>
                                   </td>
@@ -846,9 +846,9 @@ export default function StudentsClassDirectoryPage() {
               <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 shrink-0">
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => { setIsImportModalOpen(false); setImportErrors([]); setImportSuccessMessage(""); setSelectedFile(null); }}
-                  className="font-bold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 text-xs py-2 px-4 rounded-xl shadow-sm"
+                  className="font-bold text-xs py-2 px-4 shadow-sm"
                 >
                   Cancel
                 </Button>

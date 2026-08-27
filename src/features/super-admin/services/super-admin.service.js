@@ -237,7 +237,7 @@ export const downloadTransactionReceipt = async (id, format = "pdf") => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "/api";
     return `${baseUrl}/super-admin/online-payments/${id}/receipt?format=print`;
   }
-  const response = await api.get(`/super-admin/online-payments/${id}/receipt`, {
+  const response = await api.get(`/super-admin/online-payments/${id}/receipt?format=${format}`, {
     responseType: "blob"
   });
   return response;
