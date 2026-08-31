@@ -73,8 +73,8 @@ export default function SuperAdminSchoolsPage() {
   const fetchMeta = async () => {
     try {
       const res = await getSchoolMeta();
-      setMeta(res);
-      if (res.plans?.length > 0) {
+      setMeta(res || { plans: [], document_types: [] });
+      if (res?.plans?.length > 0) {
         setFormData((prev) => ({ ...prev, subscription_plan_id: res.plans[0].id }));
       }
     } catch (err) {

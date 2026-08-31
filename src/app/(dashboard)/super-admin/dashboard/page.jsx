@@ -48,22 +48,32 @@ export default function SuperAdminDashboardPage() {
     const fetchDashboardDetails = async () => {
       setLoading(true);
       try {
-        const reportsRes = await getGlobalReports();
-        const inventoryRes = await getInventorySummary();
-        const paymentsRes = await getOnlinePayments({ per_page: 50 });
-        const logsRes = await getLoginLogs({ per_page: 5 });
+        const [reportsResult, inventoryResult, paymentsResult, logsResult] = await Promise.allSettled([
+          getGlobalReports(),
+          getInventorySummary(),
+          getOnlinePayments({ per_page: 50 }),
+          getLoginLogs({ per_page: 5 })
+        ]);
 
-        if (reportsRes.success && reportsRes.global) {
-          setReports(reportsRes.global);
+        if (reportsResult.status === "fulfilled") {
+          const reportsRes = reportsResult.value || {};
+          if (reportsRes.global || reportsRes.data) {
+            setReports(reportsRes.global || reportsRes.data || {});
+          }
         }
-        if (inventoryRes.success && inventoryRes.summary) {
-          setInventoryStats(inventoryRes.summary);
+        if (inventoryResult.status === "fulfilled") {
+          const inventoryRes = inventoryResult.value || {};
+          if (inventoryRes.summary || inventoryRes.data) {
+            setInventoryStats(inventoryRes.summary || inventoryRes.data || {});
+          }
         }
-        if (paymentsRes.success) {
-          setPaymentsList(paymentsRes.transactions || []);
+        if (paymentsResult.status === "fulfilled") {
+          const paymentsRes = paymentsResult.value || {};
+          setPaymentsList(paymentsRes.transactions || paymentsRes.data || (Array.isArray(paymentsRes) ? paymentsRes : []));
         }
-        if (logsRes.success) {
-          setRecentLogs(logsRes.logs || []);
+        if (logsResult.status === "fulfilled") {
+          const logsRes = logsResult.value || {};
+          setRecentLogs(logsRes.logs || logsRes.data || (Array.isArray(logsRes) ? logsRes : []));
         }
       } catch (err) {
         console.error("Error fetching super admin dashboard metrics:", err);

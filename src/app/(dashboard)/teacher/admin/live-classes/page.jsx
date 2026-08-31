@@ -13,7 +13,8 @@ import {
   getTeacherManageLiveClasses,
   addTeacherManageLiveClass,
   getTeacherManageLiveClassDetail,
-  deleteTeacherManageLiveClass
+  deleteTeacherManageLiveClass,
+  getTeacherClassStreams
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
@@ -74,6 +75,31 @@ export default function TeacherManageLiveClassesPage() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("10:00");
   const [endTime, setEndTime] = useState("11:00");
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const selectedClassObj = meta?.classes?.find(c => String(c.id) === String(classId));
+  const cleanClassName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+  const showStreamField = cleanClassName.includes("11") || cleanClassName.includes("12");
+
+  useEffect(() => {
+    if (showStreamField && classId) {
+      getTeacherClassStreams(classId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [showStreamField, classId]);
 
   // 1. Initial Load
   const loadLiveClasses = async () => {
@@ -143,6 +169,9 @@ export default function TeacherManageLiveClassesPage() {
     setDate("");
     setStartTime("10:00");
     setEndTime("11:00");
+    setDynamicStreams([]);
+    setStream("");
+    setStreamId("");
     setFormError("");
   };
 
@@ -155,8 +184,18 @@ export default function TeacherManageLiveClassesPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!title.trim() || !teacherId || !subjectId || !classId || !date) {
-      setFormError("Title, Teacher, Subject, Class, and Date are required.");
+    if (!title.trim() || !topic.trim() || !teacherId || !subjectId || !classId || !date || !meetingUrl.trim()) {
+      setFormError("All fields including Topic and Meeting URL are required.");
+      return;
+    }
+
+    if (showStreamField && !stream) {
+      setFormError("Please select an Academic Stream for Class 11 / 12.");
+      return;
+    }
+
+    if (meetingUrl.trim() && !/^https?:\/\//i.test(meetingUrl.trim())) {
+      setFormError("Meeting URL must be a valid link starting with http:// or https://");
       return;
     }
 
@@ -170,12 +209,17 @@ export default function TeacherManageLiveClassesPage() {
         school_class_id: classId,
         class_id: classId,
         platform: platform || "google_meet",
-        meeting_url: meetingUrl.trim() || "https://meet.google.com/",
-        join_url: meetingUrl.trim() || "https://meet.google.com/",
+        meeting_url: meetingUrl.trim(),
+        join_url: meetingUrl.trim(),
         date,
         start_time: startTime,
         end_time: endTime
       };
+
+      if (showStreamField && stream) {
+        payload.stream = stream;
+        if (streamId) payload.stream_id = streamId;
+      }
 
       if (sectionId) {
         payload.section_id = sectionId;
@@ -398,7 +442,7 @@ export default function TeacherManageLiveClassesPage() {
                 const className = typeof lc.class === "string" ? lc.class : (lc.class_name || lc.school_class?.name || metaClass?.name || "Class");
                 const sectionName = typeof lc.section === "string" ? lc.section : (lc.section_name || lc.section?.name || "");
 
-                const subjectClassLabel = `${subjectName} • ${className}${sectionName ? ` (${sectionName})` : ""}`;
+                const subjectClassLabel = `${subjectName} • ${className}${lc.stream ? ` (${lc.stream})` : ""}${sectionName ? ` (${sectionName})` : ""}`;
                 const scheduleLabel = lc.scheduled_at_label || (lc.date ? `${lc.date} ${lc.start_time || ""}`.trim() : null) || (lc.scheduled_at ? new Date(lc.scheduled_at).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : "Scheduled");
                 const joinUrl = lc.meeting_url || lc.join_url || lc.url;
 
@@ -541,9 +585,10 @@ export default function TeacherManageLiveClassesPage() {
               )}
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Session Title</label>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Session Title *</label>
                 <input 
                   type="text"
+                  required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Math Live Algebra Class"
@@ -552,9 +597,10 @@ export default function TeacherManageLiveClassesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Topic / Description</label>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Topic / Description *</label>
                 <input 
                   type="text"
+                  required
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g. Quadratic Equations"
@@ -564,8 +610,9 @@ export default function TeacherManageLiveClassesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Host Teacher</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Host Teacher *</label>
                   <select
+                    required
                     value={teacherId}
                     onChange={(e) => setTeacherId(e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700"
@@ -578,8 +625,9 @@ export default function TeacherManageLiveClassesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Subject</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Subject *</label>
                   <select
+                    required
                     value={subjectId}
                     onChange={(e) => setSubjectId(e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700"
@@ -592,10 +640,11 @@ export default function TeacherManageLiveClassesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${showStreamField ? "grid-cols-3" : "grid-cols-2"}`}>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Class</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Class *</label>
                   <select
+                    required
                     value={classId}
                     onChange={(e) => { setClassId(e.target.value); setSectionId(""); }}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700"
@@ -620,12 +669,44 @@ export default function TeacherManageLiveClassesPage() {
                     ))}
                   </select>
                 </div>
+
+                {showStreamField && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">
+                      Academic Stream *
+                    </label>
+                    <select
+                      value={stream}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setStream(val);
+                        const selectedStm = dynamicStreams.find(s => s.name === val || String(s.id) === val);
+                        setStreamId(selectedStm ? selectedStm.id : "");
+                      }}
+                      className="w-full px-3 py-2 border border-violet-200 rounded-xl bg-violet-50/50 outline-none text-xs font-bold text-violet-900"
+                    >
+                      <option value="">Select Stream</option>
+                      {dynamicStreams.length > 0 ? (
+                        dynamicStreams.map(stm => (
+                          <option key={stm.id} value={stm.name}>{stm.name}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="Science">Science</option>
+                          <option value="Commerce">Commerce</option>
+                          <option value="Arts">Arts</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Platform</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Platform *</label>
                   <select
+                    required
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-700"
@@ -642,12 +723,13 @@ export default function TeacherManageLiveClassesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Meeting URL (Optional)</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Meeting URL *</label>
                   <input 
                     type="url"
+                    required
                     value={meetingUrl}
                     onChange={(e) => setMeetingUrl(e.target.value)}
-                    placeholder="https://..."
+                    placeholder="https://meet.google.com/..."
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold"
                   />
                 </div>

@@ -30,6 +30,7 @@ export default function SuperAdminSettingsPage() {
   const dialog = useAppDialog();
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
 
   // System Settings state
   const [generalForm, setGeneralForm] = useState({
@@ -68,37 +69,61 @@ export default function SuperAdminSettingsPage() {
 
   const loadSettingsData = async () => {
     setLoading(true);
+    setForbidden(false);
     try {
-      const systemRes = await getSystemSettings();
-      const integrationsRes = await getIntegrationSettings();
+      const [systemResult, integrationsResult] = await Promise.allSettled([
+        getSystemSettings(),
+        getIntegrationSettings()
+      ]);
 
-      // Map loaded system settings array to generalForm keys
-      if (systemRes.success && Array.isArray(systemRes.settings)) {
-        const loadedForm = { ...generalForm };
-        systemRes.settings.forEach((s) => {
-          if (s.key in loadedForm) {
-            loadedForm[s.key] = s.value || "";
-          }
-        });
-        setGeneralForm(loadedForm);
+      // Check for 403 Forbidden
+      if (
+        (systemResult.status === "rejected" && (systemResult.reason?.status === 403 || systemResult.reason?.statusCode === 403)) ||
+        (integrationsResult.status === "rejected" && (integrationsResult.reason?.status === 403 || integrationsResult.reason?.statusCode === 403))
+      ) {
+        setForbidden(true);
+        return;
       }
 
-      if (integrationsRes.success && integrationsRes.integrations) {
-        const data = integrationsRes.integrations;
-        setIntegrationsMeta(data);
-        setIntegrationsForm({
-          sms_api_key: "",
-          sms_sender_id: data.sms_sender_id || "",
-          whatsapp_api_url: data.whatsapp_api_url || "",
-          whatsapp_api_token: "",
-          razorpay_key: "",
-          stripe_key: "",
-          stripe_secret: ""
-        });
+      // 1. Process System Settings
+      if (systemResult.status === "fulfilled") {
+        const systemRes = systemResult.value || {};
+        const settingsList = systemRes.settings || systemRes.data?.settings || systemRes.data || (Array.isArray(systemRes) ? systemRes : []);
+        
+        if (Array.isArray(settingsList)) {
+          setGeneralForm(prev => {
+            const loadedForm = { ...prev };
+            settingsList.forEach((s) => {
+              if (s && s.key && s.key in loadedForm) {
+                loadedForm[s.key] = s.value || "";
+              }
+            });
+            return loadedForm;
+          });
+        }
+      }
+
+      // 2. Process Integrations
+      if (integrationsResult.status === "fulfilled") {
+        const integrationsRes = integrationsResult.value || {};
+        const data = integrationsRes.integrations || integrationsRes.data?.integrations || integrationsRes.data || null;
+        
+        if (data && typeof data === "object") {
+          setIntegrationsMeta(prev => ({ ...prev, ...data }));
+          setIntegrationsForm(prev => ({
+            ...prev,
+            sms_sender_id: data.sms_sender_id || "",
+            whatsapp_api_url: data.whatsapp_api_url || ""
+          }));
+        }
       }
     } catch (err) {
-      console.error("Failed to load settings:", err);
-      toast.error("Failed to retrieve platform settings.");
+      if (err.status === 403 || err.statusCode === 403) {
+        setForbidden(true);
+      } else {
+        console.error("Failed to load settings:", err);
+        toast.error(err.message || "Failed to retrieve platform settings.");
+      }
     } finally {
       setLoading(false);
     }
@@ -185,6 +210,18 @@ export default function SuperAdminSettingsPage() {
       </span>
     );
   };
+
+  if (forbidden) {
+    return (
+      <DashboardLayout role="super_admin">
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white border border-zinc-200 rounded-2xl p-8 text-center shadow-sm text-xs max-w-lg mx-auto mt-10">
+          <FaTimesCircle className="text-rose-500 w-12 h-12 mb-4" />
+          <h2 className="text-zinc-800 font-extrabold text-base mb-2">Access Denied</h2>
+          <p className="text-zinc-500 font-medium mb-6">Your current user account does not have Super Admin permissions to manage platform settings and gateways.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout role="super_admin">
