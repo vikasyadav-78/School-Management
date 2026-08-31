@@ -71,20 +71,25 @@ function ResetPasswordForm() {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <div className="inline-flex p-3 bg-violet-50 text-violet-600 rounded-2xl mb-2">
+        <div className="inline-flex p-3 bg-violet-600/10 text-violet-400 rounded-2xl mb-2 border border-violet-500/20 shadow-lg shadow-violet-500/5 animate-pulse">
           <FaGraduationCap className="w-10 h-10" />
         </div>
-        <h2 className="text-xl font-extrabold text-zinc-800">Reset Password</h2>
-        <p className="text-xs text-zinc-400">Choose your new secure password below.</p>
+        <h2 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-violet-200 via-zinc-100 to-indigo-200 bg-clip-text text-transparent">
+          Reset Password
+        </h2>
+        <p className="text-xs text-zinc-400 font-medium">Choose your new secure password below.</p>
       </div>
 
       {successMessage && (
-        <div className="space-y-4">
-          <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs rounded-xl font-bold text-center animate-fade-in">
+        <div className="space-y-4 animate-scale-up">
+          <div className="p-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-semibold text-center backdrop-blur-md">
             {successMessage}
           </div>
           <div className="text-center pt-2">
-            <Link href="/login" className="px-5 py-2.5 bg-violet-600 hover:bg-violet-750 text-white rounded-xl font-extrabold text-xs inline-block transition-all shadow-sm cursor-pointer">
+            <Link
+              href="/login"
+              className="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-extrabold text-xs inline-block transition-all border border-violet-500/30 shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 cursor-pointer"
+            >
               Go to Login
             </Link>
           </div>
@@ -92,20 +97,20 @@ function ResetPasswordForm() {
       )}
 
       {errorMessage && (
-        <div className="p-3 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-xl font-bold text-center">
+        <div className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold text-center backdrop-blur-md">
           {errorMessage}
         </div>
       )}
 
       {!successMessage && (
         <FormWrapper methods={formMethods} onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Target Email</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider block">Target Email</label>
             <input
               type="text"
               value={email}
               disabled
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-50 outline-none text-xs font-bold text-zinc-500 cursor-not-allowed"
+              className="w-full px-4 py-2 border border-zinc-800 rounded-lg text-xs outline-none bg-zinc-950/60 text-zinc-455 font-bold cursor-not-allowed"
             />
           </div>
 
@@ -114,6 +119,8 @@ function ResetPasswordForm() {
             label="New Password"
             placeholder="••••••••"
             type="password"
+            labelClassName="text-zinc-300 font-medium"
+            className="bg-zinc-950/40 border-zinc-800/80 text-white placeholder-zinc-500 focus:bg-zinc-900/50 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl"
             validation={{
               required: "Password is required",
               minLength: {
@@ -132,6 +139,8 @@ function ResetPasswordForm() {
             label="Confirm New Password"
             placeholder="••••••••"
             type="password"
+            labelClassName="text-zinc-300 font-medium"
+            className="bg-zinc-950/40 border-zinc-800/80 text-white placeholder-zinc-500 focus:bg-zinc-900/50 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl"
             validation={{
               required: "Confirmation password is required",
               validate: (val) => {
@@ -142,7 +151,11 @@ function ResetPasswordForm() {
             }}
           />
 
-          <Button type="submit" className="w-full" disabled={loading || !token || !email}>
+          <Button
+            type="submit"
+            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl border border-violet-500/30 transition-all font-bold shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 cursor-pointer"
+            disabled={loading || !token || !email}
+          >
             {loading ? "Resetting Password..." : "Update Password"}
           </Button>
         </FormWrapper>
@@ -150,7 +163,7 @@ function ResetPasswordForm() {
 
       {!successMessage && (
         <div className="text-center text-xs text-zinc-400 pt-2">
-          <Link href="/login" className="text-violet-600 font-bold hover:underline">
+          <Link href="/login" className="text-violet-400 hover:text-violet-300 transition-colors font-bold hover:underline">
             Back to Login
           </Link>
         </div>

@@ -79,11 +79,14 @@ axiosInstance.interceptors.response.use(
         }
       }
     }
-    return Promise.reject(
-      (error.response && error.response.data) || {
-        message: "Something went wrong on the network.",
-      }
-    );
+    const errorData = (error.response && error.response.data) || {
+      message: "Something went wrong on the network.",
+    };
+    if (status && typeof errorData === "object") {
+      errorData.status = status;
+      errorData.statusCode = status;
+    }
+    return Promise.reject(errorData);
   }
 );
 

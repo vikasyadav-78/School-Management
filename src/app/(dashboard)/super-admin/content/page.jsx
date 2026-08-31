@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axiosInstance from "@/services/axios";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import PageLoader from "@/components/common/PageLoader";
@@ -140,6 +141,28 @@ export default function SuperAdminContentPage() {
       fetchContentList();
     } catch (err) {
       toast.error("Failed to delete content: " + (err.message || err));
+    }
+  };
+
+  const handleDownloadFile = async (downloadUrl, filename) => {
+    try {
+      toast.info("Downloading file, please wait...");
+      const response = await axiosInstance.get(downloadUrl, {
+        responseType: "blob"
+      });
+      const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename || "downloaded-file");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Download completed successfully.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Download failed. Please try again.");
     }
   };
 
@@ -435,16 +458,14 @@ export default function SuperAdminContentPage() {
                             </button>
 
                             {item.download_url && (
-                              <a
-                                href={item.download_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100/80 border border-blue-200/80 transition-colors"
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadFile(item.download_url, item.title ? `${item.title}.pdf` : "download.pdf")}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100/80 border border-blue-200/80 transition-colors cursor-pointer"
                               >
                                 <FaDownload className="w-3 h-3 text-blue-600" />
                                 <span>Download</span>
-                              </a>
+                              </button>
                             )}
 
                             <button

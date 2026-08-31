@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axiosInstance from "@/services/axios";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
@@ -205,6 +206,28 @@ export default function SuperAdminSchoolDetailPage() {
       toast.error("Failed to upload document: " + (err.message || err));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDownloadDoc = async (downloadUrl, filename) => {
+    try {
+      toast.info("Downloading document, please wait...");
+      const response = await axiosInstance.get(downloadUrl, {
+        responseType: "blob"
+      });
+      const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename || "document.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Download completed successfully.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Download failed. Please try again.");
     }
   };
 
@@ -599,11 +622,9 @@ export default function SuperAdminSchoolDetailPage() {
                       </div>
                       <div className="flex gap-2">
                         {doc.file_url && (
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer" download>
-                            <Button variant="outline" size="xs">
-                              <FaDownload className="w-3.5 h-3.5 text-zinc-500" />
-                            </Button>
-                          </a>
+                          <Button variant="outline" size="xs" onClick={() => handleDownloadDoc(doc.file_url, doc.type ? `${doc.type}.pdf` : "document.pdf")}>
+                            <FaDownload className="w-3.5 h-3.5 text-zinc-500" />
+                          </Button>
                         )}
                         <Button variant="outline" size="xs" onClick={() => handleDeleteDoc(doc.id)}>
                           <FaTrash className="w-3.5 h-3.5 text-red-500" />

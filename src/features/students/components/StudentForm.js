@@ -8,6 +8,7 @@ import FormSelect from "@/components/forms/FormSelect";
 import Button from "@/components/ui/Button";
 import { FaUser, FaEnvelope, FaLock, FaCamera, FaTimes, FaFileAlt } from "react-icons/fa";
 import { getAdminClassStreams } from "@/features/admin/services/admin.service";
+import { getTeacherClassStreams } from "@/features/teachers/services/teacher.service";
 
 export default function StudentForm({ onSubmit, initialData, isEdit = false, meta = null, preselectedClassId = "", preselectedSectionId = "" }) {
     const methods = useForm({
@@ -60,7 +61,10 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
 
     useEffect(() => {
         if (showStreamField && schoolClassId) {
-            getAdminClassStreams(schoolClassId)
+            const role = typeof window !== "undefined" ? localStorage.getItem("role") : "";
+            const fetchStreamsFn = role === "teacher" ? getTeacherClassStreams : getAdminClassStreams;
+            
+            fetchStreamsFn(schoolClassId)
                 .then(res => {
                     const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
                     setDynamicStreams(streamsList);
