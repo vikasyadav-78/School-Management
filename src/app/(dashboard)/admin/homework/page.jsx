@@ -14,7 +14,8 @@ import {
   getHomeworkMeta, 
   getHomeworkList, 
   createHomework,
-  deleteHomework
+  deleteHomework,
+  getAdminClassStreams
 } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
@@ -52,6 +53,31 @@ export default function AdminHomeworkPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const selectedClassObj = classes.find(c => String(c.id) === String(selectedClassId));
+  const cleanClassName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+  const showStreamField = cleanClassName.includes("11") || cleanClassName.includes("12");
+
+  useEffect(() => {
+    if (showStreamField && selectedClassId) {
+      getAdminClassStreams(selectedClassId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [showStreamField, selectedClassId]);
 
   // Fetch meta options
   useEffect(() => {
@@ -146,6 +172,17 @@ export default function AdminHomeworkPage() {
       if (videoUrl.trim()) formData.append("video_link", videoUrl.trim());
       if (attachment) formData.append("attachment", attachment);
 
+      if (showStreamField && stream) {
+        const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(stream));
+        if (selectedStreamObj) {
+          formData.append("stream", selectedStreamObj.name);
+          formData.append("stream_id", selectedStreamObj.id);
+        } else {
+          formData.append("stream", stream);
+          formData.append("stream_id", "");
+        }
+      }
+
       await createHomework(formData);
       toast.success("Homework assignment created successfully!");
       setIsModalOpen(false);
@@ -161,6 +198,9 @@ export default function AdminHomeworkPage() {
       setMaxMarks("");
       setAttachment(null);
       setVideoUrl("");
+      setStream("");
+      setStreamId("");
+      setDynamicStreams([]);
 
       fetchHomework(); // refresh list
     } catch (err) {
@@ -199,6 +239,19 @@ export default function AdminHomeworkPage() {
       </DashboardLayout>
     );
   }
+
+  const baseStreamOptions = dynamicStreams.length > 0
+    ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+    : [
+        { value: "Science", label: "Science" },
+        { value: "Commerce", label: "Commerce" },
+        { value: "Arts", label: "Arts" }
+      ];
+
+  const streamOptions = [
+    { value: "", label: "Select Stream" },
+    ...baseStreamOptions
+  ];
 
   return (
     <DashboardLayout>
@@ -334,7 +387,7 @@ export default function AdminHomeworkPage() {
                   <div className="space-y-2 bg-zinc-55 p-3.5 rounded-xl border border-zinc-100/50">
                     <div className="flex justify-between items-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
                       <span>Target Class:</span>
-                      <span className="font-black text-zinc-800">{h.class} (Sec {h.section})</span>
+                      <span className="font-black text-zinc-800">{h.class} (Sec {h.section}){h.stream ? ` (${h.stream})` : ""}</span>
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
                       <span>Assigned Teacher:</span>
@@ -364,11 +417,11 @@ export default function AdminHomeworkPage() {
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-sm animate-fade-in">
             <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-md overflow-hidden animate-scale-up text-left flex flex-col">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 bg-zinc-50 shrink-0">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50 shrink-0">
                 <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-1.5">
                   <FaTasks className="text-violet-500" /> Create Homework Task
                 </h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-650 cursor-pointer">
+                <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                   <FaTimes className="w-4 h-4" />
                 </button>
               </div>
@@ -424,6 +477,24 @@ export default function AdminHomeworkPage() {
                     </select>
                   </div>
                 </div>
+
+                {showStreamField && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Academic Stream *</label>
+                    <select
+                      value={stream}
+                      onChange={(e) => setStream(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none focus:border-violet-500 text-zinc-700 font-bold"
+                    >
+                      {streamOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -508,22 +579,22 @@ export default function AdminHomeworkPage() {
                   <input
                     type="file"
                     onChange={(e) => setAttachment(e.target.files[0])}
-                    className="w-full text-zinc-650 cursor-pointer text-xs"
+                    className="w-full text-zinc-600 cursor-pointer text-xs"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-zinc-150 shrink-0">
+                <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-650 font-bold rounded-xl cursor-pointer"
+                    className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold rounded-xl cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-5 py-2 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? "Creating..." : "Create Homework"}
                   </button>

@@ -85,7 +85,7 @@ export default function AdminExamsReportsPage() {
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           loading={loading}
-          onView={(row) => router.push(`/admin/exams/${row.id}`)}
+          onView={(row) => router.push(`/admin/exams/${row.id}/reports`)}
           emptyMessage="No exams available for report generation."
         />
       </div>

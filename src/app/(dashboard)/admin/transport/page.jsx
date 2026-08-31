@@ -306,6 +306,14 @@ export default function AdminTransportManagementPage() {
       return;
     }
 
+    if (driverPhone.trim()) {
+      const cleanPhone = driverPhone.trim();
+      if (cleanPhone.length !== 10 || !/^[6-9]/.test(cleanPhone)) {
+        toast.error("Driver Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.");
+        return;
+      }
+    }
+
     try {
       setListLoading(true);
       const payload = {
@@ -543,7 +551,7 @@ export default function AdminTransportManagementPage() {
                 <Button onClick={handleOpenCreateRoute} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-150">
                   Add Route
                 </Button>
-                <Button onClick={() => setIsAssignModalOpen(true)} className="bg-zinc-100 hover:bg-zinc-250 text-zinc-700 font-bold border border-zinc-200">
+                <Button onClick={() => setIsAssignModalOpen(true)} className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold border border-zinc-200">
                   Assign Student
                 </Button>
               </div>
@@ -591,30 +599,30 @@ export default function AdminTransportManagementPage() {
                 <p className="text-[11px] text-zinc-450 font-semibold mt-0.5">All bus routes with fee and student strength.</p>
               </div>
               
-              <form onSubmit={handleRoutesFilterSubmit} className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <div className="space-y-0.5">
-                  <span className="text-[9px] text-zinc-400 font-extrabold uppercase">Status</span>
+              <form onSubmit={handleRoutesFilterSubmit} className="flex flex-wrap items-end gap-3 w-full sm:w-auto">
+                <div className="space-y-1.5 flex flex-col">
+                  <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">Status</span>
                   <select
                     value={routesStatusFilter}
                     onChange={(e) => setRoutesStatusFilter(e.target.value)}
-                    className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer"
+                    className="px-3 py-2 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer h-9 focus:border-indigo-500 min-w-[120px]"
                   >
                     <option value="all">All</option>
                     <option value="active">Active Only</option>
                     <option value="inactive">Inactive Only</option>
                   </select>
                 </div>
-                <div className="space-y-0.5 w-48">
-                  <span className="text-[9px] text-zinc-400 font-extrabold uppercase">Search</span>
+                <div className="space-y-1.5 flex flex-col w-48">
+                  <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">Search</span>
                   <input
                     type="text"
                     placeholder="Route / Vehicle / Driver"
                     value={routesSearchQuery}
                     onChange={(e) => setRoutesSearchQuery(e.target.value)}
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white text-zinc-800 placeholder-zinc-450 font-bold"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white text-zinc-800 placeholder-zinc-450 font-bold h-9 focus:border-indigo-500"
                   />
                 </div>
-                <button type="submit" className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold mt-3.5 transition-colors cursor-pointer">
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors cursor-pointer h-9 flex items-center justify-center text-xs">
                   Filter
                 </button>
               </form>
@@ -722,13 +730,13 @@ export default function AdminTransportManagementPage() {
                 <p className="text-[11px] text-zinc-450 font-semibold mt-0.5">Students assigned to transport routes with fee status.</p>
               </div>
 
-              <form onSubmit={handleAssignmentsFilterSubmit} className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <div className="space-y-0.5">
-                  <span className="text-[9px] text-zinc-400 font-extrabold uppercase">Route</span>
+              <form onSubmit={handleAssignmentsFilterSubmit} className="flex flex-wrap items-end gap-3 w-full sm:w-auto">
+                <div className="space-y-1.5 flex flex-col">
+                  <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">Route</span>
                   <select
                     value={assignRouteFilter}
                     onChange={(e) => setAssignRouteFilter(e.target.value)}
-                    className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer"
+                    className="px-3 py-2 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer h-9 focus:border-indigo-500 min-w-[140px]"
                   >
                     <option value="all">All routes</option>
                     {routes.map(r => (
@@ -736,29 +744,29 @@ export default function AdminTransportManagementPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-0.5">
-                  <span className="text-[9px] text-zinc-400 font-extrabold uppercase">Fee Status</span>
+                <div className="space-y-1.5 flex flex-col">
+                  <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">Fee Status</span>
                   <select
                     value={assignFeeFilter}
                     onChange={(e) => setAssignFeeFilter(e.target.value)}
-                    className="px-3 py-1.5 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer"
+                    className="px-3 py-2 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 bg-white outline-none cursor-pointer h-9 focus:border-indigo-500 min-w-[120px]"
                   >
                     <option value="all">All</option>
                     <option value="pending">Pending</option>
                     <option value="paid">Paid</option>
                   </select>
                 </div>
-                <div className="space-y-0.5 w-44">
-                  <span className="text-[9px] text-zinc-400 font-extrabold uppercase">Search</span>
+                <div className="space-y-1.5 flex flex-col w-44">
+                  <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">Search</span>
                   <input
                     type="text"
                     placeholder="Student / ID / Pickup"
                     value={assignSearchQuery}
                     onChange={(e) => setAssignSearchQuery(e.target.value)}
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white text-zinc-800 placeholder-zinc-450 font-bold"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs outline-none bg-zinc-50 focus:bg-white text-zinc-800 placeholder-zinc-450 font-bold h-9 focus:border-indigo-500"
                   />
                 </div>
-                <button type="submit" className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold mt-3.5 transition-colors cursor-pointer">
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors cursor-pointer h-9 flex items-center justify-center text-xs">
                   Filter
                 </button>
               </form>
@@ -987,7 +995,14 @@ export default function AdminTransportManagementPage() {
                     <input
                       type="text"
                       value={driverPhone}
-                      onChange={(e) => setDriverPhone(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        if (val.length <= 10) {
+                          if (val.length === 0 || /^[6-9]/.test(val)) {
+                            setDriverPhone(val);
+                          }
+                        }
+                      }}
                       className="w-full px-3.5 py-2.5 border border-zinc-300 rounded-xl outline-none text-zinc-855"
                       placeholder="9876543210"
                     />

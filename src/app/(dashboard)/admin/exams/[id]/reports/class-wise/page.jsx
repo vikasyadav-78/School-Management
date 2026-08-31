@@ -131,20 +131,23 @@ export default function ExamReportClassWisePage({ params }) {
               ]}
               disabled={!selectedClassId}
             />
-            <div className="relative flex items-center">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-zinc-400">
-                <FaSearch className="w-3.5 h-3.5" />
-              </span>
-              <input
-                type="text"
-                placeholder="Search students..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-9 pr-4 py-2.5 border border-zinc-200 rounded-xl outline-none font-semibold text-xs text-black focus:border-violet-500 bg-white"
-              />
+            <div className="w-full space-y-1.5">
+              <label className="block text-xs font-semibold text-zinc-700">Search</label>
+              <div className="relative flex items-center">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-zinc-400">
+                  <FaSearch className="w-3 h-3" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search students..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-lg text-xs outline-none bg-zinc-55 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-zinc-700 font-semibold"
+                />
+              </div>
             </div>
           </div>
         </div>

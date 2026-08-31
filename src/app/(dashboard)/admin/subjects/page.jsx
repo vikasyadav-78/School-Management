@@ -446,24 +446,18 @@ export default function AdminSubjectsPage() {
                       <span className="text-[10px] text-zinc-400 italic font-medium">None</span>
                     ) : (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {sub.classes.map((cls, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-zinc-100 text-zinc-700 font-extrabold text-[9px] rounded border border-zinc-200">
-                            {cls.name}
-                          </span>
-                        ))}
+                        {sub.classes.map((cls, idx) => {
+                          const clsNameLower = (cls.name || "").toLowerCase();
+                          const isStreamClass = clsNameLower.includes("11") || clsNameLower.includes("12");
+                          return (
+                            <span key={idx} className="px-2 py-0.5 bg-zinc-100 text-zinc-700 font-extrabold text-[9px] rounded border border-zinc-200">
+                              {cls.name}{isStreamClass && sub.stream ? ` (${sub.stream})` : ""}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
-
-                  {sub.stream && (
-                    <>
-                      <div className="border-t border-zinc-100 my-2"></div>
-                      <div className="flex justify-between items-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-                        <span>Stream:</span>
-                        <span className="font-extrabold text-zinc-700">{sub.stream}</span>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             </div>

@@ -14,7 +14,8 @@ import {
   addAdminManageLiveClass,
   getAdminManageLiveClassDetail,
   updateAdminManageLiveClassRecording,
-  deleteAdminManageLiveClass
+  deleteAdminManageLiveClass,
+  getAdminClassStreams
 } from "@/features/admin/services/admin.service";
 import { toast } from "sonner";
 import { useAppDialog } from "@/context/DialogContext";
@@ -74,6 +75,31 @@ function AdminManageLiveClassesContent() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("10:00");
   const [endTime, setEndTime] = useState("11:00");
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const selectedClassObj = meta?.classes?.find(c => String(c.id) === String(classId));
+  const cleanClassName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+  const showStreamField = cleanClassName.includes("11") || cleanClassName.includes("12");
+
+  useEffect(() => {
+    if (showStreamField && classId) {
+      getAdminClassStreams(classId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [showStreamField, classId]);
 
   const loadLiveClasses = async () => {
     try {
@@ -162,6 +188,9 @@ function AdminManageLiveClassesContent() {
     setStartTime("10:00");
     setEndTime("11:00");
     setFormError("");
+    setStream("");
+    setStreamId("");
+    setDynamicStreams([]);
   };
 
   const handleOpenAdd = () => {
@@ -173,8 +202,14 @@ function AdminManageLiveClassesContent() {
     e.preventDefault();
     setFormError("");
 
-    if (!title.trim() || !teacherId || !subjectId || !classId || !date) {
-      setFormError("Title, Teacher, Subject, Class, and Date are required.");
+    if (!title.trim() || !topic.trim() || !teacherId || !subjectId || !classId || !date || !meetingUrl.trim()) {
+      setFormError("Title, Topic, Teacher, Subject, Class, Date, and Meeting URL are required.");
+      return;
+    }
+
+    const cleanUrl = meetingUrl.trim();
+    if (!/^https?:\/\/.+/i.test(cleanUrl)) {
+      setFormError("Please enter a valid Meeting URL starting with http:// or https://");
       return;
     }
 
@@ -182,14 +217,14 @@ function AdminManageLiveClassesContent() {
       setSubmitting(true);
       const payload = {
         title: title.trim(),
-        topic: topic.trim() || title.trim(),
+        topic: topic.trim(),
         teacher_id: teacherId,
         subject_id: subjectId,
         school_class_id: classId,
         class_id: classId,
         platform: platform || "google_meet",
-        meeting_url: meetingUrl.trim() || "https://meet.google.com/",
-        join_url: meetingUrl.trim() || "https://meet.google.com/",
+        meeting_url: cleanUrl,
+        join_url: cleanUrl,
         date,
         start_time: startTime,
         end_time: endTime
@@ -197,6 +232,17 @@ function AdminManageLiveClassesContent() {
 
       if (sectionId) {
         payload.section_id = sectionId;
+      }
+
+      if (showStreamField && stream) {
+        const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(stream));
+        if (selectedStreamObj) {
+          payload.stream = selectedStreamObj.name;
+          payload.stream_id = selectedStreamObj.id;
+        } else {
+          payload.stream = stream;
+          payload.stream_id = "";
+        }
       }
 
       await addAdminManageLiveClass(payload);
@@ -309,6 +355,19 @@ function AdminManageLiveClassesContent() {
     return true;
   });
 
+  const baseStreamOptions = dynamicStreams.length > 0
+    ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+    : [
+        { value: "Science", label: "Science" },
+        { value: "Commerce", label: "Commerce" },
+        { value: "Arts", label: "Arts" }
+      ];
+
+  const streamOptions = [
+    { value: "", label: "Select Stream" },
+    ...baseStreamOptions
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -410,7 +469,8 @@ function AdminManageLiveClassesContent() {
             const className = typeof lc.class === "string" ? lc.class : (lc.class_name || lc.school_class?.name || metaClass?.name || "Class");
             const sectionName = typeof lc.section === "string" ? lc.section : (lc.section_name || lc.section?.name || "");
 
-            const subjectClassLabel = `${subjectName} • ${className}${sectionName ? ` (${sectionName})` : ""}`;
+            const streamLabel = lc.stream ? ` (${lc.stream})` : "";
+            const subjectClassLabel = `${subjectName} • ${className}${streamLabel}${sectionName ? ` (${sectionName})` : ""}`;
             const scheduleLabel = lc.scheduled_at_label || (lc.date ? `${lc.date} ${lc.start_time || ""}`.trim() : null) || (lc.scheduled_at ? new Date(lc.scheduled_at).toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }) : "Scheduled");
             const joinUrl = lc.meeting_url || lc.join_url || lc.url;
 
@@ -505,8 +565,8 @@ function AdminManageLiveClassesContent() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Topic</label>
-                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic / Lesson focus" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Topic *</label>
+                <input type="text" required value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic / Lesson focus" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -553,6 +613,24 @@ function AdminManageLiveClassesContent() {
                 </div>
               </div>
 
+              {showStreamField && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Academic Stream *</label>
+                  <select
+                    value={stream}
+                    onChange={(e) => setStream(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none focus:border-violet-500 font-semibold text-black"
+                  >
+                    {streamOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Platform</label>
@@ -564,8 +642,8 @@ function AdminManageLiveClassesContent() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Meeting URL</label>
-                  <input type="text" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://meet.google.com/" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Meeting URL *</label>
+                  <input type="text" required value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://meet.google.com/" className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-none text-black font-semibold" />
                 </div>
               </div>
 

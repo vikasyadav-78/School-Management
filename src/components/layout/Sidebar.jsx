@@ -200,13 +200,16 @@ export default function Sidebar() {
     return false;
   };
 
-  const isSubActive = (subItem, submenuList = []) => {
-    return isPathActive(subItem.path, submenuList);
+  const isSubActive = (subItem) => {
+    if (subItem.submenu && subItem.submenu.length > 0) {
+      return subItem.submenu.some(sub => isSubActive(sub));
+    }
+    return isPathActive(subItem.path);
   };
 
   const isParentActive = (parentItem) => {
     if (parentItem.submenu && parentItem.submenu.length > 0) {
-      return parentItem.submenu.some(sub => isSubActive(sub, parentItem.submenu));
+      return parentItem.submenu.some(sub => isSubActive(sub));
     }
     return isPathActive(parentItem.path);
   };

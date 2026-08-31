@@ -15,7 +15,8 @@ import {
   addTeacherOnlineMcqQuestion,
   deleteTeacherOnlineMcqQuestion,
   publishTeacherOnlineMcqExam,
-  deleteTeacherOnlineMcqExam
+  deleteTeacherOnlineMcqExam,
+  getTeacherClassStreams
 } from "@/features/teachers/services/teacher.service";
 import { 
   toDateTimeLocalString, 
@@ -72,6 +73,31 @@ export default function TeacherOnlineMcqPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const selectedClassObj = meta?.classes?.find(c => String(c.id) === String(classId));
+  const cleanClassName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+  const showStreamField = cleanClassName.includes("11") || cleanClassName.includes("12");
+
+  useEffect(() => {
+    if (showStreamField && classId) {
+      getTeacherClassStreams(classId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [showStreamField, classId]);
 
   // Auto-calculate End Date & Time based on Start Date & Time + Duration
   useEffect(() => {
@@ -168,6 +194,9 @@ export default function TeacherOnlineMcqPage() {
     setFullscreenRequired(false);
     setAutoSubmit(false);
     setFormError("");
+    setStream("");
+    setStreamId("");
+    setDynamicStreams([]);
   };
 
   const handleOpenAddExam = () => {
@@ -213,6 +242,17 @@ export default function TeacherOnlineMcqPage() {
         fullscreen_required: fullscreenRequired,
         auto_submit: autoSubmit
       };
+
+      if (showStreamField && stream) {
+        const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(stream));
+        if (selectedStreamObj) {
+          payload.stream = selectedStreamObj.name;
+          payload.stream_id = selectedStreamObj.id;
+        } else {
+          payload.stream = stream;
+          payload.stream_id = "";
+        }
+      }
 
       const res = await addTeacherOnlineMcqExam(payload);
       toast.success("Exam draft created successfully!");
@@ -390,8 +430,20 @@ export default function TeacherOnlineMcqPage() {
     );
   }
 
-  const selectedClassObj = meta?.classes?.find(c => c.id.toString() === classId);
   const sections = selectedClassObj?.sections || meta?.sections || [];
+
+  const baseStreamOptions = dynamicStreams.length > 0
+    ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+    : [
+        { value: "Science", label: "Science" },
+        { value: "Commerce", label: "Commerce" },
+        { value: "Arts", label: "Arts" }
+      ];
+
+  const streamOptions = [
+    { value: "", label: "Select Stream" },
+    ...baseStreamOptions
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
@@ -472,7 +524,7 @@ export default function TeacherOnlineMcqPage() {
 
                   <h4 className="font-extrabold text-zinc-800 text-sm mb-1">{e.title}</h4>
                   <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block mb-3">
-                    Subject: <span className="text-zinc-700 capitalize">{e.subject}</span> • Class: <span className="text-zinc-700">{e.class}</span>
+                    Subject: <span className="text-zinc-700 capitalize">{e.subject}</span> • Class: <span className="text-zinc-700">{e.class}{e.stream ? ` (${e.stream})` : ""}</span>
                   </span>
 
                   <div className="space-y-1.5 text-[10px] font-semibold text-zinc-500 mb-4 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
@@ -577,6 +629,24 @@ export default function TeacherOnlineMcqPage() {
                   </select>
                 </div>
               </div>
+
+              {showStreamField && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Academic Stream *</label>
+                  <select
+                    value={stream}
+                    onChange={(e) => setStream(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none focus:border-violet-500 font-semibold text-black"
+                  >
+                    {streamOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">

@@ -12,7 +12,8 @@ import {
 import {
   getHomeworkClasses,
   getHomeworkList,
-  createHomework
+  createHomework,
+  getTeacherClassStreams
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
 
@@ -40,6 +41,31 @@ export default function TeacherHomeworkPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const selectedClassObj = classes.find(c => String(c.id) === String(selectedClassId));
+  const cleanClassName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
+  const showStreamField = cleanClassName.includes("11") || cleanClassName.includes("12");
+
+  useEffect(() => {
+    if (showStreamField && selectedClassId) {
+      getTeacherClassStreams(selectedClassId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [showStreamField, selectedClassId]);
 
   // Fetch classes
   useEffect(() => {
@@ -121,6 +147,17 @@ export default function TeacherHomeworkPage() {
         formData.append("video_url", videoUrl.trim());
       }
 
+      if (showStreamField && stream) {
+        const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(stream));
+        if (selectedStreamObj) {
+          formData.append("stream", selectedStreamObj.name);
+          formData.append("stream_id", selectedStreamObj.id);
+        } else {
+          formData.append("stream", stream);
+          formData.append("stream_id", "");
+        }
+      }
+
       await createHomework(formData);
       toast.success("Homework assignment created successfully!");
       setIsModalOpen(false);
@@ -135,6 +172,9 @@ export default function TeacherHomeworkPage() {
       setMaxMarks("");
       setAttachment(null);
       setVideoUrl("");
+      setStream("");
+      setStreamId("");
+      setDynamicStreams([]);
 
       fetchHomework(); // Reload list
     } catch (err) {
@@ -144,6 +184,19 @@ export default function TeacherHomeworkPage() {
       setSubmitting(false);
     }
   };
+
+  const baseStreamOptions = dynamicStreams.length > 0
+    ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+    : [
+        { value: "Science", label: "Science" },
+        { value: "Commerce", label: "Commerce" },
+        { value: "Arts", label: "Arts" }
+      ];
+
+  const streamOptions = [
+    { value: "", label: "Select Stream" },
+    ...baseStreamOptions
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left w-full">
@@ -212,7 +265,7 @@ export default function TeacherHomeworkPage() {
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-zinc-900 line-clamp-1 group-hover:text-violet-600 transition-colors">{hw.title}</h3>
                     <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
-                      {hw.class?.name || hw.class} - {hw.section?.name || hw.section || "A"}
+                      {hw.class?.name || hw.class} - {hw.section?.name || hw.section || "A"}{hw.stream ? ` (${hw.stream})` : ""}
                     </p>
                   </div>
 
@@ -331,6 +384,24 @@ export default function TeacherHomeworkPage() {
                   </select>
                 </div>
               </div>
+
+              {showStreamField && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Academic Stream *</label>
+                  <select
+                    value={stream}
+                    onChange={(e) => setStream(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none focus:border-violet-500 text-zinc-700 font-bold"
+                  >
+                    {streamOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
