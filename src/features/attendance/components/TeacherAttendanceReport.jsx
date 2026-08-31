@@ -6,7 +6,6 @@ import { getAttendanceReport, resetReportData } from "../redux/attendanceSlice";
 import { getAttendanceReport as fetchReportThunk } from "../redux/attendanceThunk";
 import PageLoader from "@/components/common/PageLoader";
 import { FaUserCircle } from "react-icons/fa";
-import Image from "next/image";
 import Pagination from "@/components/ui/Pagination";
 
 export default function TeacherAttendanceReport() {
