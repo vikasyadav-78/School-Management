@@ -515,7 +515,7 @@ export default function TeacherStudentsManagementPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="text-sm font-medium text-zinc-800">Class {student.class || "—"}</div>
+                      <div className="text-sm font-medium text-zinc-800">Class {student.class || "—"}{student.stream ? ` (${student.stream})` : ""}</div>
                       <div className="text-xs text-zinc-500">Sec {student.section || "—"} • Roll: {student.roll_no || "—"}</div>
                     </td>
                     <td className="py-3.5 px-4">

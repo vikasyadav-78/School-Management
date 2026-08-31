@@ -7,6 +7,7 @@ import FormInput from "@/components/forms/FormInput";
 import FormSelect from "@/components/forms/FormSelect";
 import Button from "@/components/ui/Button";
 import { FaUser, FaEnvelope, FaLock, FaCamera, FaTimes, FaFileAlt } from "react-icons/fa";
+import { getAdminClassStreams } from "@/features/admin/services/admin.service";
 
 export default function StudentForm({ onSubmit, initialData, isEdit = false, meta = null, preselectedClassId = "", preselectedSectionId = "" }) {
     const methods = useForm({
@@ -53,7 +54,31 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
 
     const selectedClassObj = (meta?.classes || []).find(c => String(c.id) === String(schoolClassId));
     const cleanName = selectedClassObj ? selectedClassObj.name.replace(/class\s*-?/i, '').trim() : "";
-    const showStreamField = cleanName === "11" || cleanName === "12";
+    const showStreamField = cleanName.includes("11") || cleanName.includes("12");
+
+    const [dynamicStreams, setDynamicStreams] = useState([]);
+
+    useEffect(() => {
+        if (showStreamField && schoolClassId) {
+            getAdminClassStreams(schoolClassId)
+                .then(res => {
+                    const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+                    setDynamicStreams(streamsList);
+                })
+                .catch(err => {
+                    console.error("Failed to load class streams:", err);
+                    setDynamicStreams([]);
+                });
+        } else {
+            setDynamicStreams([]);
+        }
+    }, [showStreamField, schoolClassId]);
+
+    useEffect(() => {
+        if (!showStreamField) {
+            setValue("stream", "");
+        }
+    }, [showStreamField, setValue]);
 
     const [photoPreview, setPhotoPreview] = useState("");
 
@@ -95,7 +120,7 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                 address: initialData.address || "",
                 status: initialData.is_active ? "Active" : "Inactive",
                 id_card_theme: initialData.id_card_theme || "",
-                stream: initialData.stream || ""
+                stream: initialData.stream_id || initialData.stream || ""
             });
         } else if (meta) {
             reset({
@@ -111,14 +136,48 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
     }, [initialData, meta, reset, preselectedClassId, preselectedSectionId]);
 
     const handleFormSubmit = (data) => {
+        const finalData = { ...data };
+        if (!showStreamField) {
+            finalData.stream = "";
+            finalData.stream_id = "";
+        } else {
+            const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(data.stream));
+            if (selectedStreamObj) {
+                finalData.stream = selectedStreamObj.name;
+                finalData.stream_id = selectedStreamObj.id;
+            } else {
+                finalData.stream = data.stream;
+                finalData.stream_id = "";
+            }
+        }
+
         // Build output payload mapping names back to FullName for components that require it
         const output = {
-            ...data,
+            ...finalData,
             name: [data.first_name, data.last_name].filter(Boolean).join(" "),
             parentName: data.father_name || data.mother_name || ""
         };
         onSubmit(output);
     };
+
+    const baseOptions = dynamicStreams.length > 0
+        ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+        : [
+            { value: "Science", label: "Science" },
+            { value: "Commerce", label: "Commerce" },
+            { value: "Arts", label: "Arts" }
+          ];
+
+    const initialStreamValue = initialData?.stream_id || initialData?.stream;
+    const initialStreamLabel = initialData?.stream;
+    if (initialStreamValue && !baseOptions.some(opt => opt.value === initialStreamValue)) {
+        baseOptions.unshift({ value: initialStreamValue, label: initialStreamLabel || initialStreamValue });
+    }
+
+    const streamOptions = [
+        { value: "", label: "Select Stream" },
+        ...baseOptions
+    ];
 
     return (
         <FormWrapper methods={methods} onSubmit={handleFormSubmit} className="space-y-6 max-w-4xl mx-auto text-black font-semibold bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm text-xs text-left">
@@ -254,12 +313,7 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                             name="stream"
                             label="Academic Stream *"
                             validation={{ required: showStreamField ? "Stream selection is required" : false }}
-                            options={[
-                                { value: "", label: "Select Stream" },
-                                { value: "Science", label: "Science" },
-                                { value: "Commerce", label: "Commerce" },
-                                { value: "Arts", label: "Arts" }
-                            ]}
+                            options={streamOptions}
                         />
                     )}
                 </div>
@@ -299,8 +353,9 @@ export default function StudentForm({ onSubmit, initialData, isEdit = false, met
                     />
                     <FormInput
                         name="mother_name"
-                        label="Mother Name"
+                        label="Mother Name *"
                         placeholder="Mother's Full Name"
+                        validation={{ required: "Mother name is required" }}
                     />
                     <FormInput
                         name="phone"

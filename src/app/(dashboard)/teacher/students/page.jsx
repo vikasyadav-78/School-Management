@@ -554,7 +554,7 @@ export default function MyStudentsPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap font-bold text-zinc-800">
-                      {student.class} - {student.section || "A"}
+                      {student.class} - {student.section || "A"}{student.stream ? ` (${student.stream})` : ""}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap capitalize text-zinc-600 font-semibold">
                       {student.gender}
@@ -1097,7 +1097,7 @@ export default function MyStudentsPage() {
 
                 <div className="space-y-1 border-t border-zinc-100 pt-3">
                   <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Class & Section</span>
-                  <span className="text-zinc-900 text-xs font-bold">{activeStudent.class || "class-1"} - {activeStudent.section || "A"}</span>
+                  <span className="text-zinc-900 text-xs font-bold">{activeStudent.class || "class-1"} - {activeStudent.section || "A"}{activeStudent.stream ? ` (${activeStudent.stream})` : ""}</span>
                 </div>
                 <div className="space-y-1 border-t border-zinc-100 pt-3">
                   <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Academic Session</span>

@@ -74,7 +74,7 @@ export default function StudentProfilePage() {
 
             <h3 className="text-base font-extrabold text-zinc-900">{studentName}</h3>
             <p className="text-xs text-zinc-500 font-semibold mt-1">
-              ID: <span className="font-mono text-zinc-700">{student.student_id || "N/A"}</span> • Class {student.class || student.class_name || "N/A"}-{student.section || student.section_name || "N/A"}
+              ID: <span className="font-mono text-zinc-700">{student.student_id || "N/A"}</span> • Class {student.class || student.class_name || "N/A"}-{student.section || student.section_name || "N/A"}{student.stream ? ` (${student.stream})` : ""}
             </p>
 
             <div className="flex justify-center gap-2 mt-3.5">
@@ -175,6 +175,12 @@ export default function StudentProfilePage() {
                 <span className="font-bold text-zinc-400 block uppercase tracking-wider text-[10px]">Date of Birth</span>
                 <span className="text-zinc-800 font-semibold text-xs font-mono">{student.date_of_birth || "N/A"}</span>
               </div>
+              {student.stream && (
+                <div className="space-y-1">
+                  <span className="font-bold text-zinc-400 block uppercase tracking-wider text-[10px]">Academic Stream</span>
+                  <span className="text-zinc-900 font-extrabold text-sm">{student.stream}</span>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <span className="font-bold text-zinc-400 block uppercase tracking-wider text-[10px]">Residential Address</span>

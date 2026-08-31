@@ -90,7 +90,7 @@ export default function StudentDashboardPage() {
     <div className="space-y-6 text-left w-full">
       <PageHeader
         title={`Welcome back, ${studentName}!`}
-        description={`Student ID: ${student.student_id || "N/A"} • ${(student.class || student.class_name || "").toLowerCase().startsWith("class") ? `${student.class || student.class_name}` : `Class ${student.class || student.class_name || "N/A"}`}-${student.section || student.section_name || "N/A"} • Roll No: ${student.roll_number || "N/A"}`}
+        description={`Student ID: ${student.student_id || "N/A"} • ${(student.class || student.class_name || "").toLowerCase().startsWith("class") ? `${student.class || student.class_name}` : `Class ${student.class || student.class_name || "N/A"}`}-${student.section || student.section_name || "N/A"}${student.stream ? ` (${student.stream})` : ""} • Roll No: ${student.roll_number || "N/A"}`}
       />
 
       {/* Aggregate Metrics Grid */}
@@ -189,6 +189,7 @@ export default function StudentDashboardPage() {
               {(student.class || student.class_name || "").toLowerCase().startsWith("class")
                 ? `${student.class || student.class_name}-${student.section || student.section_name || "N/A"}`
                 : `Class ${student.class || student.class_name || "N/A"}-${student.section || student.section_name || "N/A"}`}
+              {student.stream && ` (${student.stream})`}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">Roll No: {student.roll_number || "N/A"}</p>
           </div>

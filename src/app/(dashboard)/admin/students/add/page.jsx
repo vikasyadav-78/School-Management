@@ -37,6 +37,7 @@ function AddStudentFormContent() {
     formData.append("section_id", data.section_id || "");
     formData.append("academic_year_id", data.academic_year_id || "");
     if (data.stream) formData.append("stream", data.stream);
+    if (data.stream_id) formData.append("stream_id", data.stream_id);
     
     formData.append("gender", (data.gender || "").toLowerCase());
     formData.append("date_of_birth", data.date_of_birth || "");

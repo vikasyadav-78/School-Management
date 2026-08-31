@@ -12,7 +12,8 @@ import {
   addTeacherSubject,
   updateTeacherSubject,
   toggleTeacherSubjectStatus,
-  getTeacherClasses
+  getTeacherClasses,
+  getTeacherClassStreams
 } from "@/features/teachers/services/teacher.service";
 import { toast } from "sonner";
 
@@ -40,6 +41,41 @@ export default function TeacherSubjectsPage() {
   const [type, setType] = useState("theory"); // "theory" | "practical"
   const [isActive, setIsActive] = useState(true);
   const [selectedClassIds, setSelectedClassIds] = useState([]);
+  const [dynamicStreams, setDynamicStreams] = useState([]);
+  const [stream, setStream] = useState("");
+  const [streamId, setStreamId] = useState("");
+
+  const hasStreamClassSelected = selectedClassIds.some(id => {
+    const clsObj = classes.find(c => String(c.id) === String(id));
+    if (!clsObj) return false;
+    const cleanName = clsObj.name.replace(/class\s*-?/i, '').trim();
+    return cleanName.includes("11") || cleanName.includes("12");
+  });
+
+  useEffect(() => {
+    const firstStreamClassId = selectedClassIds.find(id => {
+      const clsObj = classes.find(c => String(c.id) === String(id));
+      if (!clsObj) return false;
+      const cleanName = clsObj.name.replace(/class\s*-?/i, '').trim();
+      return cleanName.includes("11") || cleanName.includes("12");
+    });
+
+    if (firstStreamClassId) {
+      getTeacherClassStreams(firstStreamClassId)
+        .then(res => {
+          const streamsList = res.streams || res.data || (Array.isArray(res) ? res : []);
+          setDynamicStreams(streamsList);
+        })
+        .catch(err => {
+          console.error("Failed to load class streams:", err);
+          setDynamicStreams([]);
+        });
+    } else {
+      setDynamicStreams([]);
+      setStream("");
+      setStreamId("");
+    }
+  }, [selectedClassIds, classes]);
 
   // 1. Initial Load
   const loadSubjects = async () => {
@@ -102,6 +138,9 @@ export default function TeacherSubjectsPage() {
     setFormError("");
     setEditingSubjectId(null);
     setSelectedClassIds([]);
+    setStream("");
+    setStreamId("");
+    setDynamicStreams([]);
   };
 
   const handleOpenAdd = () => {
@@ -117,6 +156,8 @@ export default function TeacherSubjectsPage() {
     setType(subject.type || "theory");
     setIsActive(!!subject.is_active);
     setSelectedClassIds(subject.school_class_ids || subject.classes?.map(c => c.id) || []);
+    setStream(subject.stream_id || subject.stream || "");
+    setStreamId(subject.stream_id || "");
     setIsFormModalOpen(true);
   };
 
@@ -149,6 +190,20 @@ export default function TeacherSubjectsPage() {
         is_active: isActive,
         school_class_ids: selectedClassIds
       };
+
+      if (hasStreamClassSelected) {
+        const selectedStreamObj = dynamicStreams.find(s => String(s.id) === String(stream));
+        if (selectedStreamObj) {
+          payload.stream = selectedStreamObj.name;
+          payload.stream_id = selectedStreamObj.id;
+        } else {
+          payload.stream = stream;
+          payload.stream_id = "";
+        }
+      } else {
+        payload.stream = "";
+        payload.stream_id = "";
+      }
 
       if (editingSubjectId) {
         await updateTeacherSubject(editingSubjectId, payload);
@@ -198,6 +253,25 @@ export default function TeacherSubjectsPage() {
       </div>
     );
   }
+
+  const baseStreamOptions = dynamicStreams.length > 0
+    ? dynamicStreams.map(stm => ({ value: stm.id, label: stm.name }))
+    : [
+        { value: "Science", label: "Science" },
+        { value: "Commerce", label: "Commerce" },
+        { value: "Arts", label: "Arts" }
+      ];
+
+  if (stream && !baseStreamOptions.some(opt => opt.value === stream)) {
+    const editingSubject = subjects.find(s => s.id === editingSubjectId);
+    const initialLabel = editingSubject?.stream || stream;
+    baseStreamOptions.unshift({ value: stream, label: initialLabel });
+  }
+
+  const streamOptions = [
+    { value: "", label: "Select Stream" },
+    ...baseStreamOptions
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in text-xs text-left">
@@ -276,6 +350,7 @@ export default function TeacherSubjectsPage() {
                   <th className="px-6 py-4 whitespace-nowrap">Subject Code</th>
                   <th className="px-6 py-4 whitespace-nowrap">Subject Name</th>
                   <th className="px-6 py-4 whitespace-nowrap">Course Type</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Stream</th>
                   <th className="px-6 py-4 whitespace-nowrap text-center">Status</th>
                   <th className="px-6 py-4 whitespace-nowrap text-center">Actions</th>
                 </tr>
@@ -300,6 +375,9 @@ export default function TeacherSubjectsPage() {
                       }`}>
                         {subject.type}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-zinc-650 font-bold uppercase text-[10px]">
+                      {subject.stream || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex px-2.5 py-0.5 text-[8px] font-extrabold rounded-lg border uppercase tracking-wider ${
@@ -435,6 +513,24 @@ export default function TeacherSubjectsPage() {
                   </div>
                 )}
               </div>
+
+              {hasStreamClassSelected && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Academic Stream *</label>
+                  <select
+                    value={stream}
+                    onChange={(e) => setStream(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-semibold text-black"
+                  >
+                    {streamOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                 <button

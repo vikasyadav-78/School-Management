@@ -30,6 +30,7 @@ export default function ClassDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const { className } = params;
+  const isStreamClass = className.includes("11") || className.includes("12");
 
   const { list: students, loading, meta, pagination } = useSelector((state) => state.students);
 
@@ -537,6 +538,11 @@ export default function ClassDetailsPage() {
                   <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
                     Section
                   </th>
+                  {isStreamClass && (
+                    <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
+                      Stream
+                    </th>
+                  )}
                   <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
                     Status
                   </th>
@@ -579,6 +585,11 @@ export default function ClassDetailsPage() {
                       <td className="px-6 py-4.5 whitespace-nowrap text-xs text-zinc-500">
                         {student.section || "N/A"}
                       </td>
+                      {isStreamClass && (
+                        <td className="px-6 py-4.5 whitespace-nowrap text-xs text-zinc-500">
+                          {student.stream || "—"}
+                        </td>
+                      )}
                       <td className="px-6 py-4.5 whitespace-nowrap text-xs text-zinc-500">
                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${student.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                            {student.is_active ? "Active" : "Inactive"}

@@ -172,7 +172,7 @@ export default function StudentProfilePage() {
             <div>
               <h3 className="text-base font-bold text-zinc-800">{student.full_name || "-"}</h3>
               <p className="text-xs text-zinc-400 mt-1">
-                Class {student.class || "-"} - Section {student.section || "-"}
+                Class {student.class || "-"} - Section {student.section || "-"}{student.stream ? ` (${student.stream})` : ""}
               </p>
               <span className={`inline-flex items-center mt-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${student.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-zinc-50 text-zinc-500 border-zinc-200"
                 }`}>
@@ -276,6 +276,15 @@ export default function StudentProfilePage() {
                     <p className="text-zinc-800 font-bold mt-0.5">Class {student.class || "-"} - Section {student.section || "-"}</p>
                   </div>
                 </div>
+                {student.stream && (
+                  <div className="flex items-center gap-3">
+                    <FaBuilding className="text-zinc-400 w-4 h-4 shrink-0" />
+                    <div>
+                      <p className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-wider">Academic Stream</p>
+                      <p className="text-zinc-800 font-bold mt-0.5">{student.stream}</p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <FaCalendarAlt className="text-zinc-400 w-4 h-4 shrink-0" />
                   <div>

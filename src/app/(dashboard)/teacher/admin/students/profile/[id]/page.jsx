@@ -156,7 +156,7 @@ export default function TeacherStudentProfilePage() {
                 {student.full_name || `${student.first_name} ${student.last_name || ''}`.trim()}
               </h2>
               <div className="text-sm font-medium text-indigo-600 mt-1">
-                Class {student.class || "—"} • Section {student.section || "—"}
+                Class {student.class || "—"} • Section {student.section || "—"}{student.stream ? ` • Stream ${student.stream}` : ""}
               </div>
               
               <div className="flex gap-2 mt-4">
@@ -295,6 +295,12 @@ export default function TeacherStudentProfilePage() {
                 <div className="text-xs font-medium text-zinc-500 mb-1">APAAR ID</div>
                 <div className="text-sm font-mono font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded w-fit border border-indigo-100">{student.apaar_id || "—"}</div>
               </div>
+              {student.stream && (
+                <div>
+                  <div className="text-xs font-medium text-zinc-500 mb-1">Academic Stream</div>
+                  <div className="text-sm font-semibold text-zinc-900">{student.stream}</div>
+                </div>
+              )}
             </div>
           </div>
 
