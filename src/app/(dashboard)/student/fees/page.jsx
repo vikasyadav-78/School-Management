@@ -106,7 +106,7 @@ export default function StudentFeesPage() {
             return;
           }
 
-          const rzpKey = paymentGateway.key || paymentGateway.key_id || checkout.client?.key;
+          const rzpKey = paymentGateway.key || paymentGateway.key_id || checkout.client?.key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
           const rzpOrderId = checkout.client?.order_id || checkout.order_id;
           const rzpAmount = checkout.amount;
           const rzpCurrency = checkout.currency || paymentGateway.currency || "INR";

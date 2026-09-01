@@ -1,14 +1,23 @@
 export const ADMIN_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/admin/dashboard", icon: "MdDashboard" },
   {
+    title: "Classes & Sections",
+    path: "/admin/classes",
+    icon: "FaChalkboard",
+    submenu: [
+      { title: "All Classes & Sections", path: "/admin/classes" },
+      { title: "Subjects Management", path: "/admin/subjects" },
+      { title: "Allocation & Transfer", path: "/admin/students/allocation" },
+      { title: "Academic Sessions", path: "/admin/academic-years" }
+    ]
+  },
+  {
     title: "Students",
     path: "/admin/students",
     icon: "FaUserGraduate",
     submenu: [
       { title: "All Students", path: "/admin/students" },
-      { title: "Add Student", path: "/admin/students/add" },
-      { title: "Allocation & Transfer", path: "/admin/students/allocation" },
-      { title: "Subjects", path: "/admin/subjects" }
+      { title: "Add Student", path: "/admin/students/add" }
     ]
   },
   {
@@ -23,10 +32,9 @@ export const ADMIN_NAVIGATION_ITEMS = [
   },
   {
     title: "Academics",
-    path: "/admin/classes",
+    path: "/admin/attendance",
     icon: "FaGraduationCap",
     submenu: [
-      { title: "Classes & Sections", path: "/admin/classes" },
       {
         title: "Attendance",
         path: "/admin/attendance",
@@ -35,6 +43,7 @@ export const ADMIN_NAVIGATION_ITEMS = [
           { title: "Attendance Reports", path: "/admin/attendance/reports" }
         ]
       },
+      { title: "Timetable Management", path: "/admin/timetable" },
       {
         title: "Homework",
         path: "/admin/homework",
@@ -67,9 +76,7 @@ export const ADMIN_NAVIGATION_ITEMS = [
           { title: "Live Classes", path: "/admin/live-classes" },
           { title: "Reports", path: "/admin/live-classes/reports" }
         ]
-      },
-      { title: "Timetable Management", path: "/admin/timetable" },
-      { title: "Academic Sessions", path: "/admin/academic-years" }
+      }
     ]
   },
   {
@@ -108,9 +115,9 @@ export const ADMIN_NAVIGATION_ITEMS = [
           { title: "Reports", path: "/admin/inventory/reports" }
         ]
       },
+      { title: "Transport & Buses", path: "/admin/transport" },
       { title: "Leave Applications", path: "/admin/leaves" },
-      { title: "Holidays", path: "/admin/holidays" },
-      { title: "Transport", path: "/admin/transport" }
+      { title: "Holidays", path: "/admin/holidays" }
     ]
   }
 ];
@@ -130,9 +137,9 @@ export const SUPER_ADMIN_NAVIGATION_ITEMS = [
   { title: "Login Reports", path: "/super-admin/login-logs", icon: "FaClipboardList" }
 ];
 
-
 export const TEACHER_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/teacher/dashboard", icon: "MdDashboard" },
+  { title: "My Students", path: "/teacher/students", icon: "FaUserGraduate" },
   {
     title: "Attendance",
     path: "/teacher/attendance",
@@ -142,14 +149,9 @@ export const TEACHER_NAVIGATION_ITEMS = [
       { title: "My Attendance", path: "/teacher/my-attendance" }
     ]
   },
-  { title: "Leaves", path: "/teacher/leaves", icon: "FaFileAlt" },
-  { title: "My Students", path: "/teacher/students", icon: "FaUserGraduate" },
-  { title: "Homework", path: "/teacher/homework", icon: "FaBook" },
-  { title: "Class Notes", path: "/teacher/class-notes", icon: "FaFileAlt" },
-  { title: "Holidays", path: "/teacher/holidays", icon: "FaUmbrellaBeach" },
-  { title: "Marks Entry", path: "/teacher/marks", icon: "FaGraduationCap" },
-  { title: "My Salary", path: "/teacher/salary", icon: "FaMoneyBillWave" },
   { title: "Timetable", path: "/teacher/timetable", icon: "FaCalendarAlt" },
+  { title: "Homework", path: "/teacher/homework", icon: "FaBook" },
+  { title: "Marks Entry", path: "/teacher/marks", icon: "FaGraduationCap" },
   {
     title: "Online MCQ",
     path: "/teacher/online-mcq",
@@ -168,6 +170,10 @@ export const TEACHER_NAVIGATION_ITEMS = [
       { title: "Reports", path: "/teacher/live-classes/reports" }
     ]
   },
+  { title: "Class Notes", path: "/teacher/class-notes", icon: "FaFileAlt" },
+  { title: "Leaves", path: "/teacher/leaves", icon: "FaFileAlt" },
+  { title: "My Salary", path: "/teacher/salary", icon: "FaMoneyBillWave" },
+  { title: "Holidays", path: "/teacher/holidays", icon: "FaUmbrellaBeach" },
   { title: "My Profile", path: "/teacher/profile", icon: "FaUser" },
   
   // Administrative Operations expandable submenu
@@ -177,16 +183,26 @@ export const TEACHER_NAVIGATION_ITEMS = [
     icon: "FaLock",
     submenu: [
       {
+        title: "Classes & Sections",
+        path: "/teacher/admin/classes",
+        submenu: [
+          { title: "Classes & Sections", path: "/teacher/admin/classes" },
+          { title: "Subjects Management", path: "/teacher/admin/subjects" },
+          { title: "Allocation & Transfer", path: "/teacher/admin/classes/allocation" },
+          { title: "Academic Sessions", path: "/teacher/admin/academic-years" }
+        ]
+      },
+      {
         title: "Students",
+        path: "/teacher/admin/students",
         submenu: [
           { title: "All Students", path: "/teacher/admin/students" },
-          { title: "Add Student", path: "/teacher/admin/students/add" },
-          { title: "Allocation & Transfer", path: "/teacher/admin/classes/allocation" },
-          { title: "Subjects", path: "/teacher/admin/subjects" }
+          { title: "Add Student", path: "/teacher/admin/students/add" }
         ]
       },
       {
         title: "Staff",
+        path: "/teacher/admin/teachers",
         submenu: [
           { title: "Teachers", path: "/teacher/admin/teachers" },
           { title: "Staff Management", path: "/teacher/admin/staff" },
@@ -196,7 +212,6 @@ export const TEACHER_NAVIGATION_ITEMS = [
       {
         title: "Academics",
         submenu: [
-          { title: "Classes & Sections", path: "/teacher/admin/classes" },
           {
             title: "Attendance",
             path: "/teacher/admin/attendance",
@@ -228,8 +243,7 @@ export const TEACHER_NAVIGATION_ITEMS = [
               { title: "Reports", path: "/teacher/admin/live-classes/reports" }
             ]
           },
-          { title: "Timetable Management", path: "/teacher/admin/manage-timetable" },
-          { title: "Academic Sessions", path: "/teacher/admin/academic-years" }
+          { title: "Timetable Management", path: "/teacher/admin/manage-timetable" }
         ]
       },
       {
@@ -262,14 +276,11 @@ export const TEACHER_NAVIGATION_ITEMS = [
 export const STUDENT_NAVIGATION_ITEMS = [
   { title: "Dashboard", path: "/student/dashboard", icon: "MdDashboard" },
   { title: "Attendance", path: "/student/attendance", icon: "FaCalendarTimes" },
-  { title: "Leaves", path: "/student/leaves", icon: "FaFileAlt" },
-  { title: "My Fees", path: "/student/fees", icon: "FaMoneyBillWave" },
   { title: "Timetable", path: "/student/timetable", icon: "FaCalendarAlt" },
-  { title: "Holidays", path: "/student/holidays", icon: "FaUmbrellaBeach" },
   { title: "Homework", path: "/student/homework", icon: "FaBook" },
   { title: "Class Notes", path: "/student/class-notes", icon: "FaFileAlt" },
-  { title: "Online MCQ Exams", path: "/student/online-mcq", icon: "FaFileAlt" },
-  { title: "Live Classes", path: "/student/live-classes", icon: "FaBuilding" },
+  { title: "Online MCQ Exams", path: "/student/online-mcq", icon: "FaLaptopCode" },
+  { title: "Live Classes", path: "/student/live-classes", icon: "FaVideo" },
   {
     title: "Examinations",
     icon: "FaGraduationCap",
@@ -281,6 +292,9 @@ export const STUDENT_NAVIGATION_ITEMS = [
       { title: "Admit Cards", path: "/student/examinations/admit-cards" }
     ]
   },
-  { title: "My Bus Location", path: "/student/transport", icon: "FaBuilding" },
+  { title: "My Fees", path: "/student/fees", icon: "FaMoneyBillWave" },
+  { title: "Leaves", path: "/student/leaves", icon: "FaFileAlt" },
+  { title: "Holidays", path: "/student/holidays", icon: "FaUmbrellaBeach" },
+  { title: "My Bus Location", path: "/student/transport", icon: "FaBus" },
   { title: "My Profile", path: "/student/profile", icon: "FaUser" }
 ];

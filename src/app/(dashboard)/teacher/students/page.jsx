@@ -276,7 +276,8 @@ export default function MyStudentsPage() {
 
   const handlePrintIdCard = (student) => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    let url = student.id_card_url || `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/teacher/students/${student.id}/id-card?format=print`;
+    const apiBase = (process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/api$/, "");
+    let url = student.id_card_url || `${apiBase}/api/teacher/students/${student.id}/id-card?format=print`;
     if (token) {
       url += (url.includes("?") ? "&" : "?") + `token=${token}`;
     }

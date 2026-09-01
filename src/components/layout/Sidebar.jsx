@@ -8,7 +8,7 @@ import {
   FaUsers, FaCalendarTimes, FaMoneyBillWave, FaCalendarAlt,
   FaShoppingCart, FaFileAlt, FaUser, FaChevronDown, FaChevronRight,
   FaGraduationCap, FaLock, FaUmbrellaBeach, FaCalendarCheck, FaVideo, FaArrowLeft, FaCoins, FaClipboardList,
-  FaFileContract, FaCloudUploadAlt, FaCog
+  FaFileContract, FaCloudUploadAlt, FaCog, FaChalkboard, FaBoxes, FaBus, FaLaptopCode, FaChartBar
 } from "react-icons/fa";
 import { MdDashboard, MdEmail } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -38,7 +38,12 @@ const iconMap = {
   FaClipboardList,
   FaFileContract,
   FaCloudUploadAlt,
-  FaCog
+  FaCog,
+  FaChalkboard,
+  FaBoxes,
+  FaBus,
+  FaLaptopCode,
+  FaChartBar
 };
 
 import { useSidebar } from "@/context/SidebarContext";

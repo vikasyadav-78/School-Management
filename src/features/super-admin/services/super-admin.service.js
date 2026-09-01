@@ -234,7 +234,7 @@ export const getTransactionDetails = async (id) => {
 // Download/View Transaction PDF or print HTML receipt
 export const downloadTransactionReceipt = async (id, format = "pdf") => {
   if (format === "print") {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "/api";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     return `${baseUrl}/super-admin/online-payments/${id}/receipt?format=print`;
   }
   const response = await api.get(`/super-admin/online-payments/${id}/receipt?format=${format}`, {
